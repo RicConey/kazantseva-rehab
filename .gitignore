@@ -1,0 +1,20 @@
+# Исключаем папки сборки и зависимости
+node_modules/
+.next/
+out/
+dist/
+
+# Логи и временные файлы
+*.log
+yarn.lock
+package-lock.json
+
+# Файлы конфигурации
+.env
+.env.local
+.env.development
+.env.production
+
+# Кэш и системные файлы
+.DS_Store
+*.swp
