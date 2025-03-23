@@ -1,0 +1,19 @@
+{
+  "name": "kazantseva-rehab",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^1.5.0",
+    "glob": "^11.0.1",
+    "lru-cache": "^11.0.2",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "uuid": "^11.1.0"
+  }
+}

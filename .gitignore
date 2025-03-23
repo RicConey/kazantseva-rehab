@@ -1,3 +1,11 @@
+# IDE (JetBrains, VSCode)
+.idea/
+kazantseva-rehab.iml
+.vscode/
+
+# Vercel
+.vercel/
+
 # Исключаем папки сборки и зависимости
 node_modules/
 .next/

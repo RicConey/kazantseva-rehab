@@ -1,0 +1,80 @@
+/* Контейнер для кнопок "Назад на головну" (вверху и внизу) */
+.backButtonContainer {
+    display: flex;
+    justify-content: flex-start; /* Выровняли влево */
+    margin: 20px 0;
+}
+
+/* Контейнер для кнопки "Показати сертифікати та дипломи" */
+.certButtonContainer {
+    display: flex;
+    justify-content: center; /* Кнопка по центру */
+    margin: 30px 0;
+}
+
+/* Универсальные стили для кнопок */
+.backButton {
+    display: inline-block;
+    margin: 20px 0;
+    padding: 12px 24px;
+    background: #249B89; /* Основной цвет логотипа */
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.certButton {
+    display: inline-block;
+    padding: 12px 24px;
+    background: #249B89;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: transform 0.2s, background 0.2s;
+    text-align: center;
+    width: 250px; /* Фиксированная ширина для соответствия кнопкам в услугах */
+}
+
+/* Эффект наведения */
+.backButton:hover,
+.certButton:hover {
+    transform: translateY(-3px);
+    background: #1D8473;
+}
+
+/* Эффект нажатия */
+.backButton:active,
+.certButton:active {
+    transform: translateY(0);
+}
+
+.section {
+    padding: 20px;
+    max-width: 900px; /* Делаем такой же, как на других страницах */
+    margin: 0 auto;
+    text-align: justify;
+    line-height: 1.6;
+    font-family: inherit; /* Используем общий шрифт сайта */
+    color: #333; /* Цвет текста */
+    hyphens: auto; /* Автоматические переносы */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Заголовок */
+.title {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+/* Абзацы */
+.section p {
+    margin-bottom: 15px; /* Делаем отступы между абзацами */
+}
