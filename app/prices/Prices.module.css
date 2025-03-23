@@ -1,4 +1,4 @@
-/* Общие стили */
+/* Общий контейнер страницы */
 .section {
     padding: 20px;
     max-width: 900px;
@@ -7,9 +7,12 @@
     line-height: 1.6;
     font-family: inherit;
     color: #333;
+    hyphens: auto;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
-/* Заголовок */
+/* Заголовок страницы */
 .title {
     text-align: center;
     font-size: 2rem;
@@ -17,16 +20,26 @@
     margin-bottom: 20px;
 }
 
-/* Список цен */
-.priceList {
-    list-style: none;
-    padding: 0;
+/* Таблица с ценами */
+.priceTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
 }
 
-.priceItem {
-    padding: 15px;
-    border-bottom: 1px solid #ddd;
+.priceTable th,
+.priceTable td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
     font-size: 1rem;
+    text-align: left;
+}
+
+/* Шапка таблицы */
+.priceTable thead th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+    color: #249B89;
 }
 
 /* Ссылка на услугу */
@@ -36,42 +49,49 @@
     color: #249B89;
     text-decoration: none;
     transition: color 0.2s ease-in-out;
+    display: inline-block; /* Заменили inline-flex, чтобы текст переносился */
+    white-space: normal; /* Разрешаем перенос */
+    word-break: break-word; /* Переносим длинные слова */
 }
 
 .serviceLink:hover {
     color: #1D8473;
 }
 
-/* Маленькая стрелочка после ссылки */
+/* Стрелка */
 .arrow {
     font-size: 1.2rem;
     margin-left: 5px;
+    display: inline; /* Меняем display, чтобы не разрывать строку */
     transition: transform 0.2s ease-in-out;
 }
 
+/* При наведении */
 .serviceLink:hover .arrow {
-    transform: translateX(5px);
+    transform: translateX(4px);
 }
 
-/* Текст цены */
-.priceItem p {
-    margin: 5px 0 0;
-    font-size: 1rem;
+/* Ячейки */
+.serviceCell {
+    width: 40%;
 }
 
-.extra {
-    font-size: 0.9rem;
-    color: #777;
+.priceCell {
+    width: 30%;
 }
 
-/* Контейнер кнопки назад */
+.durationCell {
+    width: 30%;
+}
+
+/* Контейнер для кнопки "Назад на головну" */
 .backButtonContainer {
     display: flex;
     justify-content: flex-start;
-    margin: 30px 0;
+    margin: 10px 0;
 }
 
-/* Кнопки */
+/* Кнопка "Назад на головну" */
 .backButton {
     display: inline-block;
     padding: 12px 24px;
@@ -90,3 +110,56 @@
     transform: translateY(-3px);
     background: #1D8473;
 }
+
+/* ---- Адаптивная часть: при узком экране превращаем таблицу в "стек" ---- */
+@media (max-width: 600px) {
+    .priceTable thead {
+        display: none; /* Скрываем заголовки таблицы */
+    }
+
+    .priceTable,
+    .priceTable tbody,
+    .priceTable tr,
+    .priceTable td {
+        display: block;
+        width: 100%;
+    }
+
+    .priceTable tr {
+        margin-bottom: 1rem;
+        border: 1px solid #ddd;
+    }
+
+    .priceTable td {
+        position: relative;
+        padding-left: 50%;
+        border: none;
+        border-bottom: 1px dotted #ccc;
+        box-sizing: border-box;
+    }
+
+    .priceTable td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 1rem;
+        width: 45%;
+        white-space: nowrap;
+        font-weight: bold;
+        color: #249B89;
+    }
+    .arrow {
+        font-size: 1rem; /* Делаем стрелку меньше */
+        margin-left: 3px; /* Уменьшаем отступ */
+    }
+
+    .serviceLink {
+        font-size: 1rem; /* Чуть уменьшаем текст, чтобы влезало */
+    }
+
+    .serviceCell {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap; /* Позволяем перенос текста */
+    }
+}
+
