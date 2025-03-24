@@ -8,6 +8,21 @@ export const viewport = {
     initialScale: 1.0,
 };
 
+export const metadata = {
+    title: "Kazantseva Rehabilitation – Реабілітація Наталія Казанцева",
+    description: "Професійна реабілітація, остеопатія, масаж, фітобочка, краніосакральна терапія, вісцеральна терапія та інші послуги для відновлення здоров'я.",
+    // Можно добавить дополнительные метатеги
+    icons: {
+        icon: "/favicon.ico", // указывает путь к файлу в public/
+    },
+    openGraph: {
+        title: "Kazantseva Rehabilitation – Реабілітація Наталія Казанцева",
+        description: "Професійна реабілітація, остеопатія, масаж, фітобочка, краніосакральна терапія, вісцеральна терапія та інші послуги для відновлення здоров'я.",
+        url: "https://kazantseva-rehab.vercel.app/",
+        type: "website",
+    },
+};
+
 export default function RootLayout({ children }) {
     return (
         <html lang="uk">
@@ -24,16 +39,6 @@ export default function RootLayout({ children }) {
         </html>
     );
 }
-export const metadata = {
-    title: "Kazantseva Rehabilitation – Реабілітація Наталія Казанцева",
-    description: "Професійна реабілітація, остеопатія, масаж, фітобочка, краніосакральна терапія, вісцеральна терапія та інші послуги для відновлення здоров'я.",
-    // Можно добавить дополнительные метатеги
-    openGraph: {
-        title: "Kazantseva Rehabilitation – Реабілітація Наталія Казанцева",
-        description: "Професійна реабілітація, остеопатія, масаж, фітобочка, краніосакральна терапія, вісцеральна терапія та інші послуги для відновлення здоров'я.",
-        url: "https://kazantseva-rehab.vercel.app/",
-        type: "website",
-    },
-};
+
 
 
