@@ -89,3 +89,10 @@ h1, h2, h3, h4, h5, h6, p {
     color: #e0e0e0;
     transition: background-color 0.3s, color 0.3s;
 }
+
+@font-face {
+    font-family: "LogoFont";
+    src: url("/fonts/LogoFont.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+}
