@@ -1,109 +1,27 @@
-/* Общий контейнер страницы */
-.section {
-    padding: 20px;
-    max-width: 900px;
-    margin: 0 auto;
-    text-align: justify;
-    line-height: 1.6;
-    font-family: inherit;
-    color: #333;
-    hyphens: auto;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
+.container {
+    max-width: 100%;
+    margin: 10px auto;
+    padding: 10px;
 }
 
-/* Заголовок страницы */
-.title {
-    text-align: center;
-    font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 20px;
-}
-
-/* Таблица с ценами */
-.priceTable {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 30px;
-}
-
-.priceTable th,
-.priceTable td {
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-    font-size: 1rem;
-    text-align: left;
-}
-
-/* Шапка таблицы */
-.priceTable thead th {
-    background-color: #f5f5f5;
-    font-weight: bold;
-    color: #249B89;
-}
-
-/* Ссылка на услугу */
-.serviceLink {
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: #249B89;
-    text-decoration: none;
-    transition: color 0.2s ease-in-out;
-    display: inline-block; /* Заменили inline-flex, чтобы текст переносился */
-    white-space: normal; /* Разрешаем перенос */
-    word-break: break-word; /* Переносим длинные слова */
-}
-
-.serviceLink:hover {
-    color: #1D8473;
-}
-
-/* Стрелка */
-.arrow {
-    font-size: 1.2rem;
-    margin-left: 5px;
-    display: inline; /* Меняем display, чтобы не разрывать строку */
-    transition: transform 0.2s ease-in-out;
-}
-
-/* При наведении */
-.serviceLink:hover .arrow {
-    transform: translateX(4px);
-}
-
-/* Ячейки */
-.serviceCell {
-    width: 40%;
-}
-
-.priceCell {
-    width: 30%;
-}
-
-.durationCell {
-    width: 30%;
-}
-
-/* Контейнер для кнопки "Назад на головну" */
+/* Контейнер для кнопки "Назад" */
 .backButtonContainer {
     display: flex;
-    justify-content: flex-start;
+    justify-content: flex-start; /* Выравниваем влево */
     margin: 10px 0;
 }
 
-/* Кнопка "Назад на головну" */
+/* Стиль кнопки "Назад" */
 .backButton {
     display: inline-block;
     padding: 12px 24px;
-    background: #249B89;
+    background: #249B89; /* Цвет логотипа */
     color: white;
     text-decoration: none;
     border-radius: 8px;
     font-size: 1rem;
     font-weight: 500;
     transition: transform 0.2s, background 0.2s;
-    text-align: center;
-    width: 250px;
 }
 
 .backButton:hover {
@@ -111,55 +29,46 @@
     background: #1D8473;
 }
 
-/* ---- Адаптивная часть: при узком экране превращаем таблицу в "стек" ---- */
-@media (max-width: 600px) {
-    .priceTable thead {
-        display: none; /* Скрываем заголовки таблицы */
-    }
-
-    .priceTable,
-    .priceTable tbody,
-    .priceTable tr,
-    .priceTable td {
-        display: block;
-        width: 100%;
-    }
-
-    .priceTable tr {
-        margin-bottom: 1rem;
-        border: 1px solid #ddd;
-    }
-
-    .priceTable td {
-        position: relative;
-        padding-left: 50%;
-        border: none;
-        border-bottom: 1px dotted #ccc;
-        box-sizing: border-box;
-    }
-
-    .priceTable td::before {
-        content: attr(data-label);
-        position: absolute;
-        left: 1rem;
-        width: 45%;
-        white-space: nowrap;
-        font-weight: bold;
-        color: #249B89;
-    }
-    .arrow {
-        font-size: 1rem; /* Делаем стрелку меньше */
-        margin-left: 3px; /* Уменьшаем отступ */
-    }
-
-    .serviceLink {
-        font-size: 1rem; /* Чуть уменьшаем текст, чтобы влезало */
-    }
-
-    .serviceCell {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap; /* Позволяем перенос текста */
-    }
+.priceTable {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
 }
 
+.priceTable th,
+.priceTable td {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.priceTable th {
+    background: #249B89;
+    color: white;
+    font-weight: bold;
+}
+
+/* Мобильная версия */
+@media (max-width: 600px) {
+    .priceTable th {
+        font-size: 14px;
+        padding: 6px 10px;
+    }
+
+    .priceTable td {
+        font-size: 14px;
+        padding: 6px 10px;
+    }
+
+    .container {
+        padding: 5px;
+    }
+
+    .backButton {
+        width: 100%; /* Растягиваем кнопку на всю ширину на мобильных */
+        text-align: center;
+    }
+}

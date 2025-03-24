@@ -1,7 +1,5 @@
 // app/contact/page.js
 
-import Link from "next/link";
-
 export default function ContactPage() {
     return (
         <section
@@ -32,7 +30,7 @@ export default function ContactPage() {
             <p>
                 <strong>Адреса:</strong>{" "}
                 <a
-                    href="https://www.google.com/maps/dir/?api=1&destination=%D0%B2%D1%83%D0%BB.%20%D0%9C%D0%BE%D0%BB%D0%BE%D0%B4%D1%96%D0%B6%D0%BD%D0%B0%2C16%D0%90"
+                    href="https://maps.app.goo.gl/FBCCwo9srARVsH5bA"
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{ textDecoration: "underline", color: "#0070f3" }}
