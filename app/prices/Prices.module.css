@@ -7,11 +7,11 @@
 /* Контейнер для кнопки "Назад" */
 .backButtonContainer {
     display: flex;
-    justify-content: flex-start; /* Выравниваем влево */
-    margin: 10px 0;
+    justify-content: flex-start;
+    margin: 5px 0; /* Уменьшенное расстояние между шапкой и кнопкой */
 }
 
-/* Стиль кнопки "Назад" */
+/* Стиль кнопки "Назад" (унифицированный) */
 .backButton {
     display: inline-block;
     padding: 12px 24px;
@@ -29,6 +29,16 @@
     background: #1D8473;
 }
 
+.backButton:active {
+    transform: translateY(0);
+}
+
+/* Стиль заголовка */
+.title {
+    margin-bottom: 20px; /* Увеличенный отступ от заголовка до таблицы */
+    text-align: center;
+}
+
 .priceTable {
     width: 100%;
     border-collapse: collapse;
@@ -38,17 +48,21 @@
     overflow: hidden;
 }
 
-.priceTable th,
+/* Заголовки таблицы */
+.priceTable th {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background: #249B89;
+    color: white;
+    font-weight: bold;
+    text-align: center; /* Центрирование текста в заголовках */
+}
+
+/* Ячейки таблицы */
 .priceTable td {
     padding: 8px 12px;
     border: 1px solid #ddd;
     text-align: left;
-}
-
-.priceTable th {
-    background: #249B89;
-    color: white;
-    font-weight: bold;
 }
 
 /* Мобильная версия */
@@ -57,16 +71,13 @@
         font-size: 14px;
         padding: 6px 10px;
     }
-
     .priceTable td {
         font-size: 14px;
         padding: 6px 10px;
     }
-
     .container {
         padding: 5px;
     }
-
     .backButton {
         width: 100%; /* Растягиваем кнопку на всю ширину на мобильных */
         text-align: center;
@@ -79,7 +90,6 @@
     display: inline-block;
 }
 
-/* Клик по этому слову вызывает tooltip */
 .tooltipTrigger {
     color: #249B89;
     font-weight: 600;
@@ -87,14 +97,11 @@
     text-decoration: underline dotted;
 }
 
-/* Базовые стили tooltip */
 .tooltipText {
     position: absolute;
     bottom: 130%;
     left: 50%;
     transform: translateX(-50%);
-
-    /* Цвет фона, скругления и т.п. */
     background-color: #249B89;
     color: white;
     padding: 8px 10px;
@@ -103,26 +110,18 @@
     line-height: 1.2;
     text-align: justify;
     z-index: 9999;
-
-    /* Для плавного появления */
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease;
-
-    /* Позволяем переносы и задаём разумную ширину */
     white-space: normal;
     overflow-wrap: break-word;
     word-wrap: break-word;
     hyphens: auto;
-
-    /* Подберите нужные значения */
-    min-width: 200px;  /* или 250px, 300px — зависит от дизайна */
-    max-width: 400px;  /* или 500px и т.д. */
+    min-width: 200px;
+    max-width: 400px;
 }
-
 
 .tooltipVisible {
     opacity: 1;
     visibility: visible;
 }
-

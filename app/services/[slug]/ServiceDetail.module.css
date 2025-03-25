@@ -1,14 +1,13 @@
 /* Контейнер для кнопки "Назад" */
 .backButtonContainer {
     display: flex;
-    justify-content: flex-start; /* Размещаем кнопку слева */
-    margin: 20px 0;
+    justify-content: flex-start;
+    margin: 5px 0;
 }
 
-/* Кнопка "Назад" */
+/* Унифицированный стиль кнопки "Назад" */
 .backButton {
     display: inline-block;
-    width: 250px;
     padding: 12px 24px;
     background: #249B89;
     color: white;
