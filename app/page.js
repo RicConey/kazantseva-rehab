@@ -1,4 +1,3 @@
-// app/page.js
 import Link from "next/link";
 import styles from "./ServicePage.module.css";
 
@@ -50,9 +49,7 @@ export default function HomePage() {
 
     return (
         <section className={styles.section}>
-            <p className={styles.intro}>
-                Ласкаво просимо до Наталії Казанцевої! Ваш шлях до здоров'я починається тут.
-            </p>
+            <h1 className={styles.intro}>Kazantseva Rehabilitation – Ваш шлях до здоров'я!</h1>
             <ul className={styles.servicesGrid}>
                 {services.map((service) => (
                     <li key={service.slug} className={styles.serviceCard}>

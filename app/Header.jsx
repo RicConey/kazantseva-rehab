@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import styles from "./Header.module.css";
 
 export default function Header() {
@@ -13,7 +14,13 @@ export default function Header() {
                 {/* Логотип + текст */}
                 <div className={styles.logoBlock}>
                     <Link href="/">
-                        <img src="/logo.png" alt="Логотип" className={styles.logo} />
+                        <Image
+                            src="/logo.png"
+                            alt="Логотип"
+                            className={styles.logo}
+                            width={120}
+                            height={80}
+                        />
                     </Link>
                     <div className={styles.logoText}>
                         <span>Ваш шлях</span>
@@ -23,14 +30,28 @@ export default function Header() {
 
                 {/* Десктопное меню */}
                 <nav className={styles.nav}>
-                    <Link href="/" className={styles.link}>Головна</Link>
-                    <Link href="/about" className={styles.link}>Про нас</Link>
-                    <Link href="/prices" className={styles.link}>Ціни</Link> {/* Новый пункт */}
-                    <Link href="/contact" className={styles.link}>Контакти</Link>
+                    <Link href="/" className={styles.link}>
+                        Головна
+                    </Link>
+                    <Link href="/about" className={styles.link}>
+                        Про нас
+                    </Link>
+                    <Link href="/prices" className={styles.link}>
+                        Ціни
+                    </Link>
+                    <Link href="/contact" className={styles.link}>
+                        Контакти
+                    </Link>
                 </nav>
 
                 {/* Бургер-меню */}
-                <div className={styles.burger} onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                <div
+                    className={styles.burger}
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    aria-label="Відкрити меню"
+                    role="button"
+                    aria-expanded={isMenuOpen}
+                >
                     ☰
                 </div>
             </div>
@@ -38,10 +59,18 @@ export default function Header() {
             {/* Мобильное меню */}
             {isMenuOpen && (
                 <nav className={styles.mobileNav}>
-                    <Link href="/" className={styles.link} onClick={() => setIsMenuOpen(false)}>Головна</Link>
-                    <Link href="/about" className={styles.link} onClick={() => setIsMenuOpen(false)}>Про нас</Link>
-                    <Link href="/prices" className={styles.link} onClick={() => setIsMenuOpen(false)}>Ціни</Link> {/* Новый пункт */}
-                    <Link href="/contact" className={styles.link} onClick={() => setIsMenuOpen(false)}>Контакти</Link>
+                    <Link href="/" className={styles.link} onClick={() => setIsMenuOpen(false)}>
+                        Головна
+                    </Link>
+                    <Link href="/about" className={styles.link} onClick={() => setIsMenuOpen(false)}>
+                        Про нас
+                    </Link>
+                    <Link href="/prices" className={styles.link} onClick={() => setIsMenuOpen(false)}>
+                        Ціни
+                    </Link>
+                    <Link href="/contact" className={styles.link} onClick={() => setIsMenuOpen(false)}>
+                        Контакти
+                    </Link>
                 </nav>
             )}
         </header>
