@@ -28,8 +28,4 @@ package-lock.json
 *.swp
 
 # локальные для отладки
-/public/hidden-images/
-/app/hidden/
-/app/api/hidden-images/
-/app/api/comments/
-/data/
+/public/google6cebe0a2bceb6b2d.html
