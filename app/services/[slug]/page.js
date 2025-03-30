@@ -11,6 +11,10 @@ import Fitobocha from "../services-data/Fitobocha";
 import Massage from "../services-data/Massage";
 import Osteopathy from "../services-data/Osteopathy";
 import Visceral from "../services-data/Visceral";
+import Taping from "../services-data/Taping";
+import StrokeRehabilitation from "../services-data/StrokeRehabilitation";
+import InstantPainRelief from "../services-data/InstantPainRelief";
+import CuppingTherapy from "../services-data/CuppingTherapy";
 import styles from "./ServiceDetail.module.css";
 
 // Маппинг slug → компонент услуги
@@ -22,6 +26,10 @@ const servicesMap = {
     massage: Massage,
     osteopathy: Osteopathy,
     visceral: Visceral,
+    taping: Taping,
+    strokerehabilitation: StrokeRehabilitation,
+    instantpainrelief: InstantPainRelief,
+    cuppingtherapy: CuppingTherapy,
 };
 
 export default function ServiceDetailPage({ params: paramsPromise }) {
