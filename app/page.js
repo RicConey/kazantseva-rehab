@@ -49,7 +49,12 @@ export default function HomePage() {
 
     return (
         <section className={styles.section}>
-            <h1 className={styles.intro}>Kazantseva Rehabilitation – Ваш шлях до здоров'я!</h1>
+            <h1 className={styles.intro}>Kazantseva Rehabilitation – ваш шлях до здоров'я починається тут</h1>
+            <p className={styles.intro}>
+                Шукаєте ефективну реабілітацію, остеопатію, масаж чи краніосакральну терапію у Вишневому?
+                Наталія Казанцева пропонує вам професійні послуги для відновлення здоров'я, корекції постави та
+                зняття болю у зручний для вас час. Нижче представлені основні напрямки нашої роботи.
+            </p>
             <ul className={styles.servicesGrid}>
                 {services.map((service) => (
                     <li key={service.slug} className={styles.serviceCard}>

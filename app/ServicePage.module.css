@@ -6,9 +6,15 @@
 
 .intro {
     text-align: center;
-    font-size: 1.6rem;
+    font-size: 1.2rem;
     margin-bottom: 40px;
+    line-height: 1.2;
+    hyphens: auto;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: normal;
 }
+
 
 .servicesGrid {
     list-style: none;

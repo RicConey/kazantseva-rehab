@@ -9,18 +9,28 @@ export const viewport = {
 };
 
 export const metadata = {
-    title: "Kazantseva Rehabilitation – Реабілітація Наталія Казанцева",
+    title: "Kazantseva Rehabilitation – Реабілітація Наталія Казанцева у Вишневому",
     description:
-        "Професійна реабілітація, остеопатія, масаж, фітобочка, краніосакральна терапія, вісцеральна терапія та інші послуги для відновлення здоров'я.",
+        "Професійна реабілітація, остеопатія, масаж, фітобочка, краніосакральна терапія у Вишневому Київська область. Відновлення здоров'я, зменшення болю, корекція постави.",
+    keywords: "реабілітація Вишневе, остеопатія Вишневе, масаж Вишневе, краніосакральна терапія Вишневе, фітобочка Вишневе, вісцеральна терапія Вишневе",
+    author: "Наталія Казанцева",
     icons: {
         icon: "/favicon.ico",
     },
     openGraph: {
-        title: "Kazantseva Rehabilitation – Реабілітація Наталія Казанцева",
+        title: "Kazantseva Rehabilitation – Реабілітація Наталія Казанцева у Вишневому",
         description:
-            "Професійна реабілітація, остеопатія, масаж, фітобочка, краніосакральна терапія, вісцеральна терапія та інші послуги для відновлення здоров'я.",
+            "Реабілітація, остеопатія, масаж, краніосакральна терапія у Вишневому. Відновлення здоров'я професійно!",
         url: "https://kazantseva-rehabilitation.com.ua/",
         type: "website",
+        images: [
+            {
+                url: "https://kazantseva-rehabilitation.com.ua/og-image.jpg",
+                width: 1110,
+                height: 768,
+                alt: "Kazantseva Rehabilitation – Ваш шлях до здоров'я",
+            },
+        ],
     },
     alternates: {
         canonical: "https://kazantseva-rehabilitation.com.ua/",
@@ -35,8 +45,9 @@ export default function RootLayout({ children }) {
         "name": "Kazantseva Rehabilitation – Реабілітація Наталія Казанцева",
         "url": "https://kazantseva-rehabilitation.com.ua/",
         "logo": "https://kazantseva-rehabilitation.com.ua/logo.png",
+        "image": "https://kazantseva-rehabilitation.com.ua/og-image.jpg",
         "description":
-            "Професійна реабілітація, остеопатія, масаж, фітобочка, краніосакральна терапія, вісцеральна терапія та інші послуги для відновлення здоров'я.",
+            "Професійна реабілітація, остеопатія, масаж, краніосакральна терапія та інші послуги для здоров'я у місті Вишневе Київська область +380503843042.",
         "address": {
             "@type": "PostalAddress",
             "addressLocality": "Вишневе",
@@ -44,7 +55,13 @@ export default function RootLayout({ children }) {
             "postalCode": "08132",
             "streetAddress": "вулиця Молодіжна, 16А"
         },
-        "telephone": "+380503843042"
+        "telephone": "+380503843042",
+ //       "openingHours": "Mo-Fr 09:00-19:00",
+ //       "priceRange": "₴₴",
+        "sameAs": [
+ //           "https://www.facebook.com/ваш-профіль",
+            "https://www.instagram.com/kaza_natali"
+        ]
     };
 
     return (
