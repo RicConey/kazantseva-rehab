@@ -39,12 +39,14 @@ export default function HomePage() {
             description:
                 "Давня китайська методика з використанням тонких голок для стимуляції природних процесів самозцілення.",
         },
-        {slug: "strokerehabilitation",
+        {
+            slug: "strokerehabilitation",
             title: "Реабілітація після інсульту",
             description:
                 "Комплексна програма відновлення, спрямована на повернення втрачених рухових функцій.",
         },
-        {slug: "instantpainrelief",
+        {
+            slug: "instantpainrelief",
             title: "Метод миттєвого лікування болю",
             description:
                 "Комплексний підхід, що передбачає точну діагностику і цілеспрямований вплив на першопричину болю.",
@@ -69,11 +71,15 @@ export default function HomePage() {
 
     return (
         <section className={styles.section}>
-            <h1 className={styles.intro}>Kazantseva Rehabilitation – ваш шлях до здоров'я починається тут</h1>
+            <h1 className={styles.intro}>
+                Kazantseva Rehabilitation – ваш шлях до здоров'я починається тут
+            </h1>
             <p className={styles.intro}>
-                Шукаєте ефективну реабілітацію, масаж, остеопатію чи краніосакральну терапію у Вишневому?
-                Наталія Казанцева пропонує вам професійні послуги для відновлення здоров'я, корекції постави,
-                зняття болю та збалансування всієї систем. Нижче представлені основні напрямки нашої роботи.
+                Шукаєте ефективну реабілітацію, професійний масаж чи комплексний підхід до відновлення здоров’я у Вишневому? Мене звати{" "}
+                <Link href="/about" passHref legacyBehavior>
+                    <a className={styles.highlight}>Наталія Казанцева</a>
+                </Link>
+                , і я пропоную широкий спектр послуг, які допоможуть вам повернути активність, гарне самопочуття та баланс всього організму. Я спеціалізуюся на таких напрямках:
             </p>
             <ul className={styles.servicesGrid}>
                 {services.map((service) => (

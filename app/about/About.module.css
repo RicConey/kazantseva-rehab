@@ -65,7 +65,6 @@
     line-height: 1.6;
     font-family: inherit;
     color: #333;
-    hyphens: auto;
     word-wrap: break-word;
     overflow-wrap: break-word;
 }
@@ -89,4 +88,11 @@
         width: 100%; /* Растягиваем кнопку на всю ширину на мобильных */
         text-align: center;
     }
+}
+
+/* Стили для выделения имени */
+.highlight {
+    font-weight: bold;
+    color: #249B89;
+    text-decoration: none;
 }
