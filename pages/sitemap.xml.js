@@ -1,5 +1,3 @@
-// pages/sitemap.xml.js
-
 export async function getServerSideProps({ res }) {
     const baseUrl = 'https://kazantseva-rehabilitation.com.ua'
 
@@ -11,7 +9,7 @@ export async function getServerSideProps({ res }) {
         'prices'
     ]
 
-    // Динамические слаги из servicesMap
+    // Динамические слаги
     const dynamicSlugs = [
         'rehabilitation',
         'acupuncture',
@@ -26,25 +24,30 @@ export async function getServerSideProps({ res }) {
         'cuppingtherapy',
     ]
 
-    // Генерация ссылок
-    const allUrls = [...staticPaths, ...dynamicSlugs].map((path) => {
-        return `
+    const allUrls = [
+        ...staticPaths.map((path) => ({
+            loc: `${baseUrl}/${path}`,
+        })),
+        ...dynamicSlugs.map((slug) => ({
+            loc: `${baseUrl}/services/${slug}`,
+        })),
+    ]
+
+    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${allUrls
+        .map(
+            ({ loc }) => `
   <url>
-    <loc>${baseUrl}/${path}</loc>
+    <loc>${loc}</loc>
     <lastmod>${new Date().toISOString()}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>${path === '' ? '1.0' : '0.8'}</priority>
+    <priority>${loc === `${baseUrl}/` ? '1.0' : '0.8'}</priority>
   </url>`
-    })
-
-    // Генерация финального XML
-    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset
-  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  ${allUrls.join('\n')}
+        )
+        .join('')}
 </urlset>`
 
-    // Отправка ответа
     res.setHeader('Content-Type', 'application/xml')
     res.write(sitemap)
     res.end()
