@@ -1,4 +1,8 @@
-// components/services/CuppingTherapy.js
+export const metadata = {
+    slug: "cuppingtherapy",
+    title: "Вакуумно-роликовий масаж",
+    description: `Вакуумно-роликовий масаж - поєднує вакуумну терапію з м’яким механічним впливом на тканини.`,
+};
 export default function CuppingTherapy() {
     return (
         <div style={{ textAlign: 'justify', lineHeight: '1.6', fontSize: '0.95rem' }}>

@@ -1,4 +1,8 @@
-// components/services/Taping.js
+export const metadata = {
+    slug: "taping",
+    title: "Тейпування",
+    description: `Тейпування – це сучасна методика, що полягає у використанні спеціальних еластичних стрічок (тейпів) для підтримки м’язів, суглобів та фасцій.`,
+};
 export default function Taping() {
     return (
         <div style={{ textAlign: 'justify', lineHeight: '1.6', fontSize: '0.95rem' }}>

@@ -1,65 +1,40 @@
-"use client";
-
-import { use } from "react"; // Добавляем use для работы с Promise
-import { useRouter } from "next/navigation";
+// app/services/[slug]/page.js
+import { use } from "react";
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import Rehabilitation from "../services-data/Rehabilitation";
-import Acupuncture from "../services-data/Acupuncture";
-import Craniosacral from "../services-data/Craniosacral";
-import Fitobocha from "../services-data/Fitobocha";
-import Massage from "../services-data/Massage";
-import Osteopathy from "../services-data/Osteopathy";
-import Visceral from "../services-data/Visceral";
-import Taping from "../services-data/Taping";
-import StrokeRehabilitation from "../services-data/StrokeRehabilitation";
-import InstantPainRelief from "../services-data/InstantPainRelief";
-import CuppingTherapy from "../services-data/CuppingTherapy";
+import BackButton from "../../../components/BackButton";
 import styles from "./ServiceDetail.module.css";
 
-// Маппинг slug → компонент услуги
-const servicesMap = {
-    rehabilitation: Rehabilitation,
-    acupuncture: Acupuncture,
-    craniosacral: Craniosacral,
-    fitobocha: Fitobocha,
-    massage: Massage,
-    osteopathy: Osteopathy,
-    visceral: Visceral,
-    taping: Taping,
-    strokerehabilitation: StrokeRehabilitation,
-    instantpainrelief: InstantPainRelief,
-    cuppingtherapy: CuppingTherapy,
-};
+async function getServiceBySlug(slug) {
+    try {
+        const module = await import(`../../services-data/${slug}.js`);
+        return {
+            slug,
+            metadata: module.metadata,
+            Component: module.default,
+        };
+    } catch (error) {
+        return null;
+    }
+}
 
-export default function ServiceDetailPage({ params: paramsPromise }) {
-    const router = useRouter();
-    const params = use(paramsPromise); // Разворачиваем params через use()
-    const { slug } = params;
-    const ServiceComponent = servicesMap[slug];
+export default async function ServiceDetailPage({ params }) {
+    const { slug } = await params;
+    const service = await getServiceBySlug(slug);
 
-    if (!ServiceComponent) {
+    if (!service) {
         return notFound();
     }
 
     return (
         <section className={styles.section}>
-            {/* Верхняя кнопка "Назад" */}
             <div className={styles.backButtonContainer}>
-                <button className={styles.backButton} onClick={() => router.back()}>
-                    ← Назад
-                </button>
+                <BackButton />
             </div>
-
-            {/* Выводим контент услуги */}
-            <ServiceComponent />
-
-            {/* Нижняя кнопка "Назад" */}
+            <service.Component />
             <div className={styles.backButtonContainer}>
-                <button className={styles.backButton} onClick={() => router.back()}>
-                    ← Назад
-                </button>
+                <BackButton />
             </div>
         </section>
     );
 }
+

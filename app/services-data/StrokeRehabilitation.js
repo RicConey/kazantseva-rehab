@@ -1,4 +1,9 @@
-// components/services/StrokeRehabilitation.js
+export const metadata = {
+    slug: "strokerehabilitation",
+    title: "Реабілітація після інсульту",
+    description:
+        "Комплексна програма відновлення, спрямована на повернення втрачених рухових функцій.",
+};
 export default function StrokeRehabilitation() {
     return (
         <div style={{ textAlign: 'justify', lineHeight: '1.6', fontSize: '0.95rem' }}>

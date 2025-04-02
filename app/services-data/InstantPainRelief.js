@@ -1,4 +1,9 @@
-// components/services/InstantPainRelief.js
+export const metadata = {
+    slug: "instantpainrelief",
+    title: "Метод миттєвого лікування болю",
+    description:
+        "Комплексний підхід, що передбачає точну діагностику і цілеспрямований вплив на першопричину болю.",
+};
 export default function InstantPainRelief() {
     return (
         <div style={{ textAlign: 'justify', lineHeight: '1.6', fontSize: '0.95rem' }}>

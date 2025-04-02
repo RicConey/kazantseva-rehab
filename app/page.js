@@ -1,73 +1,29 @@
 import Link from "next/link";
 import styles from "./ServicePage.module.css";
+import { getServiceSlugs } from "../lib/getServices";
 
-export default function HomePage() {
-    const services = [
-        {
-            slug: "rehabilitation",
-            title: "Реабілітація",
-            description:
-                "Комплексний підхід до відновлення фізичного стану, допомога у відновленні балансу організму та зменшенні болю.",
-        },
-        {
-            slug: "massage",
-            title: "Масаж тіла та обличчя",
-            description:
-                "Комплексний масаж, що сприяє розслабленню м’язів, покращенню кровообігу та відновленню життєвих сил.",
-        },
-        {
-            slug: "osteopathy",
-            title: "Остеопатія",
-            description:
-                "Мануальна терапія, спрямована на відновлення рухливості суглобів, зняття напруги та корекцію постави.",
-        },
-        {
-            slug: "craniosacral",
-            title: "Краніосакральна терапія",
-            description:
-                "Унікальний метод, що працює з краніосакральною системою для гармонізації організму та зняття стресу.",
-        },
-        {
-            slug: "visceral",
-            title: "Вісцеральна терапія",
-            description:
-                "М’який вплив на внутрішні органи для покращення кровообігу, нормалізації функцій та зняття болю.",
-        },
-        {
-            slug: "acupuncture",
-            title: "Акупунктура",
-            description:
-                "Давня китайська методика з використанням тонких голок для стимуляції природних процесів самозцілення.",
-        },
-        {
-            slug: "strokerehabilitation",
-            title: "Реабілітація після інсульту",
-            description:
-                "Комплексна програма відновлення, спрямована на повернення втрачених рухових функцій.",
-        },
-        {
-            slug: "instantpainrelief",
-            title: "Метод миттєвого лікування болю",
-            description:
-                "Комплексний підхід, що передбачає точну діагностику і цілеспрямований вплив на першопричину болю.",
-        },
-        {
-            slug: "fitobocha",
-            title: "Фітобочка",
-            description:
-                "Процедура з використанням натуральних рослинних компонентів для оздоровлення організму, виведення токсинів та релаксації.",
-        },
-        {
-            slug: "taping",
-            title: "Тейпування",
-            description: `Тейпування – це сучасна методика, що полягає у використанні спеціальних еластичних стрічок (тейпів) для підтримки м’язів, суглобів та фасцій.`,
-        },
-        {
-            slug: "cuppingtherapy",
-            title: "Вакуумно-роликовий масаж",
-            description: `Вакуумно-роликовий масаж - поєднує вакуумну терапію з м’яким механічним впливом на тканини.`,
-        },
-    ];
+// Функція для динамічного імпорту файлів послуг
+async function getServices() {
+    const slugs = getServiceSlugs();
+    const services = await Promise.all(
+        slugs.map(async (slug) => {
+            const module = await import(`./services-data/${slug}.js`);
+            // Если поле order не задано, присваиваем Infinity
+            const order = module.metadata.order ?? Infinity;
+            return {
+                slug,
+                metadata: { ...module.metadata, order },
+                Component: module.default,
+            };
+        })
+    );
+    // Сортировка по значению order
+    services.sort((a, b) => a.metadata.order - b.metadata.order);
+    return services;
+}
+
+export default async function HomePage() {
+    const services = await getServices();
 
     return (
         <section className={styles.section}>
@@ -89,8 +45,10 @@ export default function HomePage() {
                     <li key={service.slug} className={styles.serviceCard}>
                         <Link href={`/services/${service.slug}`} passHref legacyBehavior>
                             <a className={styles.serviceLink}>
-                                <h2 className={styles.serviceTitle}>{service.title}</h2>
-                                <p className={styles.serviceDescription}>{service.description}</p>
+                                <h2 className={styles.serviceTitle}>{service.metadata.title}</h2>
+                                <p className={styles.serviceDescription}>
+                                    {service.metadata.description}
+                                </p>
                                 <span className={styles.serviceHint}>Дізнатись більше →</span>
                             </a>
                         </Link>
