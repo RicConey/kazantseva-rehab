@@ -1,22 +1,25 @@
+import styles from '../services/[slug]/ServiceDetail.module.css';
+
 export const metadata = {
     slug: "fitobocha",
     title: "Фітобочка",
     description:
         "Процедура з використанням натуральних рослинних компонентів для оздоровлення організму, виведення токсинів та релаксації.",
+    image: "/images/services/phytobarrel.webp",
 };
 export default function Fitobocha() {
     return (
-        <div style={{ textAlign: 'justify', lineHeight: '1.6', fontSize: '0.95rem' }}>
+        <div className={styles.serviceContent}>
             <p>
                 <b>Фітобочка</b> – це унікальна оздоровча процедура, яка використовує натуральні рослинні компоненти для комплексного впливу на організм. Під час процедури тіло занурюється в теплу пару, насичену цілющими трав'яними настоянками, відварами і ефірними оліями.
             </p>
 
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 'bold' }}>Як проходить процедура фітобочки?</h3>
+             <h3 className={styles.serviceHeading}>Як проходить процедура фітобочки?</h3>
             <p>
                 Процедура проводиться у спеціальній дерев'яній бочці, в якій тіло м'яко обволікається парою, а голова залишається зовні, що дозволяє комфортно дихати і уникнути перегріву. Тривалість сеансу – приблизно 15–20 хвилин.
             </p>
 
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 'bold' }}>Користь фітобочки:</h3>
+             <h3 className={styles.serviceHeading}>Користь фітобочки:</h3>
             <ul>
                 <li>ефективне виведення токсинів та очищення організму;</li>
                 <li>покращення кровообігу та лімфодренажу;</li>
@@ -27,7 +30,7 @@ export default function Fitobocha() {
                 <li>допомога в боротьбі з целюлітом і зайвою вагою.</li>
             </ul>
 
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 'bold' }}>Кому рекомендована фітобочка?</h3>
+             <h3 className={styles.serviceHeading}>Кому рекомендована фітобочка?</h3>
             <ul>
                 <li>тим, хто часто відчуває втому або стрес;</li>
                 <li>людям з ослабленим імунітетом;</li>
@@ -38,7 +41,7 @@ export default function Fitobocha() {
                 <li>при м'язових та суглобових болях.</li>
             </ul>
 
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 'bold' }}>Протипоказання:</h3>
+             <h3 className={styles.serviceHeading}>Протипоказання:</h3>
             <ul>
                 <li>серйозні серцево-судинні захворювання;</li>
                 <li>вагітність;</li>

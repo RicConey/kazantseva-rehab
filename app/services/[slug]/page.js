@@ -1,5 +1,4 @@
 // app/services/[slug]/page.js
-import { use } from "react";
 import { notFound } from "next/navigation";
 import BackButton from "../../../components/BackButton";
 import styles from "./ServiceDetail.module.css";

@@ -1,12 +1,15 @@
+import styles from '../services/[slug]/ServiceDetail.module.css';
+
 export const metadata = {
     slug: "instantpainrelief",
     title: "Метод миттєвого лікування болю",
     description:
         "Комплексний підхід, що передбачає точну діагностику і цілеспрямований вплив на першопричину болю.",
+    image: "/images/services/instant_pain_relief.webp",
 };
 export default function InstantPainRelief() {
     return (
-        <div style={{ textAlign: 'justify', lineHeight: '1.6', fontSize: '0.95rem' }}>
+        <div className={styles.serviceContent}>
 
             <p>
                 <b>Метод миттєвого лікування болю</b> – це комплексний підхід, що передбачає точну діагностику і цілеспрямований вплив на першопричину больового синдрому, спазмів, напруження та набряків. Використовуючи техніку, можна досягти швидкого зменшення болю (до 90%) вже в перші 2-10 секунд сеансу завдяки усуненню патологічних зв'язків у тілі.
@@ -25,7 +28,7 @@ export default function InstantPainRelief() {
                 <li>остеопатичні та вісцеральні техніки.</li>
             </ul>
 
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 'bold' }}>Протокол лікування за методом Балансу доктора Тана:</h3>
+             <h3 className={styles.serviceHeading}>Протокол лікування за методом Балансу доктора Тана:</h3>
             <ul>
                 <li>попередній анамнез пацієнта;</li>
                 <li>оцінка вихідного стану (тестування положень, обсягу рухів, визначення локалізації та інтенсивності болю);</li>
@@ -36,7 +39,7 @@ export default function InstantPainRelief() {
                 <li>постановка тейпу для закріплення результату.</li>
             </ul>
 
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 'bold' }}>Переваги методу Балансу доктора Тана:</h3>
+             <h3 className={styles.serviceHeading}>Переваги методу Балансу доктора Тана:</h3>
             <ul>
                 <li>швидке та ефективне зняття болю;</li>
                 <li>точний і цілеспрямований вплив на причину проблеми;</li>

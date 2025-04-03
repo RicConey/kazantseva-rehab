@@ -1,14 +1,17 @@
+import styles from '../services/[slug]/ServiceDetail.module.css';
+
 export const metadata = {
     slug: "rehabilitation",
     title: "Реабілітація",
     description:
         "Комплексний підхід до відновлення фізичного стану, допомога у відновленні балансу організму та зменшенні болю.",
+    image: "/images/services/rehabilitation.webp",
     order: 1, // Числовой порядок, чем меньше число – тем раньше отображается
 };
 
 export default function Rehabilitation() {
     return (
-        <div style={{ textAlign: 'justify', lineHeight: '1.6', fontSize: '0.95rem' }}>
+        <div className={styles.serviceContent}>
             <p>
                 <b>Реабілітація</b> – це комплекс заходів, спрямованих на відновлення функціональних можливостей організму після травм, операцій або захворювань. У моєму приватному кабінеті я пропоную індивідуальні програми, що враховують особливості кожного пацієнта.
             </p>

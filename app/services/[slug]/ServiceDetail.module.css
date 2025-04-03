@@ -29,3 +29,15 @@
 .backButton:active {
     transform: translateY(0);
 }
+
+
+.service-content {
+    text-align: justify;
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+.service-heading {
+    font-size: 0.95rem;
+    font-weight: bold;
+}

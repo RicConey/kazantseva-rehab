@@ -1,6 +1,8 @@
 import Link from "next/link";
 import styles from "./ServicePage.module.css";
 import { getServiceSlugs } from "../lib/getServices";
+import Image from "next/image";
+
 
 // Функція для динамічного імпорту файлів послуг
 async function getServices() {
@@ -45,6 +47,17 @@ export default async function HomePage() {
                     <li key={service.slug} className={styles.serviceCard}>
                         <Link href={`/services/${service.slug}`} passHref legacyBehavior>
                             <a className={styles.serviceLink}>
+                                {/* Показываем картинку, если есть */}
+                                {service.metadata.image && (
+                                    <Image
+                                        src={service.metadata.image}
+                                        alt={service.metadata.title}
+                                        width={600}
+                                        height={400}
+                                        className={styles.cardImage}
+                                        style={{ borderRadius: "2px", marginBottom: "2px" }}
+                                    />
+                                )}
                                 <h2 className={styles.serviceTitle}>{service.metadata.title}</h2>
                                 <p className={styles.serviceDescription}>
                                     {service.metadata.description}
@@ -53,6 +66,7 @@ export default async function HomePage() {
                             </a>
                         </Link>
                     </li>
+
                 ))}
             </ul>
         </section>
