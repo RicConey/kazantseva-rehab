@@ -30,14 +30,14 @@
     transform: translateY(0);
 }
 
-
-.service-content {
+/* Свойства текста услуги */
+.serviceContent {
     text-align: justify;
-    line-height: 1.6;
+    line-height: 1.3;
     font-size: 0.95rem;
 }
 
-.service-heading {
+.serviceHeading {
     font-size: 0.95rem;
     font-weight: bold;
 }

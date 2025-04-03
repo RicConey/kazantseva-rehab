@@ -8,7 +8,7 @@
     text-align: center;
     font-size: 1.2rem;
     margin-bottom: 10px;
-    line-height: 1.2;
+    line-height: 1.1;
     overflow-wrap: break-word;
     word-wrap: break-word;
     word-break: normal;
@@ -53,6 +53,7 @@
 
 .serviceTitle {
     font-size: 1.5rem;
+    line-height: 1.1;
     margin-bottom: 10px;
     color: #333;
     text-align: center;
@@ -60,6 +61,7 @@
 
 .serviceDescription {
     margin: 0;
+    line-height: 1.2;
     text-align: center;
     overflow-wrap: break-word;
     word-wrap: break-word;
