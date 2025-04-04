@@ -2,6 +2,7 @@ import "../styles/globals.css";
 import AnalyticsProvider from "./analytics-provider";
 import Header from "./Header";
 import Head from "next/head";
+import Script from "next/script";
 
 export const viewport = {
     width: "device-width",
@@ -12,7 +13,8 @@ export const metadata = {
     title: "Kazantseva Rehabilitation – Реабілітація Наталія Казанцева у Вишневому",
     description:
         "Професійна реабілітація, остеопатія, масаж, фітобочка, краніосакральна терапія у Вишневому Київська область. Відновлення здоров'я, зменшення болю, корекція постави.",
-    keywords: "реабілітація Вишневе, остеопатія Вишневе, масаж Вишневе, краніосакральна терапія Вишневе, фітобочка Вишневе, вісцеральна терапія Вишневе",
+    keywords:
+        "реабілітація Вишневе, остеопатія Вишневе, масаж Вишневе, краніосакральна терапія Вишневе, фітобочка Вишневе, вісцеральна терапія Вишневе",
     author: "Наталія Казанцева",
     icons: {
         icon: "/favicon.ico",
@@ -56,10 +58,7 @@ export default function RootLayout({ children }) {
             "streetAddress": "вулиця Молодіжна, 16А"
         },
         "telephone": "+380503843042",
- //       "openingHours": "Mo-Fr 09:00-19:00",
- //       "priceRange": "₴₴",
         "sameAs": [
- //           "https://www.facebook.com/ваш-профіль",
             "https://www.instagram.com/kaza_natali"
         ]
     };
@@ -75,6 +74,8 @@ export default function RootLayout({ children }) {
             />
         </Head>
         <body>
+        {/* Глобальное подключение Web Component "back-button" */}
+        <Script src="/back-button.js" strategy="beforeInteractive" />
         <div style={{ maxWidth: "1200px", margin: "0 auto", width: "100%" }}>
             <Header />
             <main style={{ padding: "20px" }}>{children}</main>

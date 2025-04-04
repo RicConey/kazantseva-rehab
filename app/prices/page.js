@@ -1,10 +1,7 @@
 "use client";
-import React from "react"; // 🔹 Добавлен импорт React
-import Link from "next/link";
+import React from "react";
 import styles from "./Prices.module.css";
 import DPROTooltip from "../../components/DPROTooltip";
-
-
 
 const prices = [
     { service: "Загальний остеопатичний масаж тіла", duration: ["60хв", "90хв"], price: ["1100грн", "1600грн"] },
@@ -33,9 +30,7 @@ export default function PricesPage() {
     return (
         <div className={styles.container}>
             {/* Кнопка "Назад" сверху */}
-            <div className={styles.backButtonContainer}>
-                <Link href="/" className={styles.backButton}>← Назад на головну</Link>
-            </div>
+            <back-button></back-button>
 
             <h1 className={styles.title}>Ціни на послуги</h1>
             <table className={styles.priceTable}>
@@ -62,9 +57,7 @@ export default function PricesPage() {
             </table>
 
             {/* Кнопка "Назад" внизу */}
-            <div className={styles.backButtonContainer}>
-                <Link href="/" className={styles.backButton}>← Назад на головну</Link>
-            </div>
+            <back-button></back-button>
         </div>
     );
 }

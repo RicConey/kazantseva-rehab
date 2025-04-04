@@ -4,35 +4,6 @@
     padding: 5px;
 }
 
-/* Контейнер для кнопки "Назад" */
-.backButtonContainer {
-    display: flex;
-    justify-content: flex-start;
-    margin: 5px 0; /* Уменьшенное расстояние между шапкой и кнопкой */
-}
-
-/* Стиль кнопки "Назад" (унифицированный) */
-.backButton {
-    display: inline-block;
-    padding: 12px 24px;
-    background: #249B89; /* Цвет логотипа */
-    color: white;
-    text-decoration: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 500;
-    transition: transform 0.2s, background 0.2s;
-}
-
-.backButton:hover {
-    transform: translateY(-3px);
-    background: #1D8473;
-}
-
-.backButton:active {
-    transform: translateY(0);
-}
-
 /* Стиль заголовка */
 .title {
     margin-bottom: 20px; /* Увеличенный отступ от заголовка до таблицы */
@@ -78,10 +49,7 @@
     .container {
         padding: 5px;
     }
-    .backButton {
-        width: 100%; /* Растягиваем кнопку на всю ширину на мобильных */
-        text-align: center;
-    }
+
 }
 
 /* Стили для tooltip */

@@ -84,19 +84,6 @@ h1, h2, h3, h4, h5, h6, p {
     text-align: justify;
 }
 
-/* Темы (если нужны) */
-.light {
-    background-color: #fff;
-    color: #333;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.dark {
-    background-color: #121212;
-    color: #e0e0e0;
-    transition: background-color 0.3s, color 0.3s;
-}
-
 @font-face {
     font-family: "LogoFont";
     src: url("/fonts/LogoFont.woff2") format("woff2");

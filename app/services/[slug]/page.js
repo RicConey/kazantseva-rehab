@@ -1,6 +1,5 @@
 // app/services/[slug]/page.js
 import { notFound } from "next/navigation";
-import BackButton from "../../../components/BackButton";
 import styles from "./ServiceDetail.module.css";
 
 async function getServiceBySlug(slug) {
@@ -26,13 +25,11 @@ export default async function ServiceDetailPage({ params }) {
 
     return (
         <section className={styles.section}>
-            <div className={styles.backButtonContainer}>
-                <BackButton />
-            </div>
+            <back-button></back-button>
+
             <service.Component />
-            <div className={styles.backButtonContainer}>
-                <BackButton />
-            </div>
+
+            <back-button></back-button>
         </section>
     );
 }

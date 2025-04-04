@@ -10,6 +10,8 @@ export default function ContactPage() {
                 textAlign: "center",
             }}
         >
+            <back-button></back-button>
+
             <h1 style={{ fontSize: "2rem", marginBottom: "20px" }}>Контакти</h1>
             <p>
                 <strong>Телефони:</strong>
@@ -51,6 +53,7 @@ export default function ContactPage() {
                     referrerPolicy="no-referrer-when-downgrade"
                 ></iframe>
             </div>
+            <back-button></back-button>
         </section>
     );
 }

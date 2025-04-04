@@ -1,36 +1,4 @@
-/* Контейнер для кнопки "Назад" */
-.backButtonContainer {
-    display: flex;
-    justify-content: flex-start;
-    margin: 5px 0;
-}
 
-/* Унифицированный стиль кнопки "Назад" */
-.backButton {
-    display: inline-block;
-    padding: 12px 24px;
-    background: #249B89;
-    color: white;
-    text-decoration: none;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 500;
-    text-align: center;
-    cursor: pointer;
-    transition: transform 0.2s, background 0.2s;
-}
-
-.backButton:hover {
-    transform: translateY(-3px);
-    background: #1D8473;
-}
-
-.backButton:active {
-    transform: translateY(0);
-}
-
-/* Свойства текста услуги */
 .serviceContent {
     text-align: justify;
     line-height: 1.3;

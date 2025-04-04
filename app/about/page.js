@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import CertificateGallery from "./CertificateGallery";
-import Link from "next/link";
 import styles from "./About.module.css";
 
 export default function AboutPage() {
@@ -24,12 +23,8 @@ export default function AboutPage() {
 
     return (
         <section className={styles.section}>
-            {/* Кнопка "Назад на головну" вверху */}
-            <div className={styles.backButtonContainer}>
-                <Link href="/" passHref legacyBehavior>
-                    <a className={styles.backButton}>← Назад на головну</a>
-                </Link>
-            </div>
+            {/* Кнопка "Назад" вверху */}
+            <back-button>1</back-button>
 
             <h1 className={styles.title}>Про мене</h1>
             <p>
@@ -54,12 +49,8 @@ export default function AboutPage() {
             {/* Галерея сертифікатів */}
             {showCerts && <CertificateGallery certs={certFiles} />}
 
-            {/* Кнопка "Назад на головну" внизу */}
-            <div className={styles.backButtonContainer}>
-                <Link href="/" passHref legacyBehavior>
-                    <a className={styles.backButton}>← Назад на головну</a>
-                </Link>
-            </div>
+            {/* Кнопка "Назад" внизу */}
+            <back-button></back-button>
         </section>
     );
 }
