@@ -22,9 +22,10 @@ export default function AboutPage() {
     }, []);
 
     return (
-        <section className={styles.section}>
-            {/* Кнопка "Назад" вверху */}
-            <back-button>1</back-button>
+        <section className="baseText">
+
+        {/* Кнопка "Назад" вверху */}
+            <back-button></back-button>
 
             <h1 className={styles.title}>Про мене</h1>
             <p>

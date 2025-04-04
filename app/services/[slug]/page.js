@@ -1,6 +1,5 @@
 // app/services/[slug]/page.js
 import { notFound } from "next/navigation";
-import styles from "./ServiceDetail.module.css";
 
 async function getServiceBySlug(slug) {
     try {
@@ -24,7 +23,7 @@ export default async function ServiceDetailPage({ params }) {
     }
 
     return (
-        <section className={styles.section}>
+        <section className="baseText">
             <back-button></back-button>
 
             <service.Component />

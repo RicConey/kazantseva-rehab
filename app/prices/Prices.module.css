@@ -1,12 +1,7 @@
-.container {
-    max-width: 100%;
-    margin: 5px auto;
-    padding: 5px;
-}
 
 /* Стиль заголовка */
 .title {
-    margin-bottom: 20px; /* Увеличенный отступ от заголовка до таблицы */
+    margin-bottom: 10px; /* Увеличенный отступ от заголовка до таблицы */
     text-align: center;
 }
 
@@ -45,9 +40,11 @@
     .priceTable td {
         font-size: 14px;
         padding: 6px 10px;
+        line-height: 1.2;
     }
     .container {
         padding: 5px;
+
     }
 
 }

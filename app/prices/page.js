@@ -28,7 +28,7 @@ const prices = [
 
 export default function PricesPage() {
     return (
-        <div className={styles.container}>
+        <div className="baseText">
             {/* Кнопка "Назад" сверху */}
             <back-button></back-button>
 

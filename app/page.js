@@ -28,7 +28,7 @@ export default async function HomePage() {
     const services = await getServices();
 
     return (
-        <section className={styles.section}>
+        <section className="baseText">
             <h1 className={styles.intro}>
                 Kazantseva Rehabilitation – ваш шлях до здоров'я починається тут
             </h1>

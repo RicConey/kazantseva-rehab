@@ -30,21 +30,6 @@
     transform: translateY(0);
 }
 
-/* Основной контейнер для контента страницы "Про мене"
-   Приводим его к тому же виду, что и .serviceContent из страницы услуг */
-.section {
-    padding: 20px;
-    max-width: 900px;
-    margin: 0 auto;
-    text-align: justify;
-    line-height: 1.3;
-    font-size: 0.95rem;
-    font-family: inherit;
-    color: #333;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-}
-
 /* Заголовок страницы. Можно оставить крупнее, так как это h1,
    либо уменьшить до размеров, схожих с подзаголовками на странице услуг */
 .title {
@@ -52,11 +37,6 @@
     font-size: 2rem;
     font-weight: bold;
     margin-bottom: 20px;
-}
-
-/* Для параграфов внутри секции – единые отступы, как и в услугах */
-.section p {
-    margin-bottom: 15px;
 }
 
 /* Стили для выделения имени, как и в услугах */
