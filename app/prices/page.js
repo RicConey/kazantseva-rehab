@@ -21,9 +21,6 @@ const prices = [
         price: ["900грн (для військових знижка 50%)"],
     },
 
-
-
-
 ];
 
 export default function PricesPage() {
