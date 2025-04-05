@@ -9,11 +9,16 @@
   },
   "dependencies": {
     "@vercel/analytics": "^1.5.0",
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.2",
     "glob": "^11.0.1",
     "lru-cache": "^11.0.2",
     "next": "latest",
+    "next-auth": "^4.24.11",
+    "pg": "^8.14.1",
     "react": "latest",
     "react-dom": "latest",
+    "react-icons": "^5.5.0",
     "uuid": "^11.1.0"
   }
 }

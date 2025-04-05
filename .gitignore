@@ -27,6 +27,4 @@ package-lock.json
 .DS_Store
 *.swp
 
-# локальные для отладки
-/public/google6cebe0a2bceb6b2d.html
-
+/hash.js

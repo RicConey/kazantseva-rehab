@@ -1,0 +1,169 @@
+.container {
+  padding: 10px 12px;
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    font-size: 14px;
+    padding: 6px;
+  }
+}
+
+.title {
+  margin-bottom: 1rem;
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+.toggleButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 1rem;
+  padding: 6px 12px;
+  background-color: #249B89;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 1rem;
+  background: #f9f9f9;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.form input {
+  padding: 6px 10px;
+  font-size: 14px;
+}
+
+.pair {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pair input {
+  flex: 1 1 45%;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+  vertical-align: top;
+}
+
+.error {
+  color: red;
+  margin-bottom: 1rem;
+}
+
+.inlineLabel {
+  font-weight: bold;
+  display: inline-block;
+}
+
+/* === КНОПКИ ДЕЙСТВИЙ В ТАБЛИЦЕ === */
+.actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-start;
+  margin-top: 6px;
+}
+
+.actions button {
+  background-color: #249B89;
+  border: none;
+  color: white;
+  font-size: 16px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.actions button:hover {
+  opacity: 0.9;
+}
+
+/* === КНОПКИ ОНОВИТИ / СКАСУВАТИ === */
+.editButtons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+/* === МОБИЛЬНАЯ АДАПТАЦИЯ === */
+@media (max-width: 768px) {
+  .table {
+    display: block;
+    width: 100%;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table tr {
+    display: block;
+    margin-bottom: 16px;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #fafafa;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .table td {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 6px 0;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    margin-bottom: 2px;
+    color: #555;
+    white-space: nowrap;
+  }
+
+  .inlineLabel::before {
+    content: none !important;
+  }
+
+  .table td div {
+    margin-bottom: 4px;
+  }
+
+  .actions {
+    flex-direction: row !important;
+    gap: 8px;
+    margin-top: 6px;
+  }
+}
