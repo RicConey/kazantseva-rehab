@@ -8,38 +8,40 @@
 .priceTable {
     width: 100%;
     border-collapse: collapse;
-    background: white;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     border-radius: 8px;
     overflow: hidden;
 }
 
 /* Заголовки таблицы */
 .priceTable th {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
+    padding: 10px;
+    border: 1px solid #ccc;
     background: #249B89;
     color: white;
     font-weight: bold;
-    text-align: center; /* Центрирование текста в заголовках */
+    text-align: center;
+    vertical-align: top;
 }
 
 /* Ячейки таблицы */
 .priceTable td {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
+    padding: 10px;
+    border: 1px solid #ccc;
     text-align: left;
+    vertical-align: center;
 }
 
 /* Мобильная версия */
 @media (max-width: 600px) {
     .priceTable th {
         font-size: 14px;
-        padding: 6px 10px;
+        padding: 6px;
     }
     .priceTable td {
         font-size: 14px;
-        padding: 6px 10px;
+        padding: 6px;
         line-height: 1.2;
     }
     .container {

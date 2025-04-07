@@ -29,9 +29,42 @@ export default async function HomePage() {
 
     return (
         <section className="baseText">
-            <h1 className={styles.intro}>
-                Kazantseva Rehabilitation – ваш шлях до здоров'я починається тут
-            </h1>
+
+            <div
+                className="baseText"
+                style={{ margin: "24px auto", maxWidth: "800px", textAlign: "center", lineHeight: "1.1", marginBottom: "1em" }}
+            >
+                <p
+                    style={{
+                        fontSize: "1.3rem",
+                        textTransform: "uppercase",
+                        color: "#249B89",
+                        fontFamily: "LogoFont",
+                        marginBottom: "5px",
+                        letterSpacing: "1px",
+                        fontWeight: "normal",
+                    }}
+                >
+                    Kazantseva Rehabilitation
+                </p>
+
+                <p
+                    style={{
+                        fontSize: "1.3rem",
+                        textTransform: "uppercase",
+                        color: "#249B89",
+                        fontFamily: "LogoFont",
+                        marginBottom: "5px",
+                        letterSpacing: "1px",
+                        fontWeight: "normal",
+                    }}
+                >
+                    ваш шлях до здоров'я починається тут
+                </p>
+
+            </div>
+
+
             <p className={styles.intro}>
                 Шукаєте ефективну реабілітацію, професійний масаж чи комплексний підхід до відновлення здоров’я у Вишневому?
             </p>

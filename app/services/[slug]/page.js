@@ -28,6 +28,7 @@ export default async function ServiceDetailPage({ params }) {
 
             <service.Component />
 
+
             <back-button></back-button>
         </section>
     );
