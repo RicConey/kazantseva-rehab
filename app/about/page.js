@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import CertificateGallery from "./CertificateGallery";
 import styles from "./About.module.css";
+import SeoText from "../../components/SeoText";
 
 export default function AboutPage() {
     const [showCerts, setShowCerts] = useState(false);
@@ -49,6 +50,8 @@ export default function AboutPage() {
 
             {/* Галерея сертифікатів */}
             {showCerts && <CertificateGallery certs={certFiles} />}
+
+            <SeoText />
 
             {/* Кнопка "Назад" внизу */}
             <back-button></back-button>

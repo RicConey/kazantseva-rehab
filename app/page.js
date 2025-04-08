@@ -3,6 +3,7 @@ import styles from "./ServicePage.module.css";
 import { getServiceSlugs } from "../lib/getServices";
 import Image from "next/image";
 import PromoBlock from "../components/PromoBlock";
+import SeoText from "../components/SeoText";
 
 
 // Функція для динамічного імпорту файлів послуг
@@ -106,6 +107,7 @@ export default async function HomePage() {
             </ul>
 
             <PromoBlock />
+            <SeoText />
 
         </section>
     );

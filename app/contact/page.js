@@ -1,6 +1,7 @@
 // app/contact/page.js
 
 import styles from "./Contact.module.css";
+import SeoText from "../../components/SeoText";
 
 export default function ContactPage() {
     return (
@@ -44,6 +45,8 @@ export default function ContactPage() {
                     referrerPolicy="no-referrer-when-downgrade"
                 ></iframe>
             </div>
+
+            <SeoText />
 
             <back-button></back-button>
         </section>

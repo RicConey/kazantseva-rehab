@@ -1,5 +1,6 @@
 import styles from "./Prices.module.css";
 import PromoBlock from "../../components/PromoBlock";
+import SeoText from "../../components/SeoText";
 
 export default async function PricesPage() {
     const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/prices`, {
@@ -47,6 +48,7 @@ export default async function PricesPage() {
             </div>
 
             <PromoBlock />
+            <SeoText />
 
             <back-button></back-button>
         </div>
