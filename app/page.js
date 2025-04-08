@@ -2,6 +2,7 @@ import Link from "next/link";
 import styles from "./ServicePage.module.css";
 import { getServiceSlugs } from "../lib/getServices";
 import Image from "next/image";
+import PromoBlock from "../components/PromoBlock";
 
 
 // Функція для динамічного імпорту файлів послуг
@@ -75,6 +76,7 @@ export default async function HomePage() {
                 </Link>
                 , і я пропоную широкий спектр послуг, які допоможуть вам повернути активність, гарне самопочуття та баланс всього організму.
             </p>
+
             <ul className={styles.servicesGrid}>
                 {services.map((service) => (
                     <li key={service.slug} className={styles.serviceCard}>
@@ -102,6 +104,9 @@ export default async function HomePage() {
 
                 ))}
             </ul>
+
+            <PromoBlock />
+
         </section>
     );
 }

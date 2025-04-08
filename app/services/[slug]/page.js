@@ -1,5 +1,7 @@
 // app/services/[slug]/page.js
 import { notFound } from "next/navigation";
+import SeoText from "../../../components/SeoText";
+
 
 async function getServiceBySlug(slug) {
     try {
@@ -27,7 +29,7 @@ export default async function ServiceDetailPage({ params }) {
             <back-button></back-button>
 
             <service.Component />
-
+            <SeoText slug={slug} />
 
             <back-button></back-button>
         </section>

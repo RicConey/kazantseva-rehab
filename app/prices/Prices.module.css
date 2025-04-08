@@ -1,8 +1,9 @@
 
 /* Стиль заголовка */
 .title {
-    margin-bottom: 10px; /* Увеличенный отступ от заголовка до таблицы */
+    margin-bottom: 10px;
     text-align: center;
+    color: #249B89;
 }
 
 .priceTable {

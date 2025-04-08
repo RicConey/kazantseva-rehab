@@ -1,4 +1,5 @@
 import styles from "./Prices.module.css";
+import PromoBlock from "../../components/PromoBlock";
 
 export default async function PricesPage() {
     const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/prices`, {
@@ -45,32 +46,7 @@ export default async function PricesPage() {
                 </table>
             </div>
 
-            <div
-                className="baseText"
-                style={{ margin: "24px auto", maxWidth: "800px", textAlign: "center", lineHeight: "1.1", marginBottom: "1em" }}
-            >
-                <p>Також пропонуємо</p>
-                <p
-                    style={{
-                        fontSize: "20px",
-                        textTransform: "uppercase",
-                        color: "#249B89",
-                        fontFamily: "LogoFont",
-                        marginBottom: "5px",
-                        letterSpacing: "1px",
-                    }}
-                >
-                    Подарункові сертифікати
-                </p>
-                <p>на будь яку суму та послугу.</p>
-                <p>
-                    <strong>Для військових</strong> знижка 50% на усі послуги.
-                </p>
-                <p>
-                    При оплаті комплексу з 10 сеансів —{" "}
-                    <strong>один сеанс у подарунок</strong>.
-                </p>
-            </div>
+            <PromoBlock />
 
             <back-button></back-button>
         </div>

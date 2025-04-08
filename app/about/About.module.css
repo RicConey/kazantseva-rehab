@@ -35,8 +35,8 @@
 .title {
     text-align: center;
     font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
+    color: #249B89;
 }
 
 /* Стили для выделения имени, как и в услугах */
