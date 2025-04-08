@@ -8,8 +8,6 @@ export default function ContactPage() {
         <section className={`baseText ${styles.contactSection}`}>
             <back-button></back-button>
 
-            <h1 className={styles.contactTitle}>Контакти</h1>
-
             {/* Телефони */}
             <p style={{ textAlign: "center" }}>
                     <span className={styles.icon}>📞</span> Телефони:
