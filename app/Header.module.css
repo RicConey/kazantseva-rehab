@@ -61,7 +61,7 @@
 /* Навигация */
 .nav {
     display: flex;
-    gap: 15px;
+
     align-items: center;
     margin-left: auto;
 }

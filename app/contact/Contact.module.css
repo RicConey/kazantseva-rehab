@@ -1,9 +1,7 @@
-/* app/contact/Contact.module.css */
-
 .contactSection {
     padding: 0 12px;
-
     margin: 0 auto;
+    max-width: 700px;
 }
 
 .contactTitle {
@@ -14,15 +12,19 @@
 }
 
 .contactLink {
-    display: block;
-    margin: 5px 0;
-    text-decoration: none;
-    color: #0070f3;
     text-align: center;
+    display: block;
+    font-size: 1.05rem;
+    text-decoration: underline;
+    color: #0070f3; /* стандартный цвет ссылки */
+}
+
+.contactLink:hover {
+    color: #0366d6;
 }
 
 .contactMapWrapper {
-    margin-top: 20px;
+    margin-top: 24px;
 }
 
 .contactIframe {
@@ -36,4 +38,28 @@
     font-size: 1.2em;
     margin-right: 5px;
     vertical-align: middle;
+}
+
+.phoneRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.messengerIconsInline {
+    display: flex;
+    gap: 6px;
+}
+
+.messengerIconsInline img {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.2s ease;
+}
+
+.messengerIconsInline img:hover {
+    transform: scale(1.1);
 }

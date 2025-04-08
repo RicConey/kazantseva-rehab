@@ -105,7 +105,19 @@ export default async function HomePage() {
 
                 ))}
             </ul>
-
+            <div style={{ textAlign: "center", marginTop: "24px" }}>
+                <a
+                    href="/rules"
+                    style={{
+                        color: "#249B89",
+                        fontWeight: "500",
+                        fontSize: "1.3rem",
+                        textDecoration: "underline",
+                    }}
+                >
+                    Ознайомтесь з правилами відвідування перед записом →
+                </a>
+            </div>
             <PromoBlock />
             <SeoText />
 

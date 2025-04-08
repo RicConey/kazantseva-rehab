@@ -24,7 +24,7 @@ h1, h2, h3, h4, h5, h6, p {
 }
 
 .mainContainer {
-    padding-top: 20px; /* Уменьшаем верхний отступ */
+    padding-top: 10px; /* Уменьшаем верхний отступ */
 }
 
 .homepage {
@@ -38,15 +38,14 @@ h1, h2, h3, h4, h5, h6, p {
 
 .pageTitle {
     text-align: center;
-    font-size: 2.5rem;
-    margin-bottom: 20px;
-    color: #0070f3;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
 }
 
 .intro {
     text-align: center;
     font-size: 1.2rem;
-    margin-bottom: 40px;
+    margin-bottom: 20px;
 
 }
 

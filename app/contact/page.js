@@ -1,5 +1,3 @@
-// app/contact/page.js
-
 import styles from "./Contact.module.css";
 import SeoText from "../../components/SeoText";
 
@@ -9,20 +7,42 @@ export default function ContactPage() {
             <back-button></back-button>
 
             {/* Телефони */}
-            <p style={{ textAlign: "center" }}>
-                    <span className={styles.icon}>📞</span> Телефони:
-            </p>
-            <a href="tel:+380503843042" className={styles.contactLink}>
-                +380 50 384 3042
-            </a>
-            <a href="tel:+380967237838" className={styles.contactLink}>
-                +380 96 723 7838
-            </a>
+            <h2 className={styles.contactTitle} style={{ textAlign: "center" }}>
+                Телефони:
+            </h2>
+
+            <div className={styles.phoneRow}>
+                <div className={styles.messengerIconsInline}>
+                    <a href="https://t.me/+380503843042" target="_blank" rel="noopener noreferrer" aria-label="Telegram">
+                        <img src="/icons/telegram.svg" alt="Telegram" />
+                    </a>
+                    <a href="viber://chat?number=+380503843042" aria-label="Viber">
+                        <img src="/icons/viber.svg" alt="Viber" />
+                    </a>
+                    <a href="https://wa.me/380503843042" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+                        <img src="/icons/whatsapp.svg" alt="WhatsApp" />
+                    </a>
+                </div>
+                <a href="tel:+380503843042" className={styles.contactLink}>
+                    +380 50 384 3042
+                </a>
+            </div>
+
+            <div className={styles.phoneRow}>
+                <div className={styles.messengerIconsInline}>
+                    <a href="viber://chat?number=+380967237838" aria-label="Viber">
+                        <img src="/icons/viber.svg" alt="Viber" />
+                    </a>
+                </div>
+                <a href="tel:+380967237838" className={styles.contactLink}>
+                    +380 96 723 7838
+                </a>
+            </div>
 
             {/* Адреса */}
-            <p style={{ textAlign: "center", marginTop: "20px" }}>
-                    <span className={styles.icon}>📍</span> Адреса:
-            </p>
+            <h2 className={styles.contactTitle} style={{ textAlign: "center", marginTop: "20px" }}>
+                Адреса:
+            </h2>
             <a
                 href="https://maps.app.goo.gl/FBCCwo9srARVsH5bA"
                 target="_blank"

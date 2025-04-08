@@ -39,6 +39,9 @@ export default function Header() {
                     <Link href="/prices" className={styles.link}>
                         Ціни
                     </Link>
+                    <Link href="/rules" className={styles.link}>
+                        Правила
+                    </Link>
                     <Link href="/contact" className={styles.link}>
                         Контакти
                     </Link>
@@ -67,6 +70,9 @@ export default function Header() {
                     </Link>
                     <Link href="/prices" className={styles.link} onClick={() => setIsMenuOpen(false)}>
                         Ціни
+                    </Link>
+                    <Link href="/rules" className={styles.link} onClick={() => setIsMenuOpen(false)}>
+                        Правила
                     </Link>
                     <Link href="/contact" className={styles.link} onClick={() => setIsMenuOpen(false)}>
                         Контакти
