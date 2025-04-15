@@ -37,6 +37,10 @@ export async function GET() {
     <loc>${baseUrl}/prices</loc>
     <changefreq>weekly</changefreq>
   </url>
+   <url>
+    <loc>${baseUrl}/rules</loc>
+    <changefreq>monthly</changefreq>
+  </url>
   ${urls.join('\n')}
 </urlset>`;
 
