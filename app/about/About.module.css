@@ -46,6 +46,11 @@
     text-decoration: none;
 }
 
+.highcolor {
+    color: #249B89;
+    text-decoration: none;
+}
+
 /* Адаптивные стили для мобильных устройств */
 @media (max-width: 600px) {
     .section {

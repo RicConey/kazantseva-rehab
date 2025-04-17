@@ -1,5 +1,10 @@
 
 .serviceHeading {
-    font-size: 0.95rem;
     font-weight: bold;
+    color: #249B89;
+    text-decoration: none;
+}
+.highcolor {
+    color: #249B89;
+    text-decoration: none;
 }
