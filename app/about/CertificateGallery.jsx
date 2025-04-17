@@ -32,9 +32,10 @@ export default function CertificateGallery({ certs }) {
           <Image
             src={selected}
             alt="Сертифікат"
-            fill
+            width={600}
+            height={847}
             className={styles.modalImage}
-            sizes="(max-width: 768px) 90vw, 60vw"
+            priority
           />
         </div>
       )}

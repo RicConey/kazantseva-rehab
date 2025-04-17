@@ -36,8 +36,11 @@
 }
 
 .modalImage {
-  max-width: 90%;
-  max-height: 90%;
+  width: auto !important;
+  height: auto !important;
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;   /* чтобы весь сертификат был виден */
   border-radius: 8px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
