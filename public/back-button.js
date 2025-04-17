@@ -1,15 +1,15 @@
 // public/back-button.js
-if (typeof window !== "undefined") {
-    class BackButton extends HTMLElement {
-        constructor() {
-            super();
-            this.attachShadow({ mode: "open" });
-        }
-        connectedCallback() {
-            this.render();
-        }
-        render() {
-            this.shadowRoot.innerHTML = `
+if (typeof window !== 'undefined') {
+  class BackButton extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+    }
+    connectedCallback() {
+      this.render();
+    }
+    render() {
+      this.shadowRoot.innerHTML = `
         <style>
           /* Переопределяем выравнивание для самого кастомного элемента */
           :host {
@@ -41,13 +41,13 @@ if (typeof window !== "undefined") {
         </style>
         <button class="btn">← Назад</button>
       `;
-            this.shadowRoot.querySelector("button").addEventListener("click", () => {
-                window.history.back();
-            });
-        }
+      this.shadowRoot.querySelector('button').addEventListener('click', () => {
+        window.history.back();
+      });
     }
+  }
 
-    if (!customElements.get("back-button")) {
-        customElements.define("back-button", BackButton);
-    }
+  if (!customElements.get('back-button')) {
+    customElements.define('back-button', BackButton);
+  }
 }

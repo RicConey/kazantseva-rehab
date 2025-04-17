@@ -22,7 +22,7 @@
   gap: 6px;
   margin-bottom: 1rem;
   padding: 6px 12px;
-  background-color: #249B89;
+  background-color: #249b89;
   color: white;
   border: none;
   cursor: pointer;
@@ -93,7 +93,7 @@
 }
 
 .actions button {
-  background-color: #249B89;
+  background-color: #249b89;
   border: none;
   color: white;
   font-size: 16px;

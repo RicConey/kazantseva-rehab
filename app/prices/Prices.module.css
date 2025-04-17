@@ -1,96 +1,93 @@
-
 /* Стиль заголовка */
 .title {
-    margin-bottom: 10px;
-    text-align: center;
-    color: #249B89;
-    font-size: 1.5rem;
+  margin-bottom: 10px;
+  text-align: center;
+  color: #249b89;
+  font-size: 1.5rem;
 }
 
 .priceTable {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    border-radius: 8px;
-    overflow: hidden;
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 /* Заголовки таблицы */
 .priceTable th {
-    padding: 10px;
-    border: 1px solid #ccc;
-    background: #249B89;
-    color: white;
-    font-weight: bold;
-    text-align: center;
-    vertical-align: top;
+  padding: 10px;
+  border: 1px solid #ccc;
+  background: #249b89;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  vertical-align: top;
 }
 
 /* Ячейки таблицы */
 .priceTable td {
-    padding: 10px;
-    border: 1px solid #ccc;
-    text-align: left;
-    vertical-align: center;
+  padding: 10px;
+  border: 1px solid #ccc;
+  text-align: left;
+  vertical-align: center;
 }
 
 /* Мобильная версия */
 @media (max-width: 600px) {
-    .priceTable th {
-        font-size: 14px;
-        padding: 6px;
-    }
-    .priceTable td {
-        font-size: 14px;
-        padding: 6px;
-        line-height: 1.2;
-    }
-    .container {
-        padding: 5px;
-
-    }
-
+  .priceTable th {
+    font-size: 14px;
+    padding: 6px;
+  }
+  .priceTable td {
+    font-size: 14px;
+    padding: 6px;
+    line-height: 1.2;
+  }
+  .container {
+    padding: 5px;
+  }
 }
 
 /* Стили для tooltip */
 .tooltipWrapper {
-    position: relative;
-    display: inline-block;
+  position: relative;
+  display: inline-block;
 }
 
 .tooltipTrigger {
-    color: #249B89;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: underline dotted;
+  color: #249b89;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline dotted;
 }
 
 .tooltipText {
-    position: absolute;
-    bottom: 130%;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #249B89;
-    color: white;
-    padding: 8px 10px;
-    border-radius: 8px;
-    font-size: 0.8rem;
-    line-height: 1.2;
-    text-align: justify;
-    z-index: 9999;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease;
-    white-space: normal;
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    hyphens: auto;
-    min-width: 200px;
-    max-width: 400px;
+  position: absolute;
+  bottom: 130%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #249b89;
+  color: white;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  line-height: 1.2;
+  text-align: justify;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  hyphens: auto;
+  min-width: 200px;
+  max-width: 400px;
 }
 
 .tooltipVisible {
-    opacity: 1;
-    visibility: visible;
+  opacity: 1;
+  visibility: visible;
 }

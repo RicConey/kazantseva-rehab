@@ -28,20 +28,20 @@ This website is designed to present rehabilitation services offered in a private
 - 🗂 **Static generation / Статична генерація**
 - ⚙️ **CMS-ready / Готовність до інтеграції CMS**
 
-
 - 🧾 **Connected to Neon database** — pricing data is stored and retrieved from a PostgreSQL database on Neon  
   **Підключення до бази даних Neon** — дані з прайсу зберігаються у PostgreSQL-базі на Neon
+
 ---
 
 ## 📦 Tech Stack / Технології
 
-| Technology | Purpose                          | Технологія | Призначення                         |
-|------------|----------------------------------|------------|-------------------------------------|
-| Next.js    | React framework for SSR & SSG    | Next.js    | Фреймворк React для SSR та SSG     |
-| React      | UI library                       | React      | Бібліотека для інтерфейсу           |
-| Tailwind   | Utility-first CSS styling        | Tailwind   | CSS-фреймворк                        |
-| Vercel     | Hosting and deployments          | Vercel     | Хостинг і деплой                    |
-| GitHub     | Version control                  | GitHub     | Контроль версій                    |
+| Technology | Purpose                       | Технологія | Призначення                    |
+| ---------- | ----------------------------- | ---------- | ------------------------------ |
+| Next.js    | React framework for SSR & SSG | Next.js    | Фреймворк React для SSR та SSG |
+| React      | UI library                    | React      | Бібліотека для інтерфейсу      |
+| Tailwind   | Utility-first CSS styling     | Tailwind   | CSS-фреймворк                  |
+| Vercel     | Hosting and deployments       | Vercel     | Хостинг і деплой               |
+| GitHub     | Version control               | GitHub     | Контроль версій                |
 
 ---
 

@@ -12,6 +12,7 @@
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
     "glob": "^11.0.1",
+    "globby": "^14.1.0",
     "lru-cache": "^11.0.2",
     "next": "latest",
     "next-auth": "^4.24.11",
@@ -19,6 +20,20 @@
     "react": "latest",
     "react-dom": "latest",
     "react-icons": "^5.5.0",
+    "ts-morph": "^25.0.1",
     "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.1",
+    "@types/react": "^19.1.2",
+    "eslint": "^9.24.0",
+    "eslint-config-next": "^15.3.0",
+    "eslint-config-prettier": "^10.1.2",
+    "eslint-plugin-prettier": "^5.2.6",
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.1",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3"
   }
 }

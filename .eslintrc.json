@@ -1,0 +1,22 @@
+{
+  "root": true,
+  "extends": ["next", "next/core-web-vitals", "plugin:prettier/recommended"],
+  "plugins": ["unused-imports"],
+  "rules": {
+    "@next/next/no-html-link-for-pages": "off",
+    "react/no-unescaped-entities": "off", // ⬅️ тимчасово
+    "@next/next/no-img-element": "warn",
+    "@next/next/no-assign-module-variable": "error",
+    "unused-imports/no-unused-imports": "error"
+  },
+  "settings": {
+    "next": {
+      "rootDir": ["app", "pages", "src"]
+    },
+    "import/resolver": {
+      "typescript": {
+        "project": "./tsconfig.json"
+      }
+    }
+  }
+}

@@ -1,41 +1,43 @@
 /* app/about/CertificateGallery.module.css */
 
 .galleryContainer {
-    margin-top: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center;
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
 }
 
 .certImage {
-    width: 200px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: transform 0.3s;
+  width: 200px;
+  height: auto; /* ✨ масштабуємо пропорційно */
+  object-fit: contain; /* показуємо всю сторінку сертифіката */
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.3s;
 }
 
 .certImage:hover {
-    transform: scale(1.05);
+  transform: scale(1.05);
 }
 
 .modalOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    cursor: zoom-out;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  cursor: zoom-out;
 }
 
 .modalImage {
-    max-width: 90%;
-    max-height: 90%;
-    border-radius: 8px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }

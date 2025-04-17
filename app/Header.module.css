@@ -1,143 +1,142 @@
 /* app/Header.module.css */
 
 .header {
-    max-width: 1200px;
-    margin: 0 auto;
-    background-color: #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    overflow: visible;
-    position: relative; /* Гарантирует, что бургер будет внутри */
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: visible;
+  position: relative; /* Гарантирует, что бургер будет внутри */
 }
 
 .headerContainer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 10px 20px;
-    box-sizing: border-box;
-    max-width: 1200px;
-    margin: 0 auto;
-    position: relative; /* Чтобы бургер был привязан к нему */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 20px;
+  box-sizing: border-box;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative; /* Чтобы бургер был привязан к нему */
 }
 
 .logoBlock {
-    display: flex;
-    align-items: center;
-    max-width: 200px; /* Ограничиваем ширину логотипа */
-    height: auto;
+  display: flex;
+  align-items: center;
+  max-width: 200px; /* Ограничиваем ширину логотипа */
+  height: auto;
 }
 
 /* Сам логотип */
 .logo {
-    width: 120px;
-    height: auto;
-    max-height: 80px;
-    object-fit: contain;
+  width: 120px;
+  height: auto;
+  max-height: 80px;
+  object-fit: contain;
 }
 
 .logoWrapper {
-    width: 200px; /* Максимальная ширина логотипа */
-    position: relative;
-    margin-right: 10px;
+  width: 200px; /* Максимальная ширина логотипа */
+  position: relative;
+  margin-right: 10px;
 }
 
 /* Текст рядом с логотипом */
 
-
 .logoText {
-    font-family: "LogoFont", sans-serif;
-    display: flex;
-    flex-direction: column;
-    font-size: 1.3rem; /* Такой же размер шрифта, как в меню */
-    font-weight: normal; /* Делаем такой же вес, как у других текстов */
-    line-height: 1.3;
-    color: #249B89; /* Цвет логотипа */
-    text-transform: uppercase;
-    white-space: nowrap;
-    margin-left: 10px; /* Отступ от логотипа */
+  font-family: 'LogoFont', sans-serif;
+  display: flex;
+  flex-direction: column;
+  font-size: 1.3rem; /* Такой же размер шрифта, как в меню */
+  font-weight: normal; /* Делаем такой же вес, как у других текстов */
+  line-height: 1.3;
+  color: #249b89; /* Цвет логотипа */
+  text-transform: uppercase;
+  white-space: nowrap;
+  margin-left: 10px; /* Отступ от логотипа */
 }
 
 /* Навигация */
 .nav {
-    display: flex;
+  display: flex;
 
-    align-items: center;
-    margin-left: auto;
+  align-items: center;
+  margin-left: auto;
 }
 
 .link {
-    color: #333;
-    text-decoration: none;
-    font-size: 1rem;
-    font-weight: 500;
-    padding: 10px 15px;
-    transition: color 0.2s;
+  color: #333;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 10px 15px;
+  transition: color 0.2s;
 }
 
 .link:hover {
-    color: #249B89;
+  color: #249b89;
 }
 
 /* Бургер-меню */
 .burger {
-    position: absolute;
-    top: 50%;
-    right: 20px;
-    transform: translateY(-50%);
-    font-size: 1.8rem;
-    cursor: pointer;
-    display: none;
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+  font-size: 1.8rem;
+  cursor: pointer;
+  display: none;
 }
 
 .mobileNav {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  width: auto;
+  background-color: #fff;
+  padding: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  z-index: 100;
+}
+
+.mobileNav .link {
+  white-space: nowrap;
+}
+
+/* Медиа-запрос: мобильная версия */
+@media (max-width: 900px) {
+  .nav {
+    display: none;
+  }
+
+  .burger {
+    display: block;
+    top: 50%;
+    right: 15px; /* Подгоняем отступ */
+    transform: translateY(-50%);
+  }
+
+  /* Окно бургер-меню */
+  .mobileNav {
     position: absolute;
     top: 60px;
-    right: 20px;
+    right: 10px;
     width: auto;
     background-color: #fff;
     padding: 10px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     border-radius: 5px;
     z-index: 100;
-}
+  }
 
-.mobileNav .link {
+  .mobileNav .link {
     white-space: nowrap;
-}
-
-/* Медиа-запрос: мобильная версия */
-@media (max-width: 900px) {
-    .nav {
-        display: none;
-    }
-
-    .burger {
-        display: block;
-        top: 50%;
-        right: 15px; /* Подгоняем отступ */
-        transform: translateY(-50%);
-    }
-
-    /* Окно бургер-меню */
-    .mobileNav {
-        position: absolute;
-        top: 60px;
-        right: 10px;
-        width: auto;
-        background-color: #fff;
-        padding: 10px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-        border-radius: 5px;
-        z-index: 100;
-    }
-
-    .mobileNav .link {
-        white-space: nowrap;
-        display: block;
-        padding: 8px 12px;
-    }
+    display: block;
+    padding: 8px 12px;
+  }
 }
