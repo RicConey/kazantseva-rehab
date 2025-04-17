@@ -5,7 +5,19 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "echo \"No tests specified\"",
+    "prepare": "git rev-parse --git-dir >/dev/null 2>&1 && husky install || true",
+    "type-check": "tsc --noEmit",
+    "lint": "next lint",
+    "format": "prettier --write .",
+    "lint:fix": "next lint --fix"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,md,css,json}": [
+      "prettier --write",
+      "next lint --fix"
+    ]
   },
   "dependencies": {
     "@vercel/analytics": "^1.5.0",
