@@ -188,10 +188,18 @@
   display: none;
 }
 @media (max-width: 600px) {
-  .editingRow { display: none; }
-  .mobileEditingRow { display: table-row; }
-  .mobileEditingRow td { padding: 8px 12px; }
-  .field { margin-bottom: 4px; }
+  .editingRow {
+    display: none;
+  }
+  .mobileEditingRow {
+    display: table-row;
+  }
+  .mobileEditingRow td {
+    padding: 8px 12px;
+  }
+  .field {
+    margin-bottom: 4px;
+  }
   .field label {
     display: block;
     font-weight: 600;
@@ -241,8 +249,12 @@
   animation: spin 1s linear infinite;
 }
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Подсветка поля с ошибкой */
