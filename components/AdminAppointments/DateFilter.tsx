@@ -1,4 +1,3 @@
-// File: /components/AdminAppointments/DateFilter.tsx
 'use client';
 
 import React from 'react';
@@ -12,16 +11,16 @@ interface Props {
 
 export default function DateFilter({ date, setDate, disabled }: Props) {
   return (
-    <div className={styles.controls}>
-      <label>
-        Показати дату:
-        <input
-          type="date"
-          value={date}
-          onChange={e => setDate(e.target.value)}
-          disabled={disabled}
-        />
-      </label>
-    </div>
+      <div className={styles.controls}>
+        <label>
+          Показати дату:
+          <input
+              type="date"
+              value={date}
+              onChange={e => setDate(e.target.value)}
+              disabled={disabled}
+          />
+        </label>
+      </div>
   );
 }

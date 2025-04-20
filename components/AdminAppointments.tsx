@@ -1,9 +1,10 @@
-// File: /components/AdminAppointments.tsx
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import styles from './AdminAppointments.module.css';
 import { parseISO, format } from 'date-fns';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import NewAppointmentForm from './AdminAppointments/NewAppointmentForm';
 import DateFilter from './AdminAppointments/DateFilter';
@@ -13,8 +14,8 @@ import SkeletonTable from './AdminAppointments/SkeletonTable';
 
 interface Appointment {
   id: number;
-  startTime: string; // ISO UTC
-  duration: number;  // в минутах
+  startTime: string;
+  duration: number;
   client: string;
   notes?: string | null;
 }
@@ -23,7 +24,6 @@ export default function AdminAppointments() {
   const todayStr = new Date().toISOString().slice(0, 10);
   const timelineRef = useRef<HTMLDivElement>(null);
 
-  // Formatter для Киева
   const kyivFormatter = useMemo(
       () =>
           new Intl.DateTimeFormat('ru-RU', {
@@ -39,8 +39,7 @@ export default function AdminAppointments() {
         /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+\-]\d{2}:\d{2})/g,
         iso => {
           try {
-            const dt = parseISO(iso);
-            return kyivFormatter.format(dt);
+            return kyivFormatter.format(parseISO(iso));
           } catch {
             return iso;
           }
@@ -50,7 +49,6 @@ export default function AdminAppointments() {
 
   const [date, setDate] = useState(todayStr);
   const [list, setList] = useState<Appointment[]>([]);
-  const [error, setError] = useState('');
   const [loadingAdd, setLoadingAdd] = useState(false);
   const [loadingSaveId, setLoadingSaveId] = useState<number | null>(null);
   const [loadingDeleteId, setLoadingDeleteId] = useState<number | null>(null);
@@ -64,10 +62,13 @@ export default function AdminAppointments() {
     client: '',
     notes: '',
   });
+  const [newFormErrors, setNewFormErrors] = useState<Record<string, boolean>>({});
+
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState(newForm);
+  const [editFormErrors, setEditFormErrors] = useState<Record<string, boolean>>({});
 
-  // Загрузка списка
+  // загрузка
   useEffect(() => {
     setLoadingList(true);
     fetch(`/api/appointments?date=${date}`)
@@ -78,10 +79,9 @@ export default function AdminAppointments() {
     setNewForm(f => ({ ...f, date }));
   }, [date]);
 
-  // Цвета
-  const [colorMap, setColorMap] = useState<Record<string, string>>({});
+  // цвета
   useEffect(() => {
-    const m = { ...colorMap };
+    const m: Record<string, string> = {};
     list.forEach(a => {
       if (!m[a.client]) {
         let h = 0;
@@ -89,10 +89,12 @@ export default function AdminAppointments() {
         m[a.client] = `hsl(${Math.abs(h) % 360},70%,80%)`;
       }
     });
-    setColorMap(m);
+    Object.keys(m).length && setColorMap(m);
   }, [list]);
 
-  // Закрыть тултип вне
+  const [colorMap, setColorMap] = useState<Record<string, string>>({});
+
+  // тултипы
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (!(e.target as HTMLElement).closest('[data-appt-id]')) {
@@ -113,161 +115,164 @@ export default function AdminAppointments() {
     });
   }
 
-  async function handleAdd(e: React.FormEvent) {
+  // Добавить
+  async function handleAdd(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError('');
+    setNewFormErrors({});
+    const errs: Record<string, boolean> = {};
     const { date: d, time, duration, client, notes } = newForm;
     const durNum = parseInt(duration, 10);
-    if (!d || !time || !client.trim() || isNaN(durNum)) {
-      setError('Заповніть всі поля коректно');
+    if (!d) errs.date = true;
+    if (!time) errs.time = true;
+    if (isNaN(durNum)) errs.duration = true;
+    if (!client.trim()) errs.client = true;
+    if (Object.keys(errs).length) {
+      setNewFormErrors(errs);
+      toast.error('Поля заповнені некоректно');
       return;
     }
     const [Y, M, D] = d.split('-').map(Number);
     const [h, m] = time.split(':').map(Number);
-    const localDate = new Date(Y, M - 1, D, h, m);
-    if (isOverlap(localDate, durNum)) {
-      setError('Час перекривається з іншими сеансами');
+    const ld = new Date(Y, M - 1, D, h, m);
+    if (isOverlap(ld, durNum)) {
+      toast.error('Час перекривається з іншими сеансами');
       return;
     }
     setLoadingAdd(true);
     try {
       const res = await fetch('/api/appointments', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          startTime: localDate.toISOString(),
-          duration: durNum,
-          client: client.trim(),
-          notes: notes.trim() || null,
-        }),
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ startTime: ld.toISOString(), duration: durNum, client: client.trim(), notes: notes.trim() || null }),
       });
-      const json: any = await res.json();
+      const json = await res.json();
       if (!res.ok) {
-        setError(formatErrorMessage(json.error || 'Не вдалося додати запис'));
+        toast.error(formatErrorMessage(json.error || 'Не вдалося додати запис'));
       } else {
         setList(prev =>
             [...prev, json]
                 .filter(a => parseISO(a.startTime).toISOString().slice(0, 10) === date)
-                .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+                .sort((a,b)=>new Date(a.startTime).getTime()-new Date(b.startTime).getTime())
         );
-        setNewForm({ date: todayStr, time: '', duration: '', client: '', notes: '' });
+        setNewForm({ date: todayStr, time:'', duration:'', client:'', notes:'' });
+        toast.success('Запис додано');
       }
     } catch {
-      setError('Не вдалося додати запис');
+      toast.error('Не вдалося додати запис');
     } finally {
       setLoadingAdd(false);
     }
   }
 
+  // Редактирование
   function startEdit(a: Appointment) {
     const dt = parseISO(a.startTime);
     setEditingId(a.id);
     setEditForm({
-      date: format(dt, 'yyyy-MM-dd'),
-      time: format(dt, 'HH:mm'),
-      duration: String(a.duration),
-      client: a.client,
-      notes: a.notes || '',
+      date: format(dt,'yyyy-MM-dd'),
+      time: format(dt,'HH:mm'),
+      duration:String(a.duration),
+      client:a.client,
+      notes:a.notes||'',
     });
-    setError('');
+    setEditFormErrors({});
   }
   function cancelEdit() {
     setEditingId(null);
-    setError('');
+    setEditFormErrors({});
   }
-
-  async function saveEdit(id: number) {
-    setError('');
-    const { date: d, time, duration, client, notes } = editForm;
-    const durNum = parseInt(duration, 10);
-    if (isNaN(durNum)) {
-      setError('Введіть коректну тривалість');
+  async function saveEdit(id:number) {
+    setEditFormErrors({});
+    const errs: Record<string, boolean> = {};
+    const { date:d, time, duration, client, notes } = editForm;
+    const durNum = parseInt(duration,10);
+    if (!d) errs.date=true;
+    if (!time) errs.time=true;
+    if (isNaN(durNum)) errs.duration=true;
+    if (!client.trim()) errs.client=true;
+    if (Object.keys(errs).length) {
+      setEditFormErrors(errs);
+      toast.error('Поля заповнені некоректно');
       return;
     }
-    const [Y, M, D] = d.split('-').map(Number);
-    const [h, m] = time.split(':').map(Number);
-    const localDate = new Date(Y, M - 1, D, h, m);
-    if (isOverlap(localDate, durNum, id)) {
-      setError('Час перекривається з іншими сеансами');
+    const [Y,M,D]=d.split('-').map(Number);
+    const [h,m]=time.split(':').map(Number);
+    const ld=new Date(Y,M-1,D,h,m);
+    if (isOverlap(ld,durNum,id)) {
+      toast.error('Час перекривається з іншими сеансами');
       return;
     }
     setLoadingSaveId(id);
     try {
       const res = await fetch(`/api/appointments/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          startTime: localDate.toISOString(),
-          duration: durNum,
-          client: client.trim(),
-          notes: notes.trim() || null,
-        }),
+        method:'PUT',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ startTime: ld.toISOString(), duration: durNum, client: client.trim(), notes: notes.trim()||null }),
       });
-      const json: any = await res.json();
+      const json = await res.json();
       if (!res.ok) {
-        setError(formatErrorMessage(json.error || 'Не вдалося зберегти'));
+        toast.error(formatErrorMessage(json.error||'Не вдалося зберегти'));
       } else {
         setList(prev =>
-            prev
-                .map(x => (x.id === id ? json : x))
-                .filter(a => parseISO(a.startTime).toISOString().slice(0, 10) === date)
-                .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+            prev.map(x=>x.id===id?json:x)
+                .filter(a=>parseISO(a.startTime).toISOString().slice(0,10)===date)
+                .sort((a,b)=>new Date(a.startTime).getTime()-new Date(b.startTime).getTime())
         );
         cancelEdit();
+        toast.success('Зміни збережено');
       }
     } catch {
-      setError('Не вдалося зберегти');
+      toast.error('Не вдалося зберегти');
     } finally {
       setLoadingSaveId(null);
     }
   }
 
-  async function deleteItem(id: number) {
-    if (!confirm('Ви впевнені?')) return;
+  // Удалить
+  async function deleteItem(id:number) {
     setLoadingDeleteId(id);
     try {
-      const res = await fetch(`/api/appointments/${id}`, { method: 'DELETE' });
-      if (res.ok) setList(prev => prev.filter(x => x.id !== id));
-      else {
-        const json: any = await res.json();
-        setError(formatErrorMessage(json.error || 'Не вдалося видалити'));
+      const res = await fetch(`/api/appointments/${id}`,{method:'DELETE'});
+      if (res.ok) {
+        setList(prev=>prev.filter(x=>x.id!==id));
+        toast.success('Запис видалено');
+      } else {
+        const json=await res.json();
+        toast.error(formatErrorMessage(json.error||'Не вдалося видалити'));
       }
     } catch {
-      setError('Не вдалося видалити');
+      toast.error('Не вдалося видалити');
     } finally {
       setLoadingDeleteId(null);
     }
   }
 
-  function toggleTooltip(id: number) {
-    setActiveTooltipId(cur => {
-      const next = cur === id ? null : id;
-      if (next !== null) setTimeout(() => adjustTooltip(id), 0);
+  // Тултипы
+  function toggleTooltip(id:number) {
+    setActiveTooltipId(cur=> {
+      const next = cur===id?null:id;
+      if (next!==null) setTimeout(()=>adjustTooltip(id),0);
       return next;
     });
   }
-  function adjustTooltip(id: number) {
-    const wr = document.querySelector(`[data-appt-id="${id}"]`) as HTMLElement;
-    const tip = wr?.querySelector(`.${styles.tooltip}`) as HTMLElement;
-    const cn = timelineRef.current;
-    if (!tip || !cn) return;
-    tip.style.transform = 'translateX(-50%)';
-    const t = tip.getBoundingClientRect(),
-        c = cn.getBoundingClientRect();
-    let shift = 0;
-    if (t.left < c.left) shift = c.left - t.left + 4;
-    else if (t.right > c.right) shift = c.right - t.right - 4;
-    tip.style.transform = `translateX(calc(-50% + ${shift}px))`;
+  function adjustTooltip(id:number) {
+    const wr=document.querySelector(`[data-appt-id="${id}"]`) as HTMLElement;
+    const tip=wr?.querySelector(`.${styles.tooltip}`) as HTMLElement;
+    const cn=timelineRef.current;
+    if (!tip||!cn) return;
+    tip.style.transform='translateX(-50%)';
+    const t=tip.getBoundingClientRect(), c=cn.getBoundingClientRect();
+    let shift=0;
+    if (t.left<c.left) shift=c.left-t.left+4;
+    else if (t.right>c.right) shift=c.right-t.right-4;
+    tip.style.transform=`translateX(calc(-50% + ${shift}px))`;
   }
 
-  const scaleStart = 8,
-      scaleEnd = 20,
-      scaleDuration = scaleEnd - scaleStart;
+  const scaleStart=8, scaleEnd=20, scaleDuration=scaleEnd-scaleStart;
 
   return (
       <div className={styles.container}>
         <h1 className={styles.title}>Запис клієнтів</h1>
-        {error && <div className={styles.error}>{error}</div>}
 
         <NewAppointmentForm
             todayStr={todayStr}
@@ -275,11 +280,11 @@ export default function AdminAppointments() {
             setNewForm={setNewForm}
             loadingAdd={loadingAdd}
             handleAdd={handleAdd}
+            errorFields={newFormErrors}
         />
 
         <DateFilter date={date} setDate={setDate} disabled={loadingAdd} />
 
-        {/* Таймлайн без скелетонов */}
         <AppointmentTimeline
             list={list}
             scaleStart={scaleStart}
@@ -291,14 +296,13 @@ export default function AdminAppointments() {
             kyivFormatter={kyivFormatter}
         />
 
-        {/* Таблица или её скелетон */}
         {loadingList ? (
             <SkeletonTable />
         ) : (
             <AppointmentTable
                 list={list}
                 todayStr={todayStr}
-                editingId={editingId}
+                editingId={editingId!}
                 editForm={editForm}
                 setEditForm={setEditForm}
                 loadingAdd={loadingAdd}
@@ -309,8 +313,11 @@ export default function AdminAppointments() {
                 saveEdit={saveEdit}
                 deleteItem={deleteItem}
                 kyivFormatter={kyivFormatter}
+                errorFields={editFormErrors}
             />
         )}
+
+        <ToastContainer position="top-right" autoClose={3000} />
       </div>
   );
 }
