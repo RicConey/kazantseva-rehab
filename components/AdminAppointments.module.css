@@ -6,8 +6,8 @@
 }
 @media (max-width: 768px) {
   .container {
-    font-size: 14px;
     padding: 6px;
+    font-size: 14px;
   }
 }
 
@@ -17,6 +17,7 @@
   color: #249b89;
   text-align: center;
 }
+
 .error {
   color: red;
   margin-bottom: 1rem;
@@ -25,8 +26,8 @@
 /* Форма добавления */
 .form {
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
+  gap: 8px;
   margin-bottom: 1rem;
 }
 .form input,
@@ -45,9 +46,9 @@
 
 /* Фильтр даты */
 .controls {
-  margin-bottom: 1rem;
   display: flex;
   justify-content: flex-end;
+  margin-bottom: 1rem;
 }
 .controls input {
   margin-left: 4px;
@@ -86,24 +87,6 @@
   z-index: 3;
 }
 
-/* Скелетоны в таймлайне */
-.skeletonTimelineContainer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  z-index: 1;
-}
-.skeletonTimelineBlock {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  width: 1px;
-  background: #e0e0e0;
-}
-
 /* Записи на таймлайне */
 .apptWrapper {
   position: absolute;
@@ -134,7 +117,7 @@
   min-width: 180px;
   max-width: 80vw;
   box-sizing: border-box;
-  visibility: hidden; /* inline-стиль из React управляет видимостью */
+  visibility: hidden;
   z-index: 5;
 }
 
@@ -162,13 +145,21 @@
   font-weight: 600;
 }
 .table th:last-child {
-  text-align: left; /* Дії */
+  text-align: left;
 }
 .table td {
   border-top: 1px solid #ddd;
   padding: 8px;
   text-align: left;
   line-height: 1.2;
+}
+
+/* Ячейка‑скелетон */
+.skeletonTableCell {
+  background: #e0e0e0;
+  border-radius: 4px;
+  height: 1rem;
+  width: 100%;
 }
 
 /* Действия */
@@ -187,39 +178,30 @@
   opacity: 0.7;
 }
 
-/* Desktop inline-edit row */
+/* Редактирование: desktop */
 .editingRow td {
   vertical-align: top;
 }
 
-/* Mobile inline-edit row */
+/* Редактирование: mobile */
 .mobileEditingRow {
   display: none;
 }
 @media (max-width: 600px) {
-  .editingRow {
-    display: none;
-  }
-  .mobileEditingRow {
-    display: table-row;
-  }
-  .mobileEditingRow td {
-    padding: 8px 12px; /* чуть меньше вертикальный padding */
-  }
-  .field {
-    margin-bottom: 4px; /* уменьшен отступ между полями */
-  }
+  .editingRow { display: none; }
+  .mobileEditingRow { display: table-row; }
+  .mobileEditingRow td { padding: 8px 12px; }
+  .field { margin-bottom: 4px; }
   .field label {
     display: block;
     font-weight: 600;
     margin-bottom: 2px;
-    color: #333;
-    font-size: 0.75rem; /* уменьшенный размер, как в таблице */
+    font-size: 0.75rem;
   }
   .field input {
     width: 100%;
-    padding: 4px 6px; /* чуть меньше padding */
-    font-size: 0.75rem; /* уменьшенный размер */
+    padding: 4px 6px;
+    font-size: 0.75rem;
     box-sizing: border-box;
     margin-bottom: 4px;
   }
@@ -231,7 +213,6 @@
   }
 }
 
-/* Адаптив */
 @media (max-width: 768px) {
   .form input,
   .form button,
@@ -241,8 +222,8 @@
   }
   .table th,
   .table td {
-    padding: 6px 4px;
     font-size: 0.75rem;
+    padding: 6px 4px;
   }
   .tableWrapper {
     -webkit-overflow-scrolling: touch;
@@ -260,16 +241,6 @@
   animation: spin 1s linear infinite;
 }
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Скелетоны */
-.skeleton {
-  background: #e0e0e0;
-  border-radius: 4px;
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }

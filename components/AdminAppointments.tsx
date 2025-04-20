@@ -9,13 +9,12 @@ import NewAppointmentForm from './AdminAppointments/NewAppointmentForm';
 import DateFilter from './AdminAppointments/DateFilter';
 import AppointmentTimeline from './AdminAppointments/AppointmentTimeline';
 import AppointmentTable from './AdminAppointments/AppointmentTable';
-import SkeletonTimeline from './AdminAppointments/SkeletonTimeline';
 import SkeletonTable from './AdminAppointments/SkeletonTable';
 
 interface Appointment {
   id: number;
   startTime: string; // ISO UTC
-  duration: number; // в минутах
+  duration: number;  // в минутах
   client: string;
   notes?: string | null;
 }
@@ -24,42 +23,38 @@ export default function AdminAppointments() {
   const todayStr = new Date().toISOString().slice(0, 10);
   const timelineRef = useRef<HTMLDivElement>(null);
 
-  // Formatter для Киевского времени
+  // Formatter для Киева
   const kyivFormatter = useMemo(
-    () =>
-      new Intl.DateTimeFormat('ru-RU', {
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'Europe/Kyiv',
-      }),
-    []
+      () =>
+          new Intl.DateTimeFormat('ru-RU', {
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone: 'Europe/Kyiv',
+          }),
+      []
   );
 
-  // Заменяет в тексте все ISO‑метки на формат HH:mm по Киеву
   function formatErrorMessage(msg: string) {
     return msg.replace(
-      /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+\-]\d{2}:\d{2})/g,
-      iso => {
-        try {
-          const dt = parseISO(iso);
-          return kyivFormatter.format(dt);
-        } catch {
-          return iso;
+        /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+\-]\d{2}:\d{2})/g,
+        iso => {
+          try {
+            const dt = parseISO(iso);
+            return kyivFormatter.format(dt);
+          } catch {
+            return iso;
+          }
         }
-      }
     );
   }
 
-  // Состояния
   const [date, setDate] = useState(todayStr);
   const [list, setList] = useState<Appointment[]>([]);
   const [error, setError] = useState('');
-
   const [loadingAdd, setLoadingAdd] = useState(false);
   const [loadingSaveId, setLoadingSaveId] = useState<number | null>(null);
   const [loadingDeleteId, setLoadingDeleteId] = useState<number | null>(null);
   const [loadingList, setLoadingList] = useState(true);
-
   const [activeTooltipId, setActiveTooltipId] = useState<number | null>(null);
 
   const [newForm, setNewForm] = useState({
@@ -72,18 +67,18 @@ export default function AdminAppointments() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState(newForm);
 
-  // Загрузка списка для выбранной даты
+  // Загрузка списка
   useEffect(() => {
     setLoadingList(true);
     fetch(`/api/appointments?date=${date}`)
-      .then(r => (r.ok ? r.json() : Promise.reject()))
-      .then((data: Appointment[]) => setList(data))
-      .catch(() => setList([]))
-      .finally(() => setLoadingList(false));
+        .then(r => (r.ok ? r.json() : Promise.reject()))
+        .then((data: Appointment[]) => setList(data))
+        .catch(() => setList([]))
+        .finally(() => setLoadingList(false));
     setNewForm(f => ({ ...f, date }));
   }, [date]);
 
-  // Генерация пастельных цветов
+  // Цвета
   const [colorMap, setColorMap] = useState<Record<string, string>>({});
   useEffect(() => {
     const m = { ...colorMap };
@@ -97,7 +92,7 @@ export default function AdminAppointments() {
     setColorMap(m);
   }, [list]);
 
-  // Закрыть тултип при клике вне
+  // Закрыть тултип вне
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (!(e.target as HTMLElement).closest('[data-appt-id]')) {
@@ -108,7 +103,6 @@ export default function AdminAppointments() {
     return () => document.removeEventListener('click', handler);
   }, []);
 
-  // Проверка перекрытий по времени
   function isOverlap(start: Date, dur: number, skipId?: number) {
     const end = new Date(start.getTime() + dur * 60000);
     return list.some(appt => {
@@ -119,7 +113,6 @@ export default function AdminAppointments() {
     });
   }
 
-  // Добавление записи
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     setError('');
@@ -132,20 +125,17 @@ export default function AdminAppointments() {
     const [Y, M, D] = d.split('-').map(Number);
     const [h, m] = time.split(':').map(Number);
     const localDate = new Date(Y, M - 1, D, h, m);
-    const utcString = localDate.toISOString();
-
     if (isOverlap(localDate, durNum)) {
       setError('Час перекривається з іншими сеансами');
       return;
     }
-
     setLoadingAdd(true);
     try {
       const res = await fetch('/api/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          startTime: utcString,
+          startTime: localDate.toISOString(),
           duration: durNum,
           client: client.trim(),
           notes: notes.trim() || null,
@@ -156,9 +146,9 @@ export default function AdminAppointments() {
         setError(formatErrorMessage(json.error || 'Не вдалося додати запис'));
       } else {
         setList(prev =>
-          [...prev, json]
-            .filter(a => parseISO(a.startTime).toISOString().slice(0, 10) === date)
-            .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+            [...prev, json]
+                .filter(a => parseISO(a.startTime).toISOString().slice(0, 10) === date)
+                .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
         );
         setNewForm({ date: todayStr, time: '', duration: '', client: '', notes: '' });
       }
@@ -169,7 +159,6 @@ export default function AdminAppointments() {
     }
   }
 
-  // Начало редактирования
   function startEdit(a: Appointment) {
     const dt = parseISO(a.startTime);
     setEditingId(a.id);
@@ -187,7 +176,6 @@ export default function AdminAppointments() {
     setError('');
   }
 
-  // Сохранение редактирования
   async function saveEdit(id: number) {
     setError('');
     const { date: d, time, duration, client, notes } = editForm;
@@ -199,20 +187,17 @@ export default function AdminAppointments() {
     const [Y, M, D] = d.split('-').map(Number);
     const [h, m] = time.split(':').map(Number);
     const localDate = new Date(Y, M - 1, D, h, m);
-    const utcString = localDate.toISOString();
-
     if (isOverlap(localDate, durNum, id)) {
       setError('Час перекривається з іншими сеансами');
       return;
     }
-
     setLoadingSaveId(id);
     try {
       const res = await fetch(`/api/appointments/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          startTime: utcString,
+          startTime: localDate.toISOString(),
           duration: durNum,
           client: client.trim(),
           notes: notes.trim() || null,
@@ -223,10 +208,10 @@ export default function AdminAppointments() {
         setError(formatErrorMessage(json.error || 'Не вдалося зберегти'));
       } else {
         setList(prev =>
-          prev
-            .map(x => (x.id === id ? json : x))
-            .filter(a => parseISO(a.startTime).toISOString().slice(0, 10) === date)
-            .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+            prev
+                .map(x => (x.id === id ? json : x))
+                .filter(a => parseISO(a.startTime).toISOString().slice(0, 10) === date)
+                .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
         );
         cancelEdit();
       }
@@ -237,15 +222,13 @@ export default function AdminAppointments() {
     }
   }
 
-  // Удаление
   async function deleteItem(id: number) {
     if (!confirm('Ви впевнені?')) return;
     setLoadingDeleteId(id);
     try {
       const res = await fetch(`/api/appointments/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        setList(prev => prev.filter(x => x.id !== id));
-      } else {
+      if (res.ok) setList(prev => prev.filter(x => x.id !== id));
+      else {
         const json: any = await res.json();
         setError(formatErrorMessage(json.error || 'Не вдалося видалити'));
       }
@@ -256,7 +239,6 @@ export default function AdminAppointments() {
     }
   }
 
-  // Тултип: показать/скрыть + корректировка позиции
   function toggleTooltip(id: number) {
     setActiveTooltipId(cur => {
       const next = cur === id ? null : id;
@@ -271,7 +253,7 @@ export default function AdminAppointments() {
     if (!tip || !cn) return;
     tip.style.transform = 'translateX(-50%)';
     const t = tip.getBoundingClientRect(),
-      c = cn.getBoundingClientRect();
+        c = cn.getBoundingClientRect();
     let shift = 0;
     if (t.left < c.left) shift = c.left - t.left + 4;
     else if (t.right > c.right) shift = c.right - t.right - 4;
@@ -279,58 +261,56 @@ export default function AdminAppointments() {
   }
 
   const scaleStart = 8,
-    scaleEnd = 20,
-    scaleDuration = scaleEnd - scaleStart;
+      scaleEnd = 20,
+      scaleDuration = scaleEnd - scaleStart;
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Запис клієнтів</h1>
-      {error && <div className={styles.error}>{error}</div>}
+      <div className={styles.container}>
+        <h1 className={styles.title}>Запис клієнтів</h1>
+        {error && <div className={styles.error}>{error}</div>}
 
-      <NewAppointmentForm
-        todayStr={todayStr}
-        newForm={newForm}
-        setNewForm={setNewForm}
-        loadingAdd={loadingAdd}
-        handleAdd={handleAdd}
-      />
+        <NewAppointmentForm
+            todayStr={todayStr}
+            newForm={newForm}
+            setNewForm={setNewForm}
+            loadingAdd={loadingAdd}
+            handleAdd={handleAdd}
+        />
 
-      <DateFilter date={date} setDate={setDate} disabled={loadingAdd} />
+        <DateFilter date={date} setDate={setDate} disabled={loadingAdd} />
 
-      {loadingList ? (
-        <SkeletonTimeline />
-      ) : (
+        {/* Таймлайн без скелетонов */}
         <AppointmentTimeline
-          list={list}
-          scaleStart={scaleStart}
-          scaleDuration={scaleDuration}
-          colorMap={colorMap}
-          timelineRef={timelineRef}
-          activeTooltipId={activeTooltipId}
-          toggleTooltip={toggleTooltip}
-          kyivFormatter={kyivFormatter}
+            list={list}
+            scaleStart={scaleStart}
+            scaleDuration={scaleDuration}
+            colorMap={colorMap}
+            timelineRef={timelineRef}
+            activeTooltipId={activeTooltipId}
+            toggleTooltip={toggleTooltip}
+            kyivFormatter={kyivFormatter}
         />
-      )}
 
-      {loadingList ? (
-        <SkeletonTable />
-      ) : (
-        <AppointmentTable
-          list={list}
-          todayStr={todayStr}
-          editingId={editingId}
-          editForm={editForm}
-          setEditForm={setEditForm}
-          loadingAdd={loadingAdd}
-          loadingSaveId={loadingSaveId}
-          loadingDeleteId={loadingDeleteId}
-          startEdit={startEdit}
-          cancelEdit={cancelEdit}
-          saveEdit={saveEdit}
-          deleteItem={deleteItem}
-          kyivFormatter={kyivFormatter}
-        />
-      )}
-    </div>
+        {/* Таблица или её скелетон */}
+        {loadingList ? (
+            <SkeletonTable />
+        ) : (
+            <AppointmentTable
+                list={list}
+                todayStr={todayStr}
+                editingId={editingId}
+                editForm={editForm}
+                setEditForm={setEditForm}
+                loadingAdd={loadingAdd}
+                loadingSaveId={loadingSaveId}
+                loadingDeleteId={loadingDeleteId}
+                startEdit={startEdit}
+                cancelEdit={cancelEdit}
+                saveEdit={saveEdit}
+                deleteItem={deleteItem}
+                kyivFormatter={kyivFormatter}
+            />
+        )}
+      </div>
   );
 }
