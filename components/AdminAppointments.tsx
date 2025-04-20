@@ -1,15 +1,19 @@
-// AdminAppointments.tsx
+// File: /components/AdminAppointments.tsx
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import styles from './AdminAppointments.module.css';
 import { parseISO, format } from 'date-fns';
-import { FaEdit, FaTrash, FaCheck, FaTimes, FaSpinner } from 'react-icons/fa';
+
+import NewAppointmentForm from './AdminAppointments/NewAppointmentForm';
+import DateFilter          from './AdminAppointments/DateFilter';
+import AppointmentTimeline from './AdminAppointments/AppointmentTimeline';
+import AppointmentTable    from './AdminAppointments/AppointmentTable';
 
 interface Appointment {
   id: number;
   startTime: string; // ISO UTC
-  duration: number; // в минутах
+  duration: number;   // в минутах
   client: string;
   notes?: string | null;
 }
@@ -20,27 +24,27 @@ export default function AdminAppointments() {
 
   // Formatter для Киевского времени
   const kyivFormatter = useMemo(
-    () =>
-      new Intl.DateTimeFormat('ru-RU', {
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'Europe/Kyiv',
-      }),
-    []
+      () =>
+          new Intl.DateTimeFormat('ru-RU', {
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone: 'Europe/Kyiv',
+          }),
+      []
   );
 
   // Заменяет в тексте все ISO‑метки на формат HH:mm по Киеву
   function formatErrorMessage(msg: string) {
     return msg.replace(
-      /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+\-]\d{2}:\d{2})/g,
-      iso => {
-        try {
-          const dt = parseISO(iso);
-          return kyivFormatter.format(dt);
-        } catch {
-          return iso;
+        /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+\-]\d{2}:\d{2})/g,
+        iso => {
+          try {
+            const dt = parseISO(iso);
+            return kyivFormatter.format(dt);
+          } catch {
+            return iso;
+          }
         }
-      }
     );
   }
 
@@ -68,9 +72,9 @@ export default function AdminAppointments() {
   // Загрузка списка для выбранной даты
   useEffect(() => {
     fetch(`/api/appointments?date=${date}`)
-      .then(r => (r.ok ? r.json() : Promise.reject()))
-      .then((data: Appointment[]) => setList(data))
-      .catch(() => setList([]));
+        .then(r => (r.ok ? r.json() : Promise.reject()))
+        .then((data: Appointment[]) => setList(data))
+        .catch(() => setList([]));
     setNewForm(f => ({ ...f, date }));
   }, [date]);
 
@@ -148,9 +152,9 @@ export default function AdminAppointments() {
         setError(formatErrorMessage(json.error || 'Не вдалося додати запис'));
       } else {
         setList(prev =>
-          [...prev, json]
-            .filter(a => parseISO(a.startTime).toISOString().slice(0, 10) === date)
-            .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+            [...prev, json]
+                .filter(a => parseISO(a.startTime).toISOString().slice(0, 10) === date)
+                .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
         );
         setNewForm({ date: todayStr, time: '', duration: '', client: '', notes: '' });
       }
@@ -215,10 +219,10 @@ export default function AdminAppointments() {
         setError(formatErrorMessage(json.error || 'Не вдалося зберегти'));
       } else {
         setList(prev =>
-          prev
-            .map(x => (x.id === id ? json : x))
-            .filter(a => parseISO(a.startTime).toISOString().slice(0, 10) === date)
-            .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+            prev
+                .map(x => (x.id === id ? json : x))
+                .filter(a => parseISO(a.startTime).toISOString().slice(0, 10) === date)
+                .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
         );
         cancelEdit();
       }
@@ -262,254 +266,56 @@ export default function AdminAppointments() {
     const cn = timelineRef.current;
     if (!tip || !cn) return;
     tip.style.transform = 'translateX(-50%)';
-    const t = tip.getBoundingClientRect(),
-      c = cn.getBoundingClientRect();
+    const t = tip.getBoundingClientRect(), c = cn.getBoundingClientRect();
     let shift = 0;
     if (t.left < c.left) shift = c.left - t.left + 4;
     else if (t.right > c.right) shift = c.right - t.right - 4;
     tip.style.transform = `translateX(calc(-50% + ${shift}px))`;
   }
 
-  const scaleStart = 8,
-    scaleEnd = 20,
-    scaleDuration = scaleEnd - scaleStart;
+  const scaleStart = 8, scaleEnd = 20, scaleDuration = scaleEnd - scaleStart;
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Запис клієнтів</h1>
-      {error && <div className={styles.error}>{error}</div>}
+      <div className={styles.container}>
+        <h1 className={styles.title}>Запис клієнтів</h1>
+        {error && <div className={styles.error}>{error}</div>}
 
-      {/* Форма добавления */}
-      <form className={styles.form} onSubmit={handleAdd}>
-        <input
-          type="date"
-          min={todayStr}
-          value={newForm.date}
-          onChange={e => setNewForm(f => ({ ...f, date: e.target.value }))}
-          required
-          disabled={loadingAdd}
+        <NewAppointmentForm
+            todayStr={todayStr}
+            newForm={newForm}
+            setNewForm={setNewForm}
+            loadingAdd={loadingAdd}
+            handleAdd={handleAdd}
         />
-        <input
-          type="time"
-          value={newForm.time}
-          onChange={e => setNewForm(f => ({ ...f, time: e.target.value }))}
-          required
-          disabled={loadingAdd}
-        />
-        <input
-          type="text"
-          className={styles.durationInput}
-          placeholder="хв"
-          inputMode="numeric"
-          pattern="\d*"
-          maxLength={3}
-          value={newForm.duration}
-          onChange={e =>
-            setNewForm(f => ({
-              ...f,
-              duration: e.target.value.replace(/\D/g, '').slice(0, 3),
-            }))
-          }
-          required
-          disabled={loadingAdd}
-        />
-        <input
-          type="text"
-          placeholder="ФІО"
-          value={newForm.client}
-          onChange={e => setNewForm(f => ({ ...f, client: e.target.value }))}
-          required
-          disabled={loadingAdd}
-        />
-        <input
-          type="text"
-          placeholder="Заметки"
-          value={newForm.notes}
-          onChange={e => setNewForm(f => ({ ...f, notes: e.target.value }))}
-          disabled={loadingAdd}
-        />
-        <button type="submit" disabled={loadingAdd}>
-          {loadingAdd ? (
-            <>
-              <FaSpinner className={styles.spin} /> Додаємо...
-            </>
-          ) : (
-            'Додати запис'
-          )}
-        </button>
-      </form>
 
-      {/* Фильтр даты */}
-      <div className={styles.controls}>
-        <label>
-          Показати дату:
-          <input
-            type="date"
-            value={date}
-            onChange={e => setDate(e.target.value)}
-            disabled={loadingAdd}
-          />
-        </label>
+        <DateFilter date={date} setDate={setDate} disabled={loadingAdd} />
+
+        <AppointmentTimeline
+            list={list}
+            scaleStart={scaleStart}
+            scaleDuration={scaleDuration}
+            colorMap={colorMap}
+            timelineRef={timelineRef}
+            activeTooltipId={activeTooltipId}
+            toggleTooltip={toggleTooltip}
+            kyivFormatter={kyivFormatter}
+        />
+
+        <AppointmentTable
+            list={list}
+            todayStr={todayStr}
+            editingId={editingId}
+            editForm={editForm}
+            setEditForm={setEditForm}
+            loadingAdd={loadingAdd}
+            loadingSaveId={loadingSaveId}
+            loadingDeleteId={loadingDeleteId}
+            startEdit={startEdit}
+            cancelEdit={cancelEdit}
+            saveEdit={saveEdit}
+            deleteItem={deleteItem}
+            kyivFormatter={kyivFormatter}
+        />
       </div>
-
-      {/* Таймлайн */}
-      <div className={styles.timeline} ref={timelineRef}>
-        {Array.from({ length: scaleDuration + 1 }, (_, i) => {
-          const left = (i / scaleDuration) * 100;
-          return (
-            <React.Fragment key={i}>
-              <div className={styles.timelineTick} style={{ left: `${left}%` }} />
-              <span className={styles.timelineLabel} style={{ left: `${left}%` }}>
-                {scaleStart + i}
-              </span>
-            </React.Fragment>
-          );
-        })}
-
-        {list.map(a => {
-          const dt = new Date(a.startTime);
-          const endDt = new Date(dt.getTime() + a.duration * 60000);
-          const startStr = kyivFormatter.format(dt);
-          const endStr = kyivFormatter.format(endDt);
-          const startH = dt.getHours() + dt.getMinutes() / 60;
-          const left = ((startH - scaleStart) / scaleDuration) * 100;
-          const width = (a.duration / 60 / scaleDuration) * 100;
-          const bg = colorMap[a.client] || '#249b89';
-
-          return (
-            <div
-              key={a.id}
-              data-appt-id={a.id}
-              className={styles.apptWrapper}
-              style={{ left: `${left}%`, width: `${width}%` }}
-              onMouseEnter={() => toggleTooltip(a.id)}
-              onMouseLeave={() => setActiveTooltipId(null)}
-              onClick={() => toggleTooltip(a.id)}
-            >
-              <div className={styles.apptBlock} style={{ backgroundColor: bg }} />
-              <div
-                className={styles.tooltip}
-                style={{ visibility: activeTooltipId === a.id ? 'visible' : 'hidden' }}
-              >
-                <div>
-                  <strong>
-                    {startStr}–{endStr}
-                  </strong>
-                </div>
-                <div>
-                  <strong>{a.client}</strong>
-                </div>
-                <div>хв: {a.duration}</div>
-                {a.notes && <div>📝 {a.notes}</div>}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Табличный вид */}
-      <div className={styles.tableWrapper}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Час</th>
-              <th>Хв</th>
-              <th>ФІО</th>
-              <th>Заметки</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {list.map(a => {
-              const dt = new Date(a.startTime);
-              const isS = loadingSaveId === a.id;
-              const isD = loadingDeleteId === a.id;
-              if (editingId === a.id) {
-                return (
-                  <tr key={a.id}>
-                    <td data-label="Дата / Час">
-                      <input
-                        type="date"
-                        min={todayStr}
-                        value={editForm.date}
-                        onChange={e => setEditForm(f => ({ ...f, date: e.target.value }))}
-                        required
-                        disabled={isS}
-                      />
-                      <input
-                        type="time"
-                        value={editForm.time}
-                        onChange={e => setEditForm(f => ({ ...f, time: e.target.value }))}
-                        required
-                        disabled={isS}
-                      />
-                    </td>
-                    <td data-label="Хв">
-                      <input
-                        type="text"
-                        className={styles.durationInput}
-                        value={editForm.duration}
-                        onChange={e => {
-                          const v = e.target.value.replace(/\D/g, '').slice(0, 3);
-                          setEditForm(f => ({ ...f, duration: v }));
-                        }}
-                        required
-                        disabled={isS}
-                      />
-                    </td>
-                    <td data-label="ФІО">
-                      <input
-                        type="text"
-                        value={editForm.client}
-                        onChange={e => setEditForm(f => ({ ...f, client: e.target.value }))}
-                        required
-                        disabled={isS}
-                      />
-                    </td>
-                    <td data-label="Заметки">
-                      <input
-                        type="text"
-                        value={editForm.notes}
-                        onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))}
-                        disabled={isS}
-                      />
-                    </td>
-                    <td data-label="Дії" className={styles.actions}>
-                      <button title="Зберегти" onClick={() => saveEdit(a.id)} disabled={isS}>
-                        {isS ? <FaSpinner className={styles.spin} /> : <FaCheck />}
-                      </button>
-                      <button title="Скасувати" onClick={cancelEdit} disabled={isS}>
-                        <FaTimes />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              }
-              const displayTime = kyivFormatter.format(dt);
-              return (
-                <tr key={a.id}>
-                  <td data-label="Час">{displayTime}</td>
-                  <td data-label="Хв">{a.duration}</td>
-                  <td data-label="ФІО">{a.client}</td>
-                  <td data-label="Заметки">{a.notes || '-'}</td>
-                  <td data-label="Дії" className={styles.actions}>
-                    <button
-                      title="Редагувати"
-                      onClick={() => startEdit(a)}
-                      disabled={loadingAdd || loadingSaveId !== null}
-                    >
-                      <FaEdit />
-                    </button>
-                    <button title="Видалити" onClick={() => deleteItem(a.id)} disabled={isD}>
-                      {isD ? <FaSpinner className={styles.spin} /> : <FaTrash />}
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
   );
 }
