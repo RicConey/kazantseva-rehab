@@ -2,7 +2,7 @@ import { Pool } from 'pg';
 import { revalidatePath } from 'next/cache';
 
 const pool = new Pool({
-  connectionString: process.env.POSTGRES_URL,
+  connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
 
