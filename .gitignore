@@ -28,3 +28,5 @@ package-lock.json
 *.swp
 
 /hash.js
+/generated/
+/prisma/migrations/
