@@ -6,14 +6,16 @@ import styles from './AdminAppointments.module.css';
 import { parseISO, format } from 'date-fns';
 
 import NewAppointmentForm from './AdminAppointments/NewAppointmentForm';
-import DateFilter          from './AdminAppointments/DateFilter';
+import DateFilter from './AdminAppointments/DateFilter';
 import AppointmentTimeline from './AdminAppointments/AppointmentTimeline';
-import AppointmentTable    from './AdminAppointments/AppointmentTable';
+import AppointmentTable from './AdminAppointments/AppointmentTable';
+import SkeletonTimeline from './AdminAppointments/SkeletonTimeline';
+import SkeletonTable from './AdminAppointments/SkeletonTable';
 
 interface Appointment {
   id: number;
   startTime: string; // ISO UTC
-  duration: number;   // в минутах
+  duration: number; // в минутах
   client: string;
   notes?: string | null;
 }
@@ -24,27 +26,27 @@ export default function AdminAppointments() {
 
   // Formatter для Киевского времени
   const kyivFormatter = useMemo(
-      () =>
-          new Intl.DateTimeFormat('ru-RU', {
-            hour: '2-digit',
-            minute: '2-digit',
-            timeZone: 'Europe/Kyiv',
-          }),
-      []
+    () =>
+      new Intl.DateTimeFormat('ru-RU', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Europe/Kyiv',
+      }),
+    []
   );
 
   // Заменяет в тексте все ISO‑метки на формат HH:mm по Киеву
   function formatErrorMessage(msg: string) {
     return msg.replace(
-        /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+\-]\d{2}:\d{2})/g,
-        iso => {
-          try {
-            const dt = parseISO(iso);
-            return kyivFormatter.format(dt);
-          } catch {
-            return iso;
-          }
+      /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+\-]\d{2}:\d{2})/g,
+      iso => {
+        try {
+          const dt = parseISO(iso);
+          return kyivFormatter.format(dt);
+        } catch {
+          return iso;
         }
+      }
     );
   }
 
@@ -56,6 +58,7 @@ export default function AdminAppointments() {
   const [loadingAdd, setLoadingAdd] = useState(false);
   const [loadingSaveId, setLoadingSaveId] = useState<number | null>(null);
   const [loadingDeleteId, setLoadingDeleteId] = useState<number | null>(null);
+  const [loadingList, setLoadingList] = useState(true);
 
   const [activeTooltipId, setActiveTooltipId] = useState<number | null>(null);
 
@@ -71,10 +74,12 @@ export default function AdminAppointments() {
 
   // Загрузка списка для выбранной даты
   useEffect(() => {
+    setLoadingList(true);
     fetch(`/api/appointments?date=${date}`)
-        .then(r => (r.ok ? r.json() : Promise.reject()))
-        .then((data: Appointment[]) => setList(data))
-        .catch(() => setList([]));
+      .then(r => (r.ok ? r.json() : Promise.reject()))
+      .then((data: Appointment[]) => setList(data))
+      .catch(() => setList([]))
+      .finally(() => setLoadingList(false));
     setNewForm(f => ({ ...f, date }));
   }, [date]);
 
@@ -124,7 +129,6 @@ export default function AdminAppointments() {
       setError('Заповніть всі поля коректно');
       return;
     }
-    // Собираем локальное время в UTC
     const [Y, M, D] = d.split('-').map(Number);
     const [h, m] = time.split(':').map(Number);
     const localDate = new Date(Y, M - 1, D, h, m);
@@ -152,9 +156,9 @@ export default function AdminAppointments() {
         setError(formatErrorMessage(json.error || 'Не вдалося додати запис'));
       } else {
         setList(prev =>
-            [...prev, json]
-                .filter(a => parseISO(a.startTime).toISOString().slice(0, 10) === date)
-                .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+          [...prev, json]
+            .filter(a => parseISO(a.startTime).toISOString().slice(0, 10) === date)
+            .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
         );
         setNewForm({ date: todayStr, time: '', duration: '', client: '', notes: '' });
       }
@@ -219,10 +223,10 @@ export default function AdminAppointments() {
         setError(formatErrorMessage(json.error || 'Не вдалося зберегти'));
       } else {
         setList(prev =>
-            prev
-                .map(x => (x.id === id ? json : x))
-                .filter(a => parseISO(a.startTime).toISOString().slice(0, 10) === date)
-                .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+          prev
+            .map(x => (x.id === id ? json : x))
+            .filter(a => parseISO(a.startTime).toISOString().slice(0, 10) === date)
+            .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
         );
         cancelEdit();
       }
@@ -266,56 +270,67 @@ export default function AdminAppointments() {
     const cn = timelineRef.current;
     if (!tip || !cn) return;
     tip.style.transform = 'translateX(-50%)';
-    const t = tip.getBoundingClientRect(), c = cn.getBoundingClientRect();
+    const t = tip.getBoundingClientRect(),
+      c = cn.getBoundingClientRect();
     let shift = 0;
     if (t.left < c.left) shift = c.left - t.left + 4;
     else if (t.right > c.right) shift = c.right - t.right - 4;
     tip.style.transform = `translateX(calc(-50% + ${shift}px))`;
   }
 
-  const scaleStart = 8, scaleEnd = 20, scaleDuration = scaleEnd - scaleStart;
+  const scaleStart = 8,
+    scaleEnd = 20,
+    scaleDuration = scaleEnd - scaleStart;
 
   return (
-      <div className={styles.container}>
-        <h1 className={styles.title}>Запис клієнтів</h1>
-        {error && <div className={styles.error}>{error}</div>}
+    <div className={styles.container}>
+      <h1 className={styles.title}>Запис клієнтів</h1>
+      {error && <div className={styles.error}>{error}</div>}
 
-        <NewAppointmentForm
-            todayStr={todayStr}
-            newForm={newForm}
-            setNewForm={setNewForm}
-            loadingAdd={loadingAdd}
-            handleAdd={handleAdd}
-        />
+      <NewAppointmentForm
+        todayStr={todayStr}
+        newForm={newForm}
+        setNewForm={setNewForm}
+        loadingAdd={loadingAdd}
+        handleAdd={handleAdd}
+      />
 
-        <DateFilter date={date} setDate={setDate} disabled={loadingAdd} />
+      <DateFilter date={date} setDate={setDate} disabled={loadingAdd} />
 
+      {loadingList ? (
+        <SkeletonTimeline />
+      ) : (
         <AppointmentTimeline
-            list={list}
-            scaleStart={scaleStart}
-            scaleDuration={scaleDuration}
-            colorMap={colorMap}
-            timelineRef={timelineRef}
-            activeTooltipId={activeTooltipId}
-            toggleTooltip={toggleTooltip}
-            kyivFormatter={kyivFormatter}
+          list={list}
+          scaleStart={scaleStart}
+          scaleDuration={scaleDuration}
+          colorMap={colorMap}
+          timelineRef={timelineRef}
+          activeTooltipId={activeTooltipId}
+          toggleTooltip={toggleTooltip}
+          kyivFormatter={kyivFormatter}
         />
+      )}
 
+      {loadingList ? (
+        <SkeletonTable />
+      ) : (
         <AppointmentTable
-            list={list}
-            todayStr={todayStr}
-            editingId={editingId}
-            editForm={editForm}
-            setEditForm={setEditForm}
-            loadingAdd={loadingAdd}
-            loadingSaveId={loadingSaveId}
-            loadingDeleteId={loadingDeleteId}
-            startEdit={startEdit}
-            cancelEdit={cancelEdit}
-            saveEdit={saveEdit}
-            deleteItem={deleteItem}
-            kyivFormatter={kyivFormatter}
+          list={list}
+          todayStr={todayStr}
+          editingId={editingId}
+          editForm={editForm}
+          setEditForm={setEditForm}
+          loadingAdd={loadingAdd}
+          loadingSaveId={loadingSaveId}
+          loadingDeleteId={loadingDeleteId}
+          startEdit={startEdit}
+          cancelEdit={cancelEdit}
+          saveEdit={saveEdit}
+          deleteItem={deleteItem}
+          kyivFormatter={kyivFormatter}
         />
-      </div>
+      )}
+    </div>
   );
 }
