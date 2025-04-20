@@ -1,11 +1,10 @@
+// File: /components/AdminAppointments.tsx
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import styles from './AdminAppointments.module.css';
 import { parseISO, format } from 'date-fns';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
+import { toast } from 'react-toastify'; // оставляем только toast
 import NewAppointmentForm from './AdminAppointments/NewAppointmentForm';
 import DateFilter from './AdminAppointments/DateFilter';
 import AppointmentTimeline from './AdminAppointments/AppointmentTimeline';
@@ -63,12 +62,11 @@ export default function AdminAppointments() {
     notes: '',
   });
   const [newFormErrors, setNewFormErrors] = useState<Record<string, boolean>>({});
-
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState(newForm);
   const [editFormErrors, setEditFormErrors] = useState<Record<string, boolean>>({});
 
-  // загрузка
+  // Загрузка списка
   useEffect(() => {
     setLoadingList(true);
     fetch(`/api/appointments?date=${date}`)
@@ -79,7 +77,8 @@ export default function AdminAppointments() {
     setNewForm(f => ({ ...f, date }));
   }, [date]);
 
-  // цвета
+  // Генерация цветов
+  const [colorMap, setColorMap] = useState<Record<string, string>>({});
   useEffect(() => {
     const m: Record<string, string> = {};
     list.forEach(a => {
@@ -89,12 +88,10 @@ export default function AdminAppointments() {
         m[a.client] = `hsl(${Math.abs(h) % 360},70%,80%)`;
       }
     });
-    Object.keys(m).length && setColorMap(m);
+    setColorMap(m);
   }, [list]);
 
-  const [colorMap, setColorMap] = useState<Record<string, string>>({});
-
-  // тултипы
+  // Закрытие тултипов вне записи
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (!(e.target as HTMLElement).closest('[data-appt-id]')) {
@@ -115,7 +112,7 @@ export default function AdminAppointments() {
     });
   }
 
-  // Добавить
+  // Добавление
   async function handleAdd(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setNewFormErrors({});
@@ -239,7 +236,7 @@ export default function AdminAppointments() {
     }
   }
 
-  // Удалить
+  // Удаление
   async function deleteItem(id: number) {
     setLoadingDeleteId(id);
     try {
@@ -258,32 +255,7 @@ export default function AdminAppointments() {
     }
   }
 
-  // Тултипы
-  function toggleTooltip(id: number) {
-    setActiveTooltipId(cur => {
-      const next = cur === id ? null : id;
-      if (next !== null) setTimeout(() => adjustTooltip(id), 0);
-      return next;
-    });
-  }
-  function adjustTooltip(id: number) {
-    const wr = document.querySelector(`[data-appt-id="${id}"]`) as HTMLElement;
-    const tip = wr?.querySelector(`.${styles.tooltip}`) as HTMLElement;
-    const cn = timelineRef.current;
-    if (!tip || !cn) return;
-    tip.style.transform = 'translateX(-50%)';
-    const t = tip.getBoundingClientRect(),
-      c = cn.getBoundingClientRect();
-    let shift = 0;
-    if (t.left < c.left) shift = c.left - t.left + 4;
-    else if (t.right > c.right) shift = c.right - t.right - 4;
-    tip.style.transform = `translateX(calc(-50% + ${shift}px))`;
-  }
-
-  const scaleStart = 8,
-    scaleEnd = 20,
-    scaleDuration = scaleEnd - scaleStart;
-
+  // Рендер
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Запис клієнтів</h1>
@@ -301,12 +273,12 @@ export default function AdminAppointments() {
 
       <AppointmentTimeline
         list={list}
-        scaleStart={scaleStart}
-        scaleDuration={scaleDuration}
+        scaleStart={8}
+        scaleDuration={12}
         colorMap={colorMap}
         timelineRef={timelineRef}
         activeTooltipId={activeTooltipId}
-        toggleTooltip={toggleTooltip}
+        toggleTooltip={() => {}}
         kyivFormatter={kyivFormatter}
       />
 
@@ -330,8 +302,6 @@ export default function AdminAppointments() {
           errorFields={editFormErrors}
         />
       )}
-
-      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 }
