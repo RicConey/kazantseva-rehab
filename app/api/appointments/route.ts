@@ -1,84 +1,74 @@
-// app/api/appointments/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authConfig } from '../auth/[...nextauth]/auth.config';
 import prisma from '../../../lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { formatInTimeZone } from 'date-fns-tz';
 
-async function requireAdmin() {
-  const session = await getServerSession(authConfig);
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-}
+const TZ = 'Europe/Kyiv';
 
 export async function GET(req: NextRequest) {
-  await requireAdmin();
+  const url = new URL(req.url);
+  const date = url.searchParams.get('date');
+  if (!date) return NextResponse.json([], { status: 200 });
 
-  const { searchParams } = new URL(req.url);
-  const dateParam = searchParams.get('date');
+  const startOfDay = new Date(date);
+  const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
 
-  const dayStart = dateParam
-    ? new Date(`${dateParam}T00:00:00.000Z`)
-    : new Date(new Date().setHours(0, 0, 0, 0));
-  const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
-
-  const list = await prisma.appointment.findMany({
-    where: { startTime: { gte: dayStart, lt: dayEnd } },
+  const appointments = await prisma.appointment.findMany({
+    where: {
+      startTime: {
+        gte: startOfDay.toISOString(),
+        lt: endOfDay.toISOString(),
+      },
+    },
     orderBy: { startTime: 'asc' },
   });
 
-  return NextResponse.json(list, {
-    headers: {
-      'Cache-Control': 's-maxage=86400, stale-while-revalidate=0',
-    },
-  });
+  return NextResponse.json(appointments);
 }
 
 export async function POST(req: NextRequest) {
-  await requireAdmin();
+  const { startTime, duration, client, notes } = await req.json();
+  const newStart = new Date(startTime);
+  const newEnd = new Date(newStart.getTime() + duration * 60000);
 
-  const { client, startTime, duration, notes } = await req.json();
-  const start = new Date(startTime);
-  const dur = Number(duration);
-  const end = new Date(start.getTime() + dur * 60000);
-
-  const dayStart = new Date(start);
-  dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(start);
-  dayEnd.setHours(23, 59, 59, 999);
+  // границы дня
+  const dayStart = new Date(newStart.getFullYear(), newStart.getMonth(), newStart.getDate());
+  const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
 
   const existing = await prisma.appointment.findMany({
-    where: { startTime: { gte: dayStart, lt: dayEnd } },
+    where: {
+      startTime: {
+        gte: dayStart.toISOString(),
+        lt: dayEnd.toISOString(),
+      },
+    },
   });
 
-  for (const appt of existing) {
-    const s = new Date(appt.startTime);
-    const e = new Date(s.getTime() + appt.duration * 60000);
-    if (start < e && s < end) {
-      // Показываем время конфликта в часовом поясе Киева
-      const conflictAt = formatInTimeZone(s, 'Europe/Kyiv', 'HH:mm');
-      const requested = formatInTimeZone(start, 'Europe/Kyiv', 'HH:mm');
-      return NextResponse.json(
-        {
-          error: `Неможливо створити запис о ${requested}: вже є сеанс о ${conflictAt}`,
-        },
-        { status: 400 }
-      );
-    }
+  const conflict = existing.find(a => {
+    const s = new Date(a.startTime);
+    const e = new Date(s.getTime() + a.duration * 60000);
+    return newStart < e && s < newEnd;
+  });
+
+  if (conflict) {
+    const newStr = formatInTimeZone(newStart, TZ, 'dd.MM.yyyy HH:mm');
+    const cdt = new Date(conflict.startTime);
+    const conflictStr = formatInTimeZone(cdt, TZ, 'dd.MM.yyyy HH:mm');
+    return NextResponse.json(
+      { error: `Неможливо на ${newStr}, бо вже є сеанс ${conflictStr}` },
+      { status: 400 }
+    );
   }
 
   const appt = await prisma.appointment.create({
     data: {
-      client,
-      startTime: start,
-      duration: dur,
+      startTime: newStart.toISOString(),
+      duration,
+      client: client.trim(),
       notes: notes?.trim() || null,
     },
   });
 
   revalidatePath('/api/appointments');
-
-  return NextResponse.json(appt);
+  return NextResponse.json(appt, { status: 201 });
 }

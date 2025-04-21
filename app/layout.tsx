@@ -1,7 +1,4 @@
-// app/layout.tsx
 import '../styles/globals.css';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import AnalyticsProvider from './analytics-provider';
 import Header from './Header';
 import Head from 'next/head';
@@ -19,7 +16,6 @@ export const metadata = {
     "Професійна реабілітація, остеопатія, масаж, фітобочка, краніосакральна терапія у Вишневому Київська область. Відновлення здоров'я, зменшення болю, корекція постави.",
   keywords:
     'реабілітація Вишневе, остеопатія Вишневе, масаж Вишневе, краніосакральна терапія Вишневе, фітобочка Вишневе, вісцеральна терапія Вишневе',
-  authors: { name: 'Наталія Казанцева' },
   icons: {
     icon: '/favicon.ico',
   },
@@ -44,7 +40,7 @@ export const metadata = {
   robots: 'index, follow',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }) {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
@@ -76,9 +72,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </Head>
       <body>
-        {/* Web Component back-button */}
+        {/* Глобальное подключение Web Component "back-button" */}
         <Script src="/back-button.js" strategy="beforeInteractive" />
-
         <Providers>
           <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
             <Header />
@@ -88,10 +83,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             &copy; {new Date().getFullYear()} Kazantseva Rehabilitation. Всі права захищені.
           </footer>
         </Providers>
-
-        {/* ToastContainer вынесён сюда, в корень */}
-        <ToastContainer position="top-right" autoClose={3000} />
-
         <AnalyticsProvider />
       </body>
     </html>

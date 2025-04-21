@@ -1,70 +1,71 @@
-// app/api/appointments/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authConfig } from '../../auth/[...nextauth]/auth.config';
 import prisma from '../../../../lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { formatInTimeZone } from 'date-fns-tz';
 
-async function requireAdmin() {
-  const session = await getServerSession(authConfig);
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+const TZ = 'Europe/Kyiv';
+
+function getIdFromUrl(url: string): number {
+  const parts = new URL(url).pathname.split('/');
+  return Number(parts[parts.length - 1]);
 }
 
-export async function PUT(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
-  const { id: idParam } = await ctx.params;
-  const id = Number(idParam);
+export async function PUT(req: NextRequest) {
+  const id = getIdFromUrl(req.url);
+  const { startTime, duration, client, notes } = await req.json();
+  const newStart = new Date(startTime);
+  const newEnd = new Date(newStart.getTime() + duration * 60000);
 
-  const unauth = await requireAdmin();
-  if (unauth) return unauth;
-
-  const { client, startTime, duration, notes } = await req.json();
-  const start = new Date(startTime);
-  const dur = Number(duration);
-  const end = new Date(start.getTime() + dur * 60000);
-
-  // Границы дня
-  const dayStart = new Date(start);
-  dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(start);
-  dayEnd.setHours(23, 59, 59, 999);
+  const dayStart = new Date(newStart.getFullYear(), newStart.getMonth(), newStart.getDate());
+  const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
 
   const existing = await prisma.appointment.findMany({
     where: {
-      id: { not: id },
-      startTime: { gte: dayStart, lt: dayEnd },
+      AND: [
+        { id: { not: id } },
+        {
+          startTime: {
+            gte: dayStart.toISOString(),
+            lt: dayEnd.toISOString(),
+          },
+        },
+      ],
     },
   });
 
-  for (const appt of existing) {
-    const s = new Date(appt.startTime);
-    const e = new Date(s.getTime() + appt.duration * 60000);
-    if (start < e && s < end) {
-      // Форматируем оба времени в часовой пояс Киева
-      const requested = formatInTimeZone(start, 'Europe/Kyiv', 'HH:mm');
-      const conflictAt = formatInTimeZone(s, 'Europe/Kyiv', 'HH:mm');
-      return NextResponse.json(
-        {
-          error: `Неможливо перемістити сеанс на ${requested}: вже є сеанс о ${conflictAt}`,
-        },
-        { status: 400 }
-      );
-    }
+  const conflict = existing.find(a => {
+    const s = new Date(a.startTime);
+    const e = new Date(s.getTime() + a.duration * 60000);
+    return newStart < e && s < newEnd;
+  });
+
+  if (conflict) {
+    const newStr = formatInTimeZone(newStart, TZ, 'dd.MM.yyyy HH:mm');
+    const cdt = new Date(conflict.startTime);
+    const conflictStr = formatInTimeZone(cdt, TZ, 'dd.MM.yyyy HH:mm');
+    return NextResponse.json(
+      { error: `Неможливо на ${newStr}, бо вже є сеанс ${conflictStr}` },
+      { status: 400 }
+    );
   }
 
   const updated = await prisma.appointment.update({
     where: { id },
     data: {
-      client,
-      startTime: start,
-      duration: dur,
+      startTime: newStart.toISOString(),
+      duration,
+      client: client.trim(),
       notes: notes?.trim() || null,
     },
   });
 
   revalidatePath('/api/appointments');
-
   return NextResponse.json(updated);
+}
+
+export async function DELETE(req: NextRequest) {
+  const id = getIdFromUrl(req.url);
+  await prisma.appointment.delete({ where: { id } });
+  revalidatePath('/api/appointments');
+  return NextResponse.json({ success: true });
 }

@@ -1,3 +1,4 @@
+// components/AdminAppointments/NewAppointmentForm.tsx
 'use client';
 
 import React from 'react';
@@ -13,19 +14,11 @@ interface Props {
     client: string;
     notes: string;
   };
-  setNewForm: React.Dispatch<
-    React.SetStateAction<{
-      date: string;
-      time: string;
-      duration: string;
-      client: string;
-      notes: string;
-    }>
-  >;
+  setNewForm: React.Dispatch<React.SetStateAction<any>>;
   loadingAdd: boolean;
   handleAdd: (e: React.FormEvent<HTMLFormElement>) => void;
-  // ← вот это поле добавили:
   errorFields: Record<string, boolean>;
+  errorMessage?: string;
 }
 
 export default function NewAppointmentForm({
@@ -35,6 +28,7 @@ export default function NewAppointmentForm({
   loadingAdd,
   handleAdd,
   errorFields,
+  errorMessage,
 }: Props) {
   const cls = (f: string) => (errorFields[f] ? styles.inputError : '');
 
@@ -90,6 +84,7 @@ export default function NewAppointmentForm({
         onChange={e => setNewForm(f => ({ ...f, notes: e.target.value }))}
         disabled={loadingAdd}
       />
+
       <button type="submit" disabled={loadingAdd}>
         {loadingAdd ? (
           <>
@@ -99,6 +94,8 @@ export default function NewAppointmentForm({
           'Додати запис'
         )}
       </button>
+
+      {errorMessage && <div className={styles.errorField}>{errorMessage}</div>}
     </form>
   );
 }

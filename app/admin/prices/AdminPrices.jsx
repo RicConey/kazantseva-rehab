@@ -2,7 +2,17 @@
 
 import React, { useState, useEffect } from 'react';
 import styles from './AdminPrices.module.css';
-import { FaEdit, FaTrash, FaArrowUp, FaArrowDown, FaPlus, FaTimes, FaCheck } from 'react-icons/fa';
+import {
+  FaEdit,
+  FaTrash,
+  FaArrowUp,
+  FaArrowDown,
+  FaPlus,
+  FaTimes,
+  FaCheck,
+  FaSpinner,
+} from 'react-icons/fa';
+import BackButton from '../../../components/BackButton';
 
 export default function AdminPrices() {
   const [prices, setPrices] = useState([]);
@@ -14,6 +24,7 @@ export default function AdminPrices() {
   });
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
+  const [loadingAction, setLoadingAction] = useState(null); // ← новинка
 
   useEffect(() => {
     fetchPrices();
@@ -42,12 +53,16 @@ export default function AdminPrices() {
 
   const handleSubmit = async e => {
     e.preventDefault();
+    if (loadingAction) return;
+
     try {
+      setLoadingAction(editingId ? 'update' : 'add');
       const durationArr = form.duration.filter(d => d.trim() !== '');
       const priceArr = form.price.filter(p => p.trim() !== '');
 
       if (durationArr.length === 0 || priceArr.length === 0) {
         setError('Мінімум одна пара тривалість/ціна обовʼязкова');
+        setLoadingAction(null);
         return;
       }
 
@@ -57,11 +72,7 @@ export default function AdminPrices() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          service: form.service,
-          duration: durationArr,
-          price: priceArr,
-        }),
+        body: JSON.stringify({ service: form.service, duration: durationArr, price: priceArr }),
       });
 
       if (!res.ok) throw new Error('Помилка при збереженні');
@@ -70,15 +81,13 @@ export default function AdminPrices() {
       fetchPrices();
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoadingAction(null);
     }
   };
 
   const resetForm = () => {
-    setForm({
-      service: '',
-      duration: ['', '', '', ''],
-      price: ['', '', '', ''],
-    });
+    setForm({ service: '', duration: ['', '', '', ''], price: ['', '', '', ''] });
     setEditingId(null);
     setFormVisible(false);
     setError('');
@@ -100,27 +109,38 @@ export default function AdminPrices() {
 
   const handleDelete = async id => {
     if (!confirm('Ви впевнені, що хочете видалити запис?')) return;
+    if (loadingAction) return;
+
     try {
+      setLoadingAction(`delete-${id}`);
       const res = await fetch(`/api/prices/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Помилка при видаленні');
       fetchPrices();
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoadingAction(null);
     }
   };
 
   const moveRecord = async (id, direction) => {
+    if (loadingAction) return;
     try {
+      setLoadingAction(`move-${id}-${direction}`);
       const res = await fetch(`/api/prices/${id}/move?direction=${direction}`, { method: 'PUT' });
       if (!res.ok) throw new Error('Помилка при переміщенні');
       fetchPrices();
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoadingAction(null);
     }
   };
 
   return (
     <div className={styles.container}>
+      <BackButton />
+
       <h1 className={styles.title}>Адмінка: керування цінами</h1>
 
       {error && <div className={styles.error}>{error}</div>}
@@ -166,23 +186,14 @@ export default function AdminPrices() {
             </div>
           ))}
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
-            <button
-              type="submit"
-              title="Додати"
-              style={{
-                padding: '6px 12px',
-                backgroundColor: '#249B89',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-              }}
-            >
-              <FaPlus /> Додати
+            <button type="submit" title="Додати" disabled={loadingAction === 'add'}>
+              {loadingAction === 'add' ? (
+                <FaSpinner className={styles.spin} />
+              ) : (
+                <>
+                  <FaPlus /> Додати
+                </>
+              )}
             </button>
           </div>
         </form>
@@ -232,8 +243,14 @@ export default function AdminPrices() {
                           </div>
                         ))}
                         <div className={styles.actions}>
-                          <button type="submit">
-                            <FaCheck /> Оновити
+                          <button type="submit" disabled={loadingAction === 'update'}>
+                            {loadingAction === 'update' ? (
+                              <FaSpinner className={styles.spin} />
+                            ) : (
+                              <>
+                                <FaCheck /> Оновити
+                              </>
+                            )}
                           </button>
                           <button type="button" onClick={resetForm}>
                             <FaTimes /> Скасувати
@@ -260,17 +277,38 @@ export default function AdminPrices() {
                       )}
                     </td>
                     <td className={styles.actions}>
-                      <button onClick={() => moveRecord(item.id, 'up')}>
-                        <FaArrowUp />
+                      <button
+                        onClick={() => moveRecord(item.id, 'up')}
+                        disabled={loadingAction === `move-${item.id}-up`}
+                      >
+                        {loadingAction === `move-${item.id}-up` ? (
+                          <FaSpinner className={styles.spin} />
+                        ) : (
+                          <FaArrowUp />
+                        )}
                       </button>
-                      <button onClick={() => moveRecord(item.id, 'down')}>
-                        <FaArrowDown />
+                      <button
+                        onClick={() => moveRecord(item.id, 'down')}
+                        disabled={loadingAction === `move-${item.id}-down`}
+                      >
+                        {loadingAction === `move-${item.id}-down` ? (
+                          <FaSpinner className={styles.spin} />
+                        ) : (
+                          <FaArrowDown />
+                        )}
                       </button>
                       <button onClick={() => handleEdit(item)}>
                         <FaEdit />
                       </button>
-                      <button onClick={() => handleDelete(item.id)}>
-                        <FaTrash />
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        disabled={loadingAction === `delete-${item.id}`}
+                      >
+                        {loadingAction === `delete-${item.id}` ? (
+                          <FaSpinner className={styles.spin} />
+                        ) : (
+                          <FaTrash />
+                        )}
                       </button>
                     </td>
                   </>
@@ -280,6 +318,7 @@ export default function AdminPrices() {
           </tbody>
         </table>
       </div>
+      <BackButton />
     </div>
   );
 }

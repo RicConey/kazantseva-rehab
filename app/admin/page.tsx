@@ -1,22 +1,53 @@
 'use client';
 
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
+import { useState } from 'react';
+import { FaSpinner } from 'react-icons/fa';
 import styles from './AdminHome.module.css';
 
 export default function AdminHome() {
+  const [loadingTarget, setLoadingTarget] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handleNavigate = async (href: string) => {
+    if (loadingTarget) return;
+    setLoadingTarget(href);
+    router.push(href);
+  };
+
+  const handleLogout = async () => {
+    if (loadingTarget) return;
+    setLoadingTarget('logout');
+    await signOut({ callbackUrl: '/auth/signin' });
+  };
+
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Панель администратора</h1>
       <div className={styles.buttons}>
-        <Link href="/admin/prices" className={styles.link}>
-          <button className={styles.button}>Прайс</button>
-        </Link>
-        <Link href="/admin/appointments" className={styles.link}>
-          <button className={styles.button}>Запись приёмов</button>
-        </Link>
-        <button className={styles.button} onClick={() => signOut({ callbackUrl: '/auth/signin' })}>
-          Выход
+        <button
+          className={styles.button}
+          onClick={() => handleNavigate('/admin/prices')}
+          disabled={loadingTarget !== null}
+        >
+          {loadingTarget === '/admin/prices' ? <FaSpinner className={styles.spin} /> : 'Прайс'}
+        </button>
+
+        <button
+          className={styles.button}
+          onClick={() => handleNavigate('/admin/appointments')}
+          disabled={loadingTarget !== null}
+        >
+          {loadingTarget === '/admin/appointments' ? (
+            <FaSpinner className={styles.spin} />
+          ) : (
+            'Запись приёмов'
+          )}
+        </button>
+
+        <button className={styles.button} onClick={handleLogout} disabled={loadingTarget !== null}>
+          {loadingTarget === 'logout' ? <FaSpinner className={styles.spin} /> : 'Выход'}
         </button>
       </div>
     </div>

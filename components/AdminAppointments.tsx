@@ -1,15 +1,16 @@
-// File: /components/AdminAppointments.tsx
+// components/AdminAppointments.tsx
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import styles from './AdminAppointments.module.css';
 import { parseISO, format } from 'date-fns';
-import { toast } from 'react-toastify'; // оставляем только toast
+import { toast } from 'react-toastify';
 import NewAppointmentForm from './AdminAppointments/NewAppointmentForm';
 import DateFilter from './AdminAppointments/DateFilter';
 import AppointmentTimeline from './AdminAppointments/AppointmentTimeline';
 import AppointmentTable from './AdminAppointments/AppointmentTable';
 import SkeletonTable from './AdminAppointments/SkeletonTable';
+import BackButton from '@components/BackButton';
 
 interface Appointment {
   id: number;
@@ -22,7 +23,6 @@ interface Appointment {
 export default function AdminAppointments() {
   const todayStr = new Date().toISOString().slice(0, 10);
   const timelineRef = useRef<HTMLDivElement>(null);
-
   const kyivFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat('ru-RU', {
@@ -33,19 +33,7 @@ export default function AdminAppointments() {
     []
   );
 
-  function formatErrorMessage(msg: string) {
-    return msg.replace(
-      /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+\-]\d{2}:\d{2})/g,
-      iso => {
-        try {
-          return kyivFormatter.format(parseISO(iso));
-        } catch {
-          return iso;
-        }
-      }
-    );
-  }
-
+  // Общие стейты
   const [date, setDate] = useState(todayStr);
   const [list, setList] = useState<Appointment[]>([]);
   const [loadingAdd, setLoadingAdd] = useState(false);
@@ -54,6 +42,7 @@ export default function AdminAppointments() {
   const [loadingList, setLoadingList] = useState(true);
   const [activeTooltipId, setActiveTooltipId] = useState<number | null>(null);
 
+  // Для новой формы
   const [newForm, setNewForm] = useState({
     date: todayStr,
     time: '',
@@ -62,22 +51,16 @@ export default function AdminAppointments() {
     notes: '',
   });
   const [newFormErrors, setNewFormErrors] = useState<Record<string, boolean>>({});
+  const [newFormErrorMessage, setNewFormErrorMessage] = useState<string | null>(null);
+
+  // Для редактирования
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState(newForm);
   const [editFormErrors, setEditFormErrors] = useState<Record<string, boolean>>({});
+  const [editErrorMessage, setEditErrorMessage] = useState<string | null>(null);
+  const [errorEditId, setErrorEditId] = useState<number | null>(null);
 
-  // Загрузка списка
-  useEffect(() => {
-    setLoadingList(true);
-    fetch(`/api/appointments?date=${date}`)
-      .then(r => (r.ok ? r.json() : Promise.reject()))
-      .then((data: Appointment[]) => setList(data))
-      .catch(() => setList([]))
-      .finally(() => setLoadingList(false));
-    setNewForm(f => ({ ...f, date }));
-  }, [date]);
-
-  // Генерация цветов
+  // Цвета клиентов
   const [colorMap, setColorMap] = useState<Record<string, string>>({});
   useEffect(() => {
     const m: Record<string, string> = {};
@@ -91,7 +74,18 @@ export default function AdminAppointments() {
     setColorMap(m);
   }, [list]);
 
-  // Закрытие тултипов вне записи
+  // Загрузка списка
+  useEffect(() => {
+    setLoadingList(true);
+    fetch(`/api/appointments?date=${date}`)
+      .then(r => (r.ok ? r.json() : Promise.reject()))
+      .then((data: Appointment[]) => setList(data))
+      .catch(() => setList([]))
+      .finally(() => setLoadingList(false));
+    setNewForm(f => ({ ...f, date }));
+  }, [date]);
+
+  // Клик вне — закрываем тултип
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (!(e.target as HTMLElement).closest('[data-appt-id]')) {
@@ -116,6 +110,8 @@ export default function AdminAppointments() {
   async function handleAdd(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setNewFormErrors({});
+    setNewFormErrorMessage(null);
+
     const errs: Record<string, boolean> = {};
     const { date: d, time, duration, client, notes } = newForm;
     const durNum = parseInt(duration, 10);
@@ -125,16 +121,19 @@ export default function AdminAppointments() {
     if (!client.trim()) errs.client = true;
     if (Object.keys(errs).length) {
       setNewFormErrors(errs);
-      toast.error('Поля заповнені некоректно');
+      setNewFormErrorMessage('Поля заповнені некоректно');
       return;
     }
+
     const [Y, M, D] = d.split('-').map(Number);
     const [h, m] = time.split(':').map(Number);
     const ld = new Date(Y, M - 1, D, h, m);
+
     if (isOverlap(ld, durNum)) {
-      toast.error('Час перекривається з іншими сеансами');
+      setNewFormErrorMessage('Час перекривається з іншими сеансами');
       return;
     }
+
     setLoadingAdd(true);
     try {
       const res = await fetch('/api/appointments', {
@@ -149,7 +148,7 @@ export default function AdminAppointments() {
       });
       const json = await res.json();
       if (!res.ok) {
-        toast.error(formatErrorMessage(json.error || 'Не вдалося додати запис'));
+        setNewFormErrorMessage(json.error || 'Не вдалося додати запис');
       } else {
         setList(prev =>
           [...prev, json]
@@ -157,10 +156,9 @@ export default function AdminAppointments() {
             .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
         );
         setNewForm({ date: todayStr, time: '', duration: '', client: '', notes: '' });
-        toast.success('Запис додано');
       }
     } catch {
-      toast.error('Не вдалося додати запис');
+      setNewFormErrorMessage('Не вдалося додати запис');
     } finally {
       setLoadingAdd(false);
     }
@@ -178,13 +176,22 @@ export default function AdminAppointments() {
       notes: a.notes || '',
     });
     setEditFormErrors({});
+    setEditErrorMessage(null);
+    setErrorEditId(null);
   }
+
   function cancelEdit() {
     setEditingId(null);
     setEditFormErrors({});
+    setEditErrorMessage(null);
+    setErrorEditId(null);
   }
+
   async function saveEdit(id: number) {
     setEditFormErrors({});
+    setEditErrorMessage(null);
+    setErrorEditId(null);
+
     const errs: Record<string, boolean> = {};
     const { date: d, time, duration, client, notes } = editForm;
     const durNum = parseInt(duration, 10);
@@ -194,16 +201,21 @@ export default function AdminAppointments() {
     if (!client.trim()) errs.client = true;
     if (Object.keys(errs).length) {
       setEditFormErrors(errs);
-      toast.error('Поля заповнені некоректно');
+      setEditErrorMessage('Поля заповнені некоректно');
+      setErrorEditId(id);
       return;
     }
+
     const [Y, M, D] = d.split('-').map(Number);
     const [h, m] = time.split(':').map(Number);
     const ld = new Date(Y, M - 1, D, h, m);
+
     if (isOverlap(ld, durNum, id)) {
-      toast.error('Час перекривається з іншими сеансами');
+      setEditErrorMessage('Час перекривається з іншими сеансами');
+      setErrorEditId(id);
       return;
     }
+
     setLoadingSaveId(id);
     try {
       const res = await fetch(`/api/appointments/${id}`, {
@@ -218,7 +230,8 @@ export default function AdminAppointments() {
       });
       const json = await res.json();
       if (!res.ok) {
-        toast.error(formatErrorMessage(json.error || 'Не вдалося зберегти'));
+        setEditErrorMessage(json.error || 'Не вдалося зберегти');
+        setErrorEditId(id);
       } else {
         setList(prev =>
           prev
@@ -227,26 +240,24 @@ export default function AdminAppointments() {
             .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
         );
         cancelEdit();
-        toast.success('Зміни збережено');
       }
     } catch {
-      toast.error('Не вдалося зберегти');
+      setEditErrorMessage('Не вдалося зберегти');
+      setErrorEditId(id);
     } finally {
       setLoadingSaveId(null);
     }
   }
 
-  // Удаление
+  // Удаление (без инлайн‑ошибок)
   async function deleteItem(id: number) {
     setLoadingDeleteId(id);
     try {
       const res = await fetch(`/api/appointments/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        setList(prev => prev.filter(x => x.id !== id));
-        toast.success('Запис видалено');
+      if (!res.ok) {
+        toast.error('Не вдалося видалити');
       } else {
-        const json = await res.json();
-        toast.error(formatErrorMessage(json.error || 'Не вдалося видалити'));
+        setList(prev => prev.filter(x => x.id !== id));
       }
     } catch {
       toast.error('Не вдалося видалити');
@@ -255,9 +266,10 @@ export default function AdminAppointments() {
     }
   }
 
-  // Рендер
   return (
     <div className={styles.container}>
+      <BackButton />
+
       <h1 className={styles.title}>Запис клієнтів</h1>
 
       <NewAppointmentForm
@@ -267,6 +279,7 @@ export default function AdminAppointments() {
         loadingAdd={loadingAdd}
         handleAdd={handleAdd}
         errorFields={newFormErrors}
+        errorMessage={newFormErrorMessage}
       />
 
       <DateFilter date={date} setDate={setDate} disabled={loadingAdd} />
@@ -274,11 +287,11 @@ export default function AdminAppointments() {
       <AppointmentTimeline
         list={list}
         scaleStart={8}
-        scaleDuration={12}
+        scaleDuration={13.5}
         colorMap={colorMap}
         timelineRef={timelineRef}
         activeTooltipId={activeTooltipId}
-        toggleTooltip={() => {}}
+        toggleTooltip={id => setActiveTooltipId(prev => (prev === id ? null : id))}
         kyivFormatter={kyivFormatter}
       />
 
@@ -300,8 +313,10 @@ export default function AdminAppointments() {
           deleteItem={deleteItem}
           kyivFormatter={kyivFormatter}
           errorFields={editFormErrors}
+          errorMessage={errorEditId === editingId ? editErrorMessage : undefined}
         />
       )}
+      <BackButton />
     </div>
   );
 }

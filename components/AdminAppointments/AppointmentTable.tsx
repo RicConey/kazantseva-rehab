@@ -29,10 +29,11 @@ interface Props {
   loadingDeleteId: number | null;
   startEdit: (a: Appointment) => void;
   cancelEdit: () => void;
-  saveEdit: (id: number) => Promise<void>;
-  deleteItem: (id: number) => Promise<void>;
+  saveEdit: (id: number) => void;
+  deleteItem: (id: number) => void;
   kyivFormatter: Intl.DateTimeFormat;
   errorFields: Record<string, boolean>;
+  errorMessage?: string;
 }
 
 export default function AppointmentTable({
@@ -50,6 +51,7 @@ export default function AppointmentTable({
   deleteItem,
   kyivFormatter,
   errorFields,
+  errorMessage,
 }: Props) {
   const cls = (f: string) => (errorFields[f] ? styles.inputError : '');
 
@@ -69,26 +71,39 @@ export default function AppointmentTable({
           {list.map(a => {
             const isSaving = loadingSaveId === a.id;
             const isDeleting = loadingDeleteId === a.id;
-            const displayTime = kyivFormatter.format(new Date(a.startTime));
+
+            // Вычисляем начало и конец сеанса:
+            const startDt = new Date(a.startTime);
+            const endDt = new Date(startDt.getTime() + a.duration * 60000);
+            const displayTime = `${kyivFormatter.format(startDt)}–${kyivFormatter.format(endDt)}`;
 
             if (editingId === a.id) {
               return (
                 <React.Fragment key={a.id}>
-                  {/* Desktop inline-edit row */}
                   <tr className={styles.editingRow}>
                     <td data-label="Дата / Час">
                       <input
                         type="date"
                         min={todayStr}
                         value={editForm.date}
-                        onChange={e => setEditForm((f: any) => ({ ...f, date: e.target.value }))}
+                        onChange={e =>
+                          setEditForm((f: any) => ({
+                            ...f,
+                            date: e.target.value,
+                          }))
+                        }
                         disabled={isSaving}
                         className={cls('date')}
                       />
                       <input
                         type="time"
                         value={editForm.time}
-                        onChange={e => setEditForm((f: any) => ({ ...f, time: e.target.value }))}
+                        onChange={e =>
+                          setEditForm((f: any) => ({
+                            ...f,
+                            time: e.target.value,
+                          }))
+                        }
                         disabled={isSaving}
                         className={cls('time')}
                       />
@@ -100,7 +115,10 @@ export default function AppointmentTable({
                         value={editForm.duration}
                         onChange={e => {
                           const v = e.target.value.replace(/\D/g, '').slice(0, 3);
-                          setEditForm((f: any) => ({ ...f, duration: v }));
+                          setEditForm((f: any) => ({
+                            ...f,
+                            duration: v,
+                          }));
                         }}
                         disabled={isSaving}
                       />
@@ -109,7 +127,12 @@ export default function AppointmentTable({
                       <input
                         type="text"
                         value={editForm.client}
-                        onChange={e => setEditForm((f: any) => ({ ...f, client: e.target.value }))}
+                        onChange={e =>
+                          setEditForm((f: any) => ({
+                            ...f,
+                            client: e.target.value,
+                          }))
+                        }
                         disabled={isSaving}
                         className={cls('client')}
                       />
@@ -118,7 +141,12 @@ export default function AppointmentTable({
                       <input
                         type="text"
                         value={editForm.notes}
-                        onChange={e => setEditForm((f: any) => ({ ...f, notes: e.target.value }))}
+                        onChange={e =>
+                          setEditForm((f: any) => ({
+                            ...f,
+                            notes: e.target.value,
+                          }))
+                        }
                         disabled={isSaving}
                       />
                     </td>
@@ -129,10 +157,10 @@ export default function AppointmentTable({
                       <button onClick={cancelEdit} disabled={isSaving}>
                         <FaTimes />
                       </button>
+                      {errorMessage && <div className={styles.errorField}>{errorMessage}</div>}
                     </td>
                   </tr>
 
-                  {/* Mobile inline-edit row */}
                   <tr className={styles.mobileEditingRow}>
                     <td colSpan={5}>
                       <div className={styles.field}>
@@ -141,14 +169,24 @@ export default function AppointmentTable({
                           type="date"
                           min={todayStr}
                           value={editForm.date}
-                          onChange={e => setEditForm((f: any) => ({ ...f, date: e.target.value }))}
+                          onChange={e =>
+                            setEditForm((f: any) => ({
+                              ...f,
+                              date: e.target.value,
+                            }))
+                          }
                           disabled={isSaving}
                           className={cls('date')}
                         />
                         <input
                           type="time"
                           value={editForm.time}
-                          onChange={e => setEditForm((f: any) => ({ ...f, time: e.target.value }))}
+                          onChange={e =>
+                            setEditForm((f: any) => ({
+                              ...f,
+                              time: e.target.value,
+                            }))
+                          }
                           disabled={isSaving}
                           className={cls('time')}
                         />
@@ -161,7 +199,10 @@ export default function AppointmentTable({
                           value={editForm.duration}
                           onChange={e => {
                             const v = e.target.value.replace(/\D/g, '').slice(0, 3);
-                            setEditForm((f: any) => ({ ...f, duration: v }));
+                            setEditForm((f: any) => ({
+                              ...f,
+                              duration: v,
+                            }));
                           }}
                           disabled={isSaving}
                         />
@@ -172,7 +213,10 @@ export default function AppointmentTable({
                           type="text"
                           value={editForm.client}
                           onChange={e =>
-                            setEditForm((f: any) => ({ ...f, client: e.target.value }))
+                            setEditForm((f: any) => ({
+                              ...f,
+                              client: e.target.value,
+                            }))
                           }
                           disabled={isSaving}
                           className={cls('client')}
@@ -183,7 +227,12 @@ export default function AppointmentTable({
                         <input
                           type="text"
                           value={editForm.notes}
-                          onChange={e => setEditForm((f: any) => ({ ...f, notes: e.target.value }))}
+                          onChange={e =>
+                            setEditForm((f: any) => ({
+                              ...f,
+                              notes: e.target.value,
+                            }))
+                          }
                           disabled={isSaving}
                         />
                       </div>
@@ -194,6 +243,7 @@ export default function AppointmentTable({
                         <button onClick={cancelEdit} disabled={isSaving}>
                           <FaTimes />
                         </button>
+                        {errorMessage && <div className={styles.errorField}>{errorMessage}</div>}
                       </div>
                     </td>
                   </tr>

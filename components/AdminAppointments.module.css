@@ -107,6 +107,7 @@
   position: absolute;
   bottom: 100%;
   left: 50%;
+  transform: translateX(-50%);
   background: rgba(0, 0, 0, 0.8);
   color: #fff;
   padding: 4px 6px;
@@ -114,8 +115,9 @@
   font-size: 0.75rem;
   white-space: normal;
   word-break: break-word;
+  overflow-wrap: break-word;
   min-width: 180px;
-  max-width: 80vw;
+  max-width: 90vw;
   box-sizing: border-box;
   visibility: hidden;
   z-index: 5;
@@ -162,20 +164,23 @@
   width: 100%;
 }
 
-/* Действия */
+/* Действия (обычный режим) */
 .actions {
   display: flex;
   gap: 6px;
   justify-content: center;
 }
 .actions button {
-  background: none;
+  background: #249b89;
+  color: #fff;
+  padding: 6px 8px;
   border: none;
+  border-radius: 4px;
   cursor: pointer;
   font-size: 1rem;
 }
 .actions button:hover {
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
 /* Редактирование: desktop */
@@ -183,14 +188,13 @@
   vertical-align: top;
 }
 
-/* Редактирование: mobile */
-.mobileEditingRow {
-  display: none;
-}
-@media (max-width: 600px) {
+/* Мобильная версия редактирования до 768px */
+@media (max-width: 768px) {
+  /* Скрываем desktop-редактирование */
   .editingRow {
     display: none;
   }
+  /* Показываем мобильное редактирование */
   .mobileEditingRow {
     display: table-row;
   }
@@ -213,14 +217,39 @@
     box-sizing: border-box;
     margin-bottom: 4px;
   }
+  /* inline-редактирование */
   .actionsMobile {
     display: flex;
     gap: 8px;
     justify-content: flex-start;
     margin-top: 4px;
   }
+  /* Компактные кнопки в обычных строках */
+  .actions {
+    gap: 4px;
+  }
+  .actions button {
+    padding: 4px 6px;
+    font-size: 0.85rem;
+  }
+  /* Подправленные inline-кнопки */
+  .actionsMobile {
+    gap: 4px;
+    margin-top: 2px;
+  }
+  .actionsMobile button {
+    background: #249b89;
+    color: #fff;
+    padding: 4px 6px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+  }
+  .actionsMobile button:hover {
+    opacity: 0.8;
+  }
 }
 
+/* Стили для мелких элементов и общие @media */
 @media (max-width: 768px) {
   .form input,
   .form button,
@@ -238,7 +267,6 @@
   }
 }
 
-/* Ограничение ширины поля "хв" */
 .durationInput {
   width: 6ch;
   box-sizing: border-box;
@@ -257,7 +285,14 @@
   }
 }
 
-/* Подсветка поля с ошибкой */
+/* Подсветка ошибочного поля */
 .inputError {
   border: 1px solid red;
+}
+
+/* Маленькое сообщение об ошибке под полем */
+.errorField {
+  color: red;
+  font-size: 0.75rem;
+  margin-top: 2px;
 }
