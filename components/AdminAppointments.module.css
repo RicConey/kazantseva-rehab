@@ -1,14 +1,9 @@
-/* File: /components/AdminAppointments.module.css */
-
+/* ----------------------------------- */
+/* 1. ОБЩИЕ СТИЛИ */
+/* ----------------------------------- */
 .container {
   padding: 12px;
   font-size: 16px;
-}
-@media (max-width: 768px) {
-  .container {
-    padding: 6px;
-    font-size: 14px;
-  }
 }
 
 .title {
@@ -23,19 +18,23 @@
   margin-bottom: 1rem;
 }
 
-/* Форма добавления */
+/* ----------------------------------- */
+/* 2. ФОРМА ДОБАВЛЕНИЯ */
+/* ----------------------------------- */
 .form {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 1rem;
 }
+
 .form input,
 .form button {
   padding: 6px 8px;
   font-size: 14px;
   box-sizing: border-box;
 }
+
 .form button {
   background: #249b89;
   color: #fff;
@@ -44,12 +43,15 @@
   cursor: pointer;
 }
 
-/* Фильтр даты */
+/* ----------------------------------- */
+/* 3. ФИЛЬТР ДАТЫ */
+/* ----------------------------------- */
 .controls {
   display: flex;
   justify-content: flex-end;
   margin-bottom: 1rem;
 }
+
 .controls input {
   margin-left: 4px;
   padding: 4px 8px;
@@ -57,7 +59,9 @@
   box-sizing: border-box;
 }
 
-/* Таймлайн */
+/* ----------------------------------- */
+/* 4. ТАЙМЛАЙН (горизонтальный) */
+/* ----------------------------------- */
 .timeline {
   position: relative;
   width: 100%;
@@ -67,6 +71,7 @@
   margin: 1.5rem 0 12px;
   overflow: visible;
 }
+
 .timelineTick {
   position: absolute;
   top: 0;
@@ -75,6 +80,7 @@
   background: rgba(0, 0, 0, 0.6);
   z-index: 2;
 }
+
 .timelineLabel {
   position: absolute;
   top: -1.2rem;
@@ -87,7 +93,9 @@
   z-index: 3;
 }
 
-/* Записи на таймлайне */
+/* ----------------------------------- */
+/* 5. ЗАПИСИ НА ТАЙМЛАЙНЕ (гориз.) */
+/* ----------------------------------- */
 .apptWrapper {
   position: absolute;
   top: 0;
@@ -95,6 +103,7 @@
   cursor: pointer;
   z-index: 4;
 }
+
 .apptBlock {
   width: 100%;
   height: 100%;
@@ -102,7 +111,9 @@
   opacity: 0.8;
 }
 
-/* Тултип */
+/* ----------------------------------- */
+/* 6. ТУЛТИП */
+/* ----------------------------------- */
 .tooltip {
   position: absolute;
   bottom: 100%;
@@ -123,7 +134,9 @@
   z-index: 5;
 }
 
-/* Таблица */
+/* ----------------------------------- */
+/* 7. ТАБЛИЦА */
+/* ----------------------------------- */
 .tableWrapper {
   width: 100%;
   overflow-x: auto;
@@ -131,6 +144,7 @@
   max-height: 400px;
   overflow-y: auto;
 }
+
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -139,6 +153,7 @@
   border-radius: 8px;
   overflow: hidden;
 }
+
 .table th {
   background: #249b89;
   color: #fff;
@@ -146,9 +161,11 @@
   text-align: center;
   font-weight: 600;
 }
+
 .table th:last-child {
   text-align: left;
 }
+
 .table td {
   border-top: 1px solid #ddd;
   padding: 8px;
@@ -156,7 +173,9 @@
   line-height: 1.2;
 }
 
-/* Ячейка‑скелетон */
+/* ----------------------------------- */
+/* 8. СКЕЛЕТОН ДЛЯ ТАБЛИЦЫ */
+/* ----------------------------------- */
 .skeletonTableCell {
   background: #e0e0e0;
   border-radius: 4px;
@@ -164,12 +183,15 @@
   width: 100%;
 }
 
-/* Действия (обычный режим) */
+/* ----------------------------------- */
+/* 9. ДЕЙСТВИЯ */
+/* ----------------------------------- */
 .actions {
   display: flex;
   gap: 6px;
   justify-content: center;
 }
+
 .actions button {
   background: #249b89;
   color: #fff;
@@ -179,37 +201,47 @@
   cursor: pointer;
   font-size: 1rem;
 }
+
 .actions button:hover {
   opacity: 0.8;
 }
 
-/* Редактирование: desktop */
+/* ----------------------------------- */
+/* 10. РЕДАКТИРОВАНИЕ (desktop & mobile) */
+/* ----------------------------------- */
+
+/* desktop */
 .editingRow td {
   vertical-align: top;
 }
 
-/* Мобильная версия редактирования до 768px */
+/* mobile */
 @media (max-width: 768px) {
-  /* Скрываем desktop-редактирование */
+  /* Скрыть редактирование для десктопа */
   .editingRow {
     display: none;
   }
-  /* Показываем мобильное редактирование */
+
+  /* Показываем мобильную версию редактирования */
   .mobileEditingRow {
     display: table-row;
   }
+
   .mobileEditingRow td {
     padding: 8px 12px;
   }
+
   .field {
     margin-bottom: 4px;
   }
+
   .field label {
     display: block;
     font-weight: 600;
     margin-bottom: 2px;
     font-size: 0.75rem;
   }
+
   .field input {
     width: 100%;
     padding: 4px 6px;
@@ -217,26 +249,19 @@
     box-sizing: border-box;
     margin-bottom: 4px;
   }
-  /* inline-редактирование */
+
   .actionsMobile {
     display: flex;
     gap: 8px;
     justify-content: flex-start;
     margin-top: 4px;
   }
-  /* Компактные кнопки в обычных строках */
-  .actions {
-    gap: 4px;
-  }
+
   .actions button {
     padding: 4px 6px;
     font-size: 0.85rem;
   }
-  /* Подправленные inline-кнопки */
-  .actionsMobile {
-    gap: 4px;
-    margin-top: 2px;
-  }
+
   .actionsMobile button {
     background: #249b89;
     color: #fff;
@@ -244,55 +269,286 @@
     border-radius: 4px;
     font-size: 0.85rem;
   }
+
   .actionsMobile button:hover {
     opacity: 0.8;
   }
 }
 
-/* Стили для мелких элементов и общие @media */
+/* ----------------------------------- */
+/* 11. СПИННЕР И ОШИБКИ */
+/* ----------------------------------- */
+.durationInput {
+  width: 6ch;
+  box-sizing: border-box;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.inputError {
+  border: 1px solid red;
+}
+
+.errorField {
+  color: red;
+  font-size: 0.75rem;
+  margin-top: 2px;
+}
+
+/* ----------------------------------- */
+/* 12. WEEKLY GRID (вертикальный график) */
+/* ----------------------------------- */
+.weeklyGrid {
+  display: grid;
+  grid-template-columns: 50px repeat(7, minmax(80px, 1fr));
+  width: 100%;
+  overflow-x: auto;
+  position: relative;
+}
+
+.dayHeaderPlaceholder {
+  height: 32px;
+}
+
+.timeColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.timeLabelGrid {
+  flex: none;
+  height: calc((100vh - 2rem - 32px) / 13.5);
+  font-size: 0.75rem;
+  text-align: right;
+  padding-right: 4px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* ----------------------------------- */
+/* 13. ДНИ СЕТКИ */
+/* ----------------------------------- */
+.dayColumn {
+  position: relative;
+  cursor: pointer;
+  border-left: 1px solid #eee;
+}
+
+.dayHeaderGrid {
+  position: sticky;
+  top: 0;
+  background: #fafafa;
+  border-bottom: 1px solid #ddd;
+  display: grid;
+  grid-template-rows: auto auto;
+  align-items: center;
+  justify-items: center;
+  padding: 4px 2px;
+  box-sizing: border-box;
+  z-index: 2;
+}
+
+.weekdayAbbrev {
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.dayNumber {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+/* ----------------------------------- */
+/* 14. СОБЫТИЯ И ЛИНИИ */
+/* ----------------------------------- */
+.eventsContainer {
+  position: relative;
+  height: calc((100vh - 2rem - 32px));
+  overflow-y: visible;
+}
+
+.timelineTickGlobal {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.1);
+  z-index: 1;
+}
+
+.eventGrid {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  border-radius: 4px;
+  opacity: 0.9;
+  padding: 2px 4px;
+  color: #fff;
+  box-sizing: border-box;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.eventContent {
+  font-size: 0.7rem;
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* ----------------------------------- */
+/* 15. HEADER WEEKLY SCHEDULE */
+/* ----------------------------------- */
+.weeklyHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  margin-bottom: 8px;
+}
+
+.weeklyTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.weekNav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.weekNav button {
+  background: none;
+  border: 1px solid #249b89;
+  color: #249b89;
+  font-size: 1rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+
+.weekNav button:hover {
+  background: #249b89;
+  color: #fff;
+}
+
+.weekMonth {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* ----------------------------------- */
+/* 16. SKELETON ДЛЯ WEEKLY GRID */
+/* ----------------------------------- */
+.skeletonWeeklyBlock {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  opacity: 0.6;
+  z-index: 2;
+}
+
+/* ----------------------------------- */
+/* 17. АДАПТИВНОСТЬ (max-width: 768px) */
+/* ----------------------------------- */
 @media (max-width: 768px) {
+  /* 1. Пересчёт размеров базовых блоков */
+  .container {
+    padding: 6px;
+    font-size: 14px;
+  }
+
   .form input,
   .form button,
   .controls input {
     font-size: 12px;
     padding: 4px 6px;
   }
+
   .table th,
   .table td {
     font-size: 0.75rem;
     padding: 6px 4px;
   }
+
   .tableWrapper {
     -webkit-overflow-scrolling: touch;
   }
-}
 
-.durationInput {
-  width: 6ch;
-  box-sizing: border-box;
-}
-
-/* Спиннер */
-.spin {
-  animation: spin 1s linear infinite;
-}
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
+  .timeLabelGrid {
+    font-size: 0.6rem;
+    padding-right: 2px;
   }
-  to {
-    transform: rotate(360deg);
+
+  /* 2. Узкие колонки недели */
+  .weeklyGrid {
+    grid-template-columns: 30px repeat(7, 1fr) !important;
+  }
+
+  .dayHeaderGrid {
+    font-size: 0.7rem;
+    padding: 2px 1px;
+  }
+
+  .weekdayAbbrev {
+    font-size: 0.65rem;
+  }
+
+  .dayNumber {
+    font-size: 0.75rem;
+  }
+
+  /* 3. Меню недели */
+  .weeklyHeader {
+    padding: 0 6px;
+    margin-bottom: 4px;
+  }
+
+  .weeklyTitle {
+    font-size: 1rem;
+  }
+
+  .weekNav button {
+    width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
+  }
+
+  .weekMonth {
+    font-size: 0.9rem;
+  }
+
+  /* 4. Мобильный заголовок .title внутри weeklyHeader */
+  .weeklyHeader .title {
+    font-size: 1.2rem;
+  }
+
+  /* 5. Мелкий текст событий */
+  .eventContent {
+    font-size: 0.6rem !important;
   }
 }
-
-/* Подсветка ошибочного поля */
-.inputError {
-  border: 1px solid red;
-}
-
-/* Маленькое сообщение об ошибке под полем */
-.errorField {
-  color: red;
-  font-size: 0.75rem;
-  margin-top: 2px;
+.todayColumn {
+  border: 2px solid #249b89;
+  border-radius: 8px;
+  background-color: rgba(36, 155, 137, 0.07);
 }

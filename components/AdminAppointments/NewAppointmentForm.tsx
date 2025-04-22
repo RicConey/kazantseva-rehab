@@ -1,4 +1,3 @@
-// components/AdminAppointments/NewAppointmentForm.tsx
 'use client';
 
 import React from 'react';
@@ -13,6 +12,7 @@ interface Props {
     duration: string;
     client: string;
     notes: string;
+    price: string; // ← добавлено поле price
   };
   setNewForm: React.Dispatch<React.SetStateAction<any>>;
   loadingAdd: boolean;
@@ -38,7 +38,7 @@ export default function NewAppointmentForm({
         type="date"
         min={todayStr}
         value={newForm.date}
-        onChange={e => setNewForm(f => ({ ...f, date: e.target.value }))}
+        onChange={e => setNewForm((f: any) => ({ ...f, date: e.target.value }))}
         disabled={loadingAdd}
         className={cls('date')}
         required
@@ -46,7 +46,7 @@ export default function NewAppointmentForm({
       <input
         type="time"
         value={newForm.time}
-        onChange={e => setNewForm(f => ({ ...f, time: e.target.value }))}
+        onChange={e => setNewForm((f: any) => ({ ...f, time: e.target.value }))}
         disabled={loadingAdd}
         className={cls('time')}
         required
@@ -59,7 +59,7 @@ export default function NewAppointmentForm({
         maxLength={3}
         value={newForm.duration}
         onChange={e =>
-          setNewForm(f => ({
+          setNewForm((f: any) => ({
             ...f,
             duration: e.target.value.replace(/\D/g, '').slice(0, 3),
           }))
@@ -72,7 +72,7 @@ export default function NewAppointmentForm({
         type="text"
         placeholder="ФІО"
         value={newForm.client}
-        onChange={e => setNewForm(f => ({ ...f, client: e.target.value }))}
+        onChange={e => setNewForm((f: any) => ({ ...f, client: e.target.value }))}
         disabled={loadingAdd}
         className={cls('client')}
         required
@@ -81,8 +81,25 @@ export default function NewAppointmentForm({
         type="text"
         placeholder="Заметки"
         value={newForm.notes}
-        onChange={e => setNewForm(f => ({ ...f, notes: e.target.value }))}
+        onChange={e => setNewForm((f: any) => ({ ...f, notes: e.target.value }))}
         disabled={loadingAdd}
+      />
+      <input
+        type="text"
+        placeholder="Сума"
+        inputMode="numeric"
+        pattern="\d*"
+        maxLength={7}
+        value={newForm.price}
+        onChange={e =>
+          setNewForm((f: any) => ({
+            ...f,
+            price: e.target.value.replace(/\D/g, '').slice(0, 7),
+          }))
+        }
+        disabled={loadingAdd}
+        className={cls('price')}
+        required
       />
 
       <button type="submit" disabled={loadingAdd}>

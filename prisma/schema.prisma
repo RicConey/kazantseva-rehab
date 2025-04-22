@@ -22,6 +22,9 @@ model Appointment {
   duration   Int      // длительность в минутах
   notes      String?  // необязательные заметки
   createdAt  DateTime @default(now())
+  price      Int
+
+  @@map("appointments")
 }
 
 model qr_links {

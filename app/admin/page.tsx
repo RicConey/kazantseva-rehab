@@ -36,18 +36,18 @@ export default function AdminHome() {
 
         <button
           className={styles.button}
-          onClick={() => handleNavigate('/admin/appointments')}
+          onClick={() => handleNavigate('/admin/weekly-schedule')}
           disabled={loadingTarget !== null}
         >
-          {loadingTarget === '/admin/appointments' ? (
+          {loadingTarget === '/admin/weekly-schedule' ? (
             <FaSpinner className={styles.spin} />
           ) : (
-            'Запись приёмов'
+            'Розклад прийомів'
           )}
         </button>
 
         <button className={styles.button} onClick={handleLogout} disabled={loadingTarget !== null}>
-          {loadingTarget === 'logout' ? <FaSpinner className={styles.spin} /> : 'Выход'}
+          {loadingTarget === 'logout' ? <FaSpinner className={styles.spin} /> : 'Вихід'}
         </button>
       </div>
     </div>

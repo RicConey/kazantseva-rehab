@@ -1,6 +1,7 @@
+// components/AdminAppointments/AppointmentVerticalTimeline.tsx
 'use client';
 
-import React, { useState, useRef, useLayoutEffect } from 'react';
+import React, { useRef, useLayoutEffect, useState } from 'react';
 import styles from '../AdminAppointments.module.css';
 
 export interface Appointment {
@@ -20,9 +21,11 @@ interface Props {
   activeTooltipId: number | null;
   toggleTooltip: (id: number | null) => void;
   kyivFormatter: Intl.DateTimeFormat;
+  /** Новое: рисовать метки часов (только для первого столбца) */
+  showTimeLabels: boolean;
 }
 
-export default function AppointmentTimeline({
+export default function AppointmentVerticalTimeline({
   list,
   scaleStart,
   scaleDuration,
@@ -31,57 +34,59 @@ export default function AppointmentTimeline({
   activeTooltipId,
   toggleTooltip,
   kyivFormatter,
+  showTimeLabels,
 }: Props) {
   const EDGE_GAP = 8;
   const tooltipRef = useRef<HTMLDivElement>(null);
-  const [clampedLeft, setClampedLeft] = useState<number | null>(null);
+  const [clampedTop, setClampedTop] = useState<number | null>(null);
 
   useLayoutEffect(() => {
     if (activeTooltipId === null) {
-      setClampedLeft(null);
+      setClampedTop(null);
       return;
     }
-    const wrapperEl = document.querySelector(
+    const wrap = document.querySelector(
       `[data-appt-id="${activeTooltipId}"]`
     ) as HTMLElement | null;
-    const tipEl = tooltipRef.current;
-    const timelineEl = timelineRef.current;
-    if (!wrapperEl || !tipEl || !timelineEl) {
-      setClampedLeft(null);
+    const tip = tooltipRef.current;
+    const tl = timelineRef.current;
+    if (!wrap || !tip || !tl) {
+      setClampedTop(null);
       return;
     }
+    const wrapRect = wrap.getBoundingClientRect();
+    const tipRect = tip.getBoundingClientRect();
+    const tlRect = tl.getBoundingClientRect();
 
-    const wrapRect = wrapperEl.getBoundingClientRect();
-    const tipRect = tipEl.getBoundingClientRect();
-    const tlRect = timelineEl.getBoundingClientRect();
+    const centerY = wrapRect.top + wrapRect.height / 2;
+    const topFree = centerY - tipRect.height / 2;
+    const bottomFree = centerY + tipRect.height / 2;
 
-    const centerX = wrapRect.left + wrapRect.width / 2;
-    const leftFree = centerX - tipRect.width / 2;
-    const rightFree = centerX + tipRect.width / 2;
-
-    let shiftX = 0;
-    if (leftFree < tlRect.left + EDGE_GAP) {
-      shiftX = tlRect.left + EDGE_GAP - leftFree;
-    } else if (rightFree > tlRect.right - EDGE_GAP) {
-      shiftX = tlRect.right - EDGE_GAP - rightFree;
+    let shift = 0;
+    if (topFree < tlRect.top + EDGE_GAP) {
+      shift = tlRect.top + EDGE_GAP - topFree;
+    } else if (bottomFree > tlRect.bottom - EDGE_GAP) {
+      shift = tlRect.bottom - EDGE_GAP - bottomFree;
     }
 
-    const local = wrapRect.width / 2 - tipRect.width / 2 + shiftX;
-    setClampedLeft(local);
+    const local = wrapRect.height / 2 - tipRect.height / 2 + shift;
+    setClampedTop(local);
   }, [activeTooltipId, list, timelineRef]);
 
   const tickCount = Math.floor(scaleDuration) + 1;
 
   return (
-    <div className={styles.timeline} ref={timelineRef}>
+    <div className={styles.timelineVertical} ref={timelineRef}>
       {Array.from({ length: tickCount }, (_, i) => {
-        const leftPct = (i / scaleDuration) * 100;
+        const topPct = (i / scaleDuration) * 100;
         return (
           <React.Fragment key={i}>
-            <div className={styles.timelineTick} style={{ left: `${leftPct}%` }} />
-            <span className={styles.timelineLabel} style={{ left: `${leftPct}%` }}>
-              {scaleStart + i}
-            </span>
+            <div className={styles.timelineTickVertical} style={{ top: `${topPct}%` }} />
+            {showTimeLabels && (
+              <span className={styles.timelineLabelVertical} style={{ top: `${topPct}%` }}>
+                {scaleStart + i}:00
+              </span>
+            )}
           </React.Fragment>
         );
       })}
@@ -89,21 +94,21 @@ export default function AppointmentTimeline({
       {list.map(a => {
         const dt = new Date(a.startTime);
         const endDt = new Date(dt.getTime() + a.duration * 60000);
-        const startStr = kyivFormatter.format(dt);
-        const endStr = kyivFormatter.format(endDt);
         const startH = dt.getHours() + dt.getMinutes() / 60;
-        const leftPct = ((startH - scaleStart) / scaleDuration) * 100;
-        const widthPct = (a.duration / 60 / scaleDuration) * 100;
+        const topPct = ((startH - scaleStart) / scaleDuration) * 100;
+        const heightPct = (a.duration / 60 / scaleDuration) * 100;
         const bg = colorMap[a.client] || '#249b89';
-
         const isActive = activeTooltipId === a.id;
 
         return (
           <div
             key={a.id}
             data-appt-id={a.id}
-            className={styles.apptWrapper}
-            style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
+            className={styles.apptWrapperVertical}
+            style={{
+              top: `${topPct}%`,
+              height: `${heightPct}%`,
+            }}
             onMouseEnter={() => toggleTooltip(a.id)}
             onMouseLeave={() => toggleTooltip(null)}
             onTouchEnd={e => {
@@ -111,20 +116,22 @@ export default function AppointmentTimeline({
               toggleTooltip(isActive ? null : a.id);
             }}
           >
-            <div className={styles.apptBlock} style={{ backgroundColor: bg }} />
+            <div className={styles.apptBlockVertical} style={{ backgroundColor: bg }} />
             <div
               ref={tooltipRef}
               className={styles.tooltip}
               style={{
                 visibility: isActive ? 'visible' : 'hidden',
-                ...(clampedLeft !== null && isActive
-                  ? { left: `${clampedLeft}px`, transform: 'none' }
-                  : {}),
+                left: '100%',
+                transform:
+                  clampedTop != null && isActive
+                    ? `translateY(${clampedTop}px)`
+                    : 'translateY(-50%)',
               }}
             >
               <div>
                 <strong>
-                  {startStr}–{endStr}
+                  {kyivFormatter.format(dt)}–{kyivFormatter.format(endDt)}
                 </strong>
               </div>
               <div>

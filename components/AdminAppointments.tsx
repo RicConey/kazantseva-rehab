@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import styles from './AdminAppointments.module.css';
 import { parseISO, format } from 'date-fns';
 import { toast } from 'react-toastify';
@@ -18,10 +19,16 @@ interface Appointment {
   duration: number;
   client: string;
   notes?: string | null;
+  price: number;
 }
 
 export default function AdminAppointments() {
+  const searchParams = useSearchParams();
+  const dateParam = searchParams.get('date');
+
   const todayStr = new Date().toISOString().slice(0, 10);
+  const [date, setDate] = useState<string>(dateParam ?? todayStr);
+
   const timelineRef = useRef<HTMLDivElement>(null);
   const kyivFormatter = useMemo(
     () =>
@@ -33,8 +40,7 @@ export default function AdminAppointments() {
     []
   );
 
-  // Общие стейты
-  const [date, setDate] = useState(todayStr);
+  // ——— Общее состояние ———
   const [list, setList] = useState<Appointment[]>([]);
   const [loadingAdd, setLoadingAdd] = useState(false);
   const [loadingSaveId, setLoadingSaveId] = useState<number | null>(null);
@@ -42,25 +48,26 @@ export default function AdminAppointments() {
   const [loadingList, setLoadingList] = useState(true);
   const [activeTooltipId, setActiveTooltipId] = useState<number | null>(null);
 
-  // Для новой формы
+  // ——— Новая форма ———
   const [newForm, setNewForm] = useState({
     date: todayStr,
     time: '',
     duration: '',
     client: '',
     notes: '',
+    price: '', // поле для суммы
   });
   const [newFormErrors, setNewFormErrors] = useState<Record<string, boolean>>({});
   const [newFormErrorMessage, setNewFormErrorMessage] = useState<string | null>(null);
 
-  // Для редактирования
+  // ——— Редактирование ———
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState(newForm);
   const [editFormErrors, setEditFormErrors] = useState<Record<string, boolean>>({});
   const [editErrorMessage, setEditErrorMessage] = useState<string | null>(null);
   const [errorEditId, setErrorEditId] = useState<number | null>(null);
 
-  // Цвета клиентов
+  // ——— Цвета клиентов ———
   const [colorMap, setColorMap] = useState<Record<string, string>>({});
   useEffect(() => {
     const m: Record<string, string> = {};
@@ -68,24 +75,25 @@ export default function AdminAppointments() {
       if (!m[a.client]) {
         let h = 0;
         for (const c of a.client) h = c.charCodeAt(0) + ((h << 5) - h);
-        m[a.client] = `hsl(${Math.abs(h) % 360},70%,80%)`;
+        m[a.client] = `hsl(${Math.abs(h) % 360},80%,65%)`;
       }
     });
     setColorMap(m);
   }, [list]);
 
-  // Загрузка списка
+  // ——— Загрузка списка по дате ———
   useEffect(() => {
     setLoadingList(true);
-    fetch(`/api/appointments?date=${date}`)
+    fetch(`/api/appointments?date=${encodeURIComponent(date)}`)
       .then(r => (r.ok ? r.json() : Promise.reject()))
       .then((data: Appointment[]) => setList(data))
       .catch(() => setList([]))
       .finally(() => setLoadingList(false));
+
     setNewForm(f => ({ ...f, date }));
   }, [date]);
 
-  // Клик вне — закрываем тултип
+  // клик вне — закрываем тултип
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (!(e.target as HTMLElement).closest('[data-appt-id]')) {
@@ -106,19 +114,22 @@ export default function AdminAppointments() {
     });
   }
 
-  // Добавление
+  // ——— Добавление ———
   async function handleAdd(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setNewFormErrors({});
     setNewFormErrorMessage(null);
 
     const errs: Record<string, boolean> = {};
-    const { date: d, time, duration, client, notes } = newForm;
+    const { date: d, time, duration, client, notes, price } = newForm;
     const durNum = parseInt(duration, 10);
+    const priceNum = parseInt(price, 10);
+
     if (!d) errs.date = true;
     if (!time) errs.time = true;
     if (isNaN(durNum)) errs.duration = true;
     if (!client.trim()) errs.client = true;
+    if (isNaN(priceNum)) errs.price = true; // проверка суммы
     if (Object.keys(errs).length) {
       setNewFormErrors(errs);
       setNewFormErrorMessage('Поля заповнені некоректно');
@@ -144,6 +155,7 @@ export default function AdminAppointments() {
           duration: durNum,
           client: client.trim(),
           notes: notes.trim() || null,
+          price: priceNum, // передаём сумму
         }),
       });
       const json = await res.json();
@@ -155,7 +167,7 @@ export default function AdminAppointments() {
             .filter(a => parseISO(a.startTime).toISOString().slice(0, 10) === date)
             .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
         );
-        setNewForm({ date: todayStr, time: '', duration: '', client: '', notes: '' });
+        setNewForm({ date: todayStr, time: '', duration: '', client: '', notes: '', price: '' });
       }
     } catch {
       setNewFormErrorMessage('Не вдалося додати запис');
@@ -164,7 +176,7 @@ export default function AdminAppointments() {
     }
   }
 
-  // Редактирование
+  // ——— Редактирование ———
   function startEdit(a: Appointment) {
     const dt = parseISO(a.startTime);
     setEditingId(a.id);
@@ -174,6 +186,7 @@ export default function AdminAppointments() {
       duration: String(a.duration),
       client: a.client,
       notes: a.notes || '',
+      price: String(a.price), // наполняем сумму
     });
     setEditFormErrors({});
     setEditErrorMessage(null);
@@ -193,12 +206,15 @@ export default function AdminAppointments() {
     setErrorEditId(null);
 
     const errs: Record<string, boolean> = {};
-    const { date: d, time, duration, client, notes } = editForm;
+    const { date: d, time, duration, client, notes, price } = editForm;
     const durNum = parseInt(duration, 10);
+    const priceNum = parseInt(price, 10);
+
     if (!d) errs.date = true;
     if (!time) errs.time = true;
     if (isNaN(durNum)) errs.duration = true;
     if (!client.trim()) errs.client = true;
+    if (isNaN(priceNum)) errs.price = true; // проверка суммы
     if (Object.keys(errs).length) {
       setEditFormErrors(errs);
       setEditErrorMessage('Поля заповнені некоректно');
@@ -226,6 +242,7 @@ export default function AdminAppointments() {
           duration: durNum,
           client: client.trim(),
           notes: notes.trim() || null,
+          price: priceNum, // передаём сумму
         }),
       });
       const json = await res.json();
@@ -249,16 +266,13 @@ export default function AdminAppointments() {
     }
   }
 
-  // Удаление (без инлайн‑ошибок)
+  // ——— Удаление ———
   async function deleteItem(id: number) {
     setLoadingDeleteId(id);
     try {
       const res = await fetch(`/api/appointments/${id}`, { method: 'DELETE' });
-      if (!res.ok) {
-        toast.error('Не вдалося видалити');
-      } else {
-        setList(prev => prev.filter(x => x.id !== id));
-      }
+      if (!res.ok) toast.error('Не вдалося видалити');
+      else setList(prev => prev.filter(x => x.id !== id));
     } catch {
       toast.error('Не вдалося видалити');
     } finally {
@@ -316,6 +330,7 @@ export default function AdminAppointments() {
           errorMessage={errorEditId === editingId ? editErrorMessage : undefined}
         />
       )}
+
       <BackButton />
     </div>
   );
