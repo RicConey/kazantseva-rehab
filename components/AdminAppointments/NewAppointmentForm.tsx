@@ -89,7 +89,7 @@ export default function NewAppointmentForm({
         placeholder="Сума"
         inputMode="numeric"
         pattern="\d*"
-        maxLength={7}
+        maxLength={5}
         value={newForm.price}
         onChange={e =>
           setNewForm((f: any) => ({
@@ -98,7 +98,7 @@ export default function NewAppointmentForm({
           }))
         }
         disabled={loadingAdd}
-        className={cls('price')}
+        className={`${styles.priceInput} {cls('price')}`}
         required
       />
 

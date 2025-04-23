@@ -1,8 +1,10 @@
 // app/api/appointments/[id]/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { formatInTimeZone } from 'date-fns-tz';
+import { requireAdmin } from '@lib/auth'; // добавили проверку сессии
 
 const TZ = 'Europe/Kyiv';
 
@@ -13,8 +15,11 @@ function getIdFromUrl(url: string): number {
 }
 
 export async function PUT(req: NextRequest) {
+  // защита: возвращаем 401, если нет сессии
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const id = getIdFromUrl(req.url);
-  // теперь деструктурируем также price
   const { startTime, duration, client, notes, price } = await req.json();
 
   const newStart = new Date(startTime);
@@ -63,7 +68,7 @@ export async function PUT(req: NextRequest) {
       duration,
       client: client.trim(),
       notes: notes?.trim() || null,
-      price, // ← добавлено сюда
+      price, // ← оставляем сохранение цены
     },
   });
 
@@ -74,6 +79,10 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  // защита: возвращаем 401, если нет сессии
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const id = getIdFromUrl(req.url);
   await prisma.appointment.delete({ where: { id } });
   revalidatePath('/api/appointments');

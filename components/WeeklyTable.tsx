@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { format, startOfWeek, addDays } from 'date-fns';
 import { uk } from 'date-fns/locale';
+import { useRouter } from 'next/navigation';
 import styles from './AdminAppointments.module.css';
 
 interface DayRow {
@@ -13,6 +14,7 @@ interface DayRow {
 }
 
 export default function WeeklyTable() {
+  const router = useRouter();
   const today = new Date();
   const [weekStart, setWeekStart] = useState(startOfWeek(today, { weekStartsOn: 1 }));
   const [dayData, setDayData] = useState<DayRow[]>([]);
@@ -40,10 +42,19 @@ export default function WeeklyTable() {
 
   if (loading) {
     return (
-      <p style={{ color: '#249b89', textAlign: 'center', margin: '1rem 0' }}>Завантаженя тижня…</p>
+      <p
+        style={{
+          color: '#249b89',
+          textAlign: 'center',
+          margin: '1rem 0',
+        }}
+      >
+        Завантаження тижня…
+      </p>
     );
   }
 
+  // Массив дат недели и значений
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const weekVals = days.map(d => {
     const iso = format(d, 'yyyy-MM-dd');
@@ -63,7 +74,7 @@ export default function WeeklyTable() {
         </div>
       </div>
 
-      {/* Таблица дней недели */}
+      {/* Таблица дней недели с разделителями и итогом внизу */}
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
           <thead>
@@ -77,32 +88,39 @@ export default function WeeklyTable() {
           </thead>
           <tbody>
             <tr>
-              {weekVals.map((v, i) => (
-                <td
-                  key={i}
-                  className={styles.tableCell}
-                  style={{ borderLeft: '1px solid #ddd', textAlign: 'center' }}
-                >
-                  {v != null ? v.toLocaleString() : ''}
-                </td>
-              ))}
+              {days.map((d, i) => {
+                const v = weekVals[i];
+                const iso = format(d, 'yyyy-MM-dd');
+                return (
+                  <td
+                    key={i}
+                    className={styles.tableCell}
+                    style={{
+                      borderLeft: '1px solid #ddd',
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => router.push(`/admin/appointments?date=${iso}`)}
+                  >
+                    {v != null ? v.toLocaleString() : ''}
+                  </td>
+                );
+              })}
             </tr>
           </tbody>
-
-          {/* Итог недели в одной ячейке с рамкой */}
           <tfoot>
             <tr>
               <td
                 colSpan={7}
                 className={styles.tableCell}
                 style={{
-                  border: '1px solid #ddd',
                   textAlign: 'center',
                   color: '#249b89',
-                  fontSize: '1.3rem',
+                  fontSize: '1.5rem',
+                  fontWeight: 600,
                 }}
               >
-                {weekSum.toLocaleString()} грн
+                {weekSum.toLocaleString()} грн
               </td>
             </tr>
           </tfoot>

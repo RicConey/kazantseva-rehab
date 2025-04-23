@@ -4,15 +4,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { formatInTimeZone } from 'date-fns-tz';
+import { requireAdmin } from '@lib/auth'; // защита всех методов
 
 const TZ = 'Europe/Kyiv';
 
+// Вспомогательная функция для вычленения id из URL
 function getIdFromUrl(url: string): number {
   const parts = new URL(url).pathname.split('/');
   return Number(parts[parts.length - 1]);
 }
 
 export async function GET(req: NextRequest) {
+  // защита: если нет сессии — 401
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const url = new URL(req.url);
   const date = url.searchParams.get('date');
   const from = url.searchParams.get('from');
@@ -46,12 +52,15 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const { startTime, duration, client, notes, price } = await req.json();
+  // защита
+  const denied = await requireAdmin();
+  if (denied) return denied;
 
+  const { startTime, duration, client, notes, price } = await req.json();
   const newStart = new Date(startTime);
   const newEnd = new Date(newStart.getTime() + duration * 60000);
 
-  // Проверяем пересечения
+  // проверяем пересечения
   const list = await prisma.appointment.findMany();
   for (const appt of list) {
     const s = new Date(appt.startTime);
@@ -66,14 +75,13 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Создаём новую запись с price
   const appt = await prisma.appointment.create({
     data: {
       startTime: newStart.toISOString(),
       duration,
       client: client.trim(),
       notes: notes?.trim() || null,
-      price, // ← вот тут
+      price,
     },
   });
 
@@ -82,13 +90,16 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  // защита
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const id = getIdFromUrl(req.url);
   const { startTime, duration, client, notes, price } = await req.json();
-
   const newStart = new Date(startTime);
   const newEnd = new Date(newStart.getTime() + duration * 60000);
 
-  // Проверяем пересечения (skip self)
+  // проверяем пересечения (skip self)
   const list = await prisma.appointment.findMany();
   for (const appt of list) {
     if (appt.id === id) continue;
@@ -104,7 +115,6 @@ export async function PUT(req: NextRequest) {
     }
   }
 
-  // Обновляем запись, включая price
   const updated = await prisma.appointment.update({
     where: { id },
     data: {
@@ -112,7 +122,7 @@ export async function PUT(req: NextRequest) {
       duration,
       client: client.trim(),
       notes: notes?.trim() || null,
-      price, // ← и тут
+      price,
     },
   });
 
@@ -121,6 +131,10 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  // защита
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const id = getIdFromUrl(req.url);
   await prisma.appointment.delete({ where: { id } });
   revalidatePath('/api/appointments');

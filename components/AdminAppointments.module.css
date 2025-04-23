@@ -282,6 +282,10 @@
   width: 6ch;
   box-sizing: border-box;
 }
+.priceInput {
+  width: 8ch;
+  box-sizing: border-box;
+}
 
 .spin {
   animation: spin 1s linear infinite;
