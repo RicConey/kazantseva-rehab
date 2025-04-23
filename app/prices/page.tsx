@@ -1,6 +1,6 @@
 // app/prices/page.tsx
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const dynamic = 'force-static';
+export const revalidate = false;
 
 import styles from './Prices.module.css';
 import PromoBlock from '@components/PromoBlock';
@@ -15,8 +15,11 @@ type PriceItem = {
 };
 
 export default async function PricesPage() {
-  // убрали revalidate из fetch — контролируем кэш вручную из админки
-  const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/prices`);
+  const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/prices`, {
+    next: {
+      tags: ['prices'],
+    },
+  });
   const prices: PriceItem[] = await res.json();
 
   return (
