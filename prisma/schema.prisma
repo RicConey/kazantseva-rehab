@@ -54,3 +54,23 @@ model users {
   created_at    DateTime?  @default(now()) @db.Timestamptz(6)
   qr_links      qr_links[]
 }
+
+model FinanceReport {
+  id           Int      @id @default(autoincrement())
+  periodType   String   @map("period_type")
+  periodStart  DateTime @map("period_start")
+  periodEnd    DateTime @map("period_end")
+  total        Decimal  @db.Decimal(15, 2)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@unique([periodType, periodStart, periodEnd], name: "period_type_period_start_period_end")
+  @@map("finance_reports")
+}
+
+model CronFlag {
+  id       Int      @id @default(autoincrement())
+  cronName String   @unique @map("cron_name")
+  lastRun  DateTime @map("last_run")
+
+  @@map("cron_flags")
+}

@@ -46,6 +46,18 @@ export default function AdminHome() {
           )}
         </button>
 
+        <button
+          className={styles.button}
+          onClick={() => handleNavigate('/admin/finance')}
+          disabled={loadingTarget !== null}
+        >
+          {loadingTarget === '/admin/finance' ? (
+            <FaSpinner className={styles.spin} />
+          ) : (
+            'Фінансова звітність'
+          )}
+        </button>
+
         <button className={styles.button} onClick={handleLogout} disabled={loadingTarget !== null}>
           {loadingTarget === 'logout' ? <FaSpinner className={styles.spin} /> : 'Вихід'}
         </button>
