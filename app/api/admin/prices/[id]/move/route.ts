@@ -40,9 +40,7 @@ export async function PUT(req: NextRequest) {
   // 5) Находим соседний элемент для обмена позиций
   const swapWith = await prisma.prices.findFirst({
     where: {
-      position: direction === 'up'
-          ? { lt: record.position }
-          : { gt: record.position },
+      position: direction === 'up' ? { lt: record.position } : { gt: record.position },
     },
     orderBy: {
       position: direction === 'up' ? 'desc' : 'asc',

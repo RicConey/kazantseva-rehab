@@ -58,7 +58,7 @@ export async function PUT(req: NextRequest) {
   const denied = await requireAdmin();
   if (denied) return denied;
 
-  const id   = req.nextUrl.searchParams.get('id');
+  const id = req.nextUrl.searchParams.get('id');
   const data = await req.json();
 
   const updated = await prisma.prices.update({
