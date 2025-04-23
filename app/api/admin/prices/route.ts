@@ -1,9 +1,14 @@
 // app/api/admin/prices/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { requireAdmin } from '@lib/auth';
+import { revalidateTag } from 'next/cache';
 
 const prisma = new PrismaClient();
+
+// Все админские мутации будем сбрасывать кэш публичного API с тегом "prices"
+const TAG = 'prices';
 
 export async function GET(req: NextRequest) {
   // Проверка сессии
@@ -42,5 +47,40 @@ export async function POST(req: NextRequest) {
   });
 
   await prisma.$disconnect();
+
+  // Сбрасываем кэш публичного API /api/prices (tag="prices")
+  revalidateTag(TAG);
+
   return NextResponse.json(created);
+}
+
+export async function PUT(req: NextRequest) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
+  const id   = req.nextUrl.searchParams.get('id');
+  const data = await req.json();
+
+  const updated = await prisma.prices.update({
+    where: { id: Number(id) },
+    data,
+  });
+  await prisma.$disconnect();
+
+  revalidateTag(TAG);
+
+  return NextResponse.json(updated);
+}
+
+export async function DELETE(req: NextRequest) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
+  const id = req.nextUrl.searchParams.get('id');
+  await prisma.prices.delete({ where: { id: Number(id) } });
+  await prisma.$disconnect();
+
+  revalidateTag(TAG);
+
+  return NextResponse.json({ success: true });
 }
