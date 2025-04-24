@@ -1,3 +1,4 @@
+/* components/AdminPrices/AdminPrices.module.css */
 .container {
   padding: 10px 12px;
   font-size: 16px;
@@ -82,7 +83,7 @@
   display: inline-block;
 }
 
-/* === КНОПКИ ДЕЙСТВИЙ В ТАБЛИЦЕ === */
+/* === ACTION BUTTONS === */
 .actions {
   display: flex;
   flex-direction: row;
@@ -109,7 +110,7 @@
   opacity: 0.9;
 }
 
-/* === КНОПКИ ОНОВИТИ / СКАСУВАТИ === */
+/* === UPDATE/CANCEL BUTTONS === */
 .editButtons {
   display: flex;
   gap: 10px;
@@ -117,7 +118,61 @@
   flex-wrap: wrap;
 }
 
-/* === МОБИЛЬНАЯ АДАПТАЦИЯ === */
+/* === SPINNER === */
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* === SKELETON EFFECT === */
+.skeletonRow td {
+  padding: 4px 8px;
+}
+
+.skeletonCell {
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  height: 0.75rem;
+  width: 100%;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* === MOBILE SKELETON: separate blocks === */
+.skeletonMobileWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0.5rem 0;
+}
+.skeletonMobileBlock {
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  height: 0.75rem;
+  width: 100%;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+/* === MOBILE TABLE ADAPTATION === */
 @media (max-width: 768px) {
   .table {
     display: block;
@@ -165,16 +220,5 @@
     flex-direction: row !important;
     gap: 8px;
     margin-top: 6px;
-  }
-}
-.spin {
-  animation: spin 1s linear infinite;
-}
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
   }
 }

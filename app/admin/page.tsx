@@ -1,67 +1,20 @@
-'use client';
+// app/admin/page.tsx
 
-import { useRouter } from 'next/navigation';
-import { signOut } from 'next-auth/react';
-import { useState } from 'react';
-import { FaSpinner } from 'react-icons/fa';
-import styles from './AdminHome.module.css';
+import AdminHome from '@components/AdminHome';
+import { getServerSession } from 'next-auth';
+import { authConfig } from '../api/auth/[...nextauth]/auth.config';
+import { redirect } from 'next/navigation';
 
-export default function AdminHome() {
-  const [loadingTarget, setLoadingTarget] = useState<string | null>(null);
-  const router = useRouter();
+export const dynamic = 'force-dynamic';
 
-  const handleNavigate = async (href: string) => {
-    if (loadingTarget) return;
-    setLoadingTarget(href);
-    router.push(href);
-  };
+export default async function AdminHomePage() {
+  // Проверяем сессию на сервере
+  const session = await getServerSession(authConfig);
+  // Если не авторизован — редирект на страницу входа
+  if (!session) {
+    redirect('/api/auth/signin');
+  }
 
-  const handleLogout = async () => {
-    if (loadingTarget) return;
-    setLoadingTarget('logout');
-    await signOut({ callbackUrl: '/auth/signin' });
-  };
-
-  return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Панель администратора</h1>
-      <div className={styles.buttons}>
-        <button
-          className={styles.button}
-          onClick={() => handleNavigate('/admin/prices')}
-          disabled={loadingTarget !== null}
-        >
-          {loadingTarget === '/admin/prices' ? <FaSpinner className={styles.spin} /> : 'Прайс'}
-        </button>
-
-        <button
-          className={styles.button}
-          onClick={() => handleNavigate('/admin/weekly-schedule')}
-          disabled={loadingTarget !== null}
-        >
-          {loadingTarget === '/admin/weekly-schedule' ? (
-            <FaSpinner className={styles.spin} />
-          ) : (
-            'Розклад прийомів'
-          )}
-        </button>
-
-        <button
-          className={styles.button}
-          onClick={() => handleNavigate('/admin/finance')}
-          disabled={loadingTarget !== null}
-        >
-          {loadingTarget === '/admin/finance' ? (
-            <FaSpinner className={styles.spin} />
-          ) : (
-            'Фінансова звітність'
-          )}
-        </button>
-
-        <button className={styles.button} onClick={handleLogout} disabled={loadingTarget !== null}>
-          {loadingTarget === 'logout' ? <FaSpinner className={styles.spin} /> : 'Вихід'}
-        </button>
-      </div>
-    </div>
-  );
+  // Иначе рендерим защищённый UI
+  return <AdminHome />;
 }

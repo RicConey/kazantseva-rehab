@@ -1,14 +1,20 @@
-'use client';
+// app/admin/appointments/page.tsx
 
-import { useSession, signIn } from 'next-auth/react';
-import { useEffect } from 'react';
 import AdminAppointments from '../../../components/AdminAppointments';
+import { getServerSession } from 'next-auth';
+import { authConfig } from '../../api/auth/[...nextauth]/auth.config';
+import { redirect } from 'next/navigation';
 
-export default function Page() {
-  const { data: session, status } = useSession();
-  useEffect(() => {
-    if (status === 'unauthenticated') signIn();
-  }, [status]);
-  if (status === 'loading' || !session) return <div>Загрузка...</div>;
+export const dynamic = 'force-dynamic';
+
+export default async function AppointmentsPage() {
+  // Проверяем сессию на сервере
+  const session = await getServerSession(authConfig);
+  // Если пользователь не авторизован — перенаправляем на страницу входа
+  if (!session) {
+    redirect('/api/auth/signin');
+  }
+
+  // Иначе рендерим защищённый компонент
   return <AdminAppointments />;
 }
