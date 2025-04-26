@@ -1,3 +1,5 @@
+// components/AdminAppointments.tsx
+
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
@@ -5,16 +7,17 @@ import { useAppointments } from '@lib/useAppointments';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import AppointmentTable from './AdminAppointments/AppointmentTable';
-import NewAppointmentForm from './AdminAppointments/NewAppointmentForm';
+import NewAppointmentForm from './AdminAppointments/NewAppointmentForm/NewAppointmentForm';
 import AppointmentTimeline from './AdminAppointments/AppointmentTimeline';
+import { validateSessionTime } from '../utils/appointmentValidation';
 
 export default function AdminAppointments() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  // если в URL есть ?date=YYYY-MM-DD — берем его, иначе today
   const initialDate = searchParams.get('date') || new Date().toISOString().slice(0, 10);
   const [date, setDate] = useState(initialDate);
   const { data: list, mutate } = useAppointments(date);
+
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState({
     date: '',
@@ -23,9 +26,8 @@ export default function AdminAppointments() {
     client: '',
     notes: '',
     price: '',
-    clientId: '', // важное добавление
+    clientId: '',
   });
-
   const [editFormErrors, setEditFormErrors] = useState<Record<string, boolean>>({});
   const [editErrorMessage, setEditErrorMessage] = useState<string | null>(null);
   const [loadingSaveId, setLoadingSaveId] = useState<number | null>(null);
@@ -93,6 +95,14 @@ export default function AdminAppointments() {
     const [h, m] = time.split(':').map(Number);
     const ld = new Date(Y, M - 1, D, h, m);
 
+    // перевірка часових меж
+    const timeError = validateSessionTime(ld, durNum);
+    if (timeError) {
+      setEditErrorMessage(timeError);
+      setErrorEditId(id);
+      return;
+    }
+
     if (isOverlap(ld, durNum, id)) {
       setEditErrorMessage('Час перекривається з іншими сеансами');
       setErrorEditId(id);
@@ -106,12 +116,8 @@ export default function AdminAppointments() {
       price: priceNum,
       id,
     };
-
-    if (clientId) {
-      payload.clientId = clientId;
-    } else {
-      payload.client = client.trim();
-    }
+    if (clientId) payload.clientId = clientId;
+    else payload.client = client.trim();
 
     setLoadingSaveId(id);
     try {
@@ -120,7 +126,6 @@ export default function AdminAppointments() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
       const json = await res.json();
       if (!res.ok) {
         setEditErrorMessage(json.error || 'Не вдалося зберегти');
@@ -140,19 +145,15 @@ export default function AdminAppointments() {
   const deleteItem = async (id: number) => {
     if (!confirm('Видалити сеанс?')) return;
     setLoadingDeleteId(id);
-    try {
-      await fetch(`/api/appointments/${id}`, { method: 'DELETE' });
-      await mutate();
-    } finally {
-      setLoadingDeleteId(null);
-    }
+    await fetch(`/api/appointments/${id}`, { method: 'DELETE' });
+    await mutate();
+    setLoadingDeleteId(null);
   };
 
   const todayStr = new Date().toISOString().slice(0, 10);
-
   const timelineRef = useRef<HTMLDivElement>(null);
   const scaleStart = 8;
-  const scaleDuration = 13.5; // до 21:30
+  const scaleDuration = 13.5;
 
   const colorMap = useMemo(() => {
     const map: Record<string, string> = {};
@@ -164,14 +165,12 @@ export default function AdminAppointments() {
   }, [list]);
 
   const [activeTooltipId, setActiveTooltipId] = useState<number | null>(null);
-
   function stringToHSLColor(str: string, saturation = 65, lightness = 55): string {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       hash = str.charCodeAt(i) + ((hash << 5) - hash);
     }
-    const hue = Math.abs(hash) % 360;
-    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    return `hsl(${Math.abs(hash) % 360}, ${saturation}%, ${lightness}%)`;
   }
 
   return (
@@ -180,34 +179,34 @@ export default function AdminAppointments() {
       <div
         style={{
           display: 'flex',
-          justifyContent: 'flex-end',
+          justifyContent: 'space-between',
           alignItems: 'center',
-          gap: '0.5rem',
-          marginBottom: '1rem',
-          marginTop: '1rem',
+          margin: '0',
         }}
       >
-        <label htmlFor="dayPicker" style={{ fontWeight: 500 }}>
-          Дата:
-        </label>
-        <input
-          id="dayPicker"
-          type="date"
-          value={date}
-          onChange={e => {
-            const newDate = e.target.value;
-            setDate(newDate);
-            // подтягиваем URL — необязательно, но удобно для "поделиться"
-            router.push(`/admin/appointments?date=${newDate}`);
-          }}
-          style={{
-            padding: '6px 10px',
-            fontSize: '14px',
-            borderRadius: '4px',
-            border: '1px solid #ccc',
-          }}
-        />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <label htmlFor="dayPicker" style={{ fontWeight: 500 }}>
+            Дата:
+          </label>
+          <input
+            id="dayPicker"
+            type="date"
+            value={date}
+            onChange={e => {
+              const newDate = e.target.value;
+              setDate(newDate);
+              router.push(`/admin/appointments?date=${newDate}`);
+            }}
+            style={{
+              padding: '6px 10px',
+              fontSize: '14px',
+              borderRadius: '4px',
+              border: '1px solid #ccc',
+            }}
+          />
+        </div>
       </div>
+
       <AppointmentTimeline
         list={list}
         scaleStart={scaleStart}

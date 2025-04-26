@@ -150,7 +150,7 @@ export default function AppointmentTable({
                       onChange={e =>
                         setEditForm((f: any) => ({
                           ...f,
-                          duration: e.target.value.replace(/\\D/g, '').slice(0, 3),
+                          duration: e.target.value.replace(/\D/g, '').slice(0, 3),
                         }))
                       }
                       disabled={isSaving}
@@ -178,7 +178,7 @@ export default function AppointmentTable({
                       onChange={e =>
                         setEditForm((f: any) => ({
                           ...f,
-                          price: e.target.value.replace(/\\D/g, '').slice(0, 7),
+                          price: e.target.value.replace(/\D/g, '').slice(0, 7),
                         }))
                       }
                       disabled={isSaving}
@@ -188,28 +188,34 @@ export default function AppointmentTable({
                 </>
               );
 
-              return isMobile ? (
-                <tr key={a.id} className={styles.mobileEditingRow}>
-                  <td colSpan={5}>
-                    {baseFields}
-                    <div className={styles.actionsMobile}>
-                      <button onClick={() => handleSave(a)} disabled={isSaving}>
-                        {isSaving ? <FaSpinner className={styles.spin} /> : <FaCheck />}
-                      </button>
-                      <button onClick={cancelEdit} disabled={isSaving}>
-                        <FaTimes />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
+              if (isMobile) {
+                return (
+                  <tr key={a.id} className={styles.mobileEditingRow}>
+                    <td colSpan={5}>
+                      {baseFields}
+                      <div className={styles.actionsMobile}>
+                        <button onClick={() => handleSave(a)} disabled={isSaving}>
+                          {isSaving ? <FaSpinner className={styles.spin} /> : <FaCheck />}
+                        </button>
+                        <button onClick={cancelEdit} disabled={isSaving}>
+                          <FaTimes />
+                        </button>
+                      </div>
+                      {errorMessage && <div className={styles.errorField}>{errorMessage}</div>}
+                    </td>
+                  </tr>
+                );
+              }
+
+              return (
                 <tr key={a.id} className={styles.editingRow}>
-                  <td data-label="Дата / Час">{baseFields.props.children[0].props.children}</td>
-                  <td data-label="Хв">{baseFields.props.children[1].props.children}</td>
+                  <td data-label="Час">{displayTime}</td>
+                  <td data-label="Хв">{a.duration}</td>
                   <td data-label="ФІО">{clientField}</td>
                   <td data-label="Заметки / Сума">
-                    {baseFields.props.children[3].props.children}
-                    {baseFields.props.children[4].props.children}
+                    {a.notes || '-'}
+                    <br />
+                    <strong>{a.price} ₴</strong>
                   </td>
                   <td className={styles.actions}>
                     <button onClick={() => handleSave(a)} disabled={isSaving}>

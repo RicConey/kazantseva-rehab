@@ -48,7 +48,6 @@ export default function ClientsManager() {
     setForm(f => ({ ...f, phone: '+38' + digits }));
   };
 
-  // авторастяжение textarea
   const handleNotesInput = () => {
     const ta = notesRef.current;
     if (!ta) return;
@@ -77,11 +76,18 @@ export default function ClientsManager() {
           notes: form.notes.trim() || null,
         }),
       });
+
+      // парсимо тіло відповіді (якщо сервер повернув JSON з { message })
+      const data = await res.json().catch(() => ({}) as { message?: string });
+
       if (!res.ok) {
-        const json = await res.json();
-        throw new Error(json.error || 'Помилка створення клієнта');
+        // використовуємо message від сервера або загальний текст
+        const message = data.message || 'Помилка створення клієнта';
+        throw new Error(message);
       }
-      const newClient = await res.json();
+
+      // успішно створено — додаємо до списку
+      const newClient = data;
       setClients(prev => [
         {
           ...newClient,
@@ -90,9 +96,12 @@ export default function ClientsManager() {
         },
         ...prev,
       ]);
+
+      // очищуємо форму
       setShowForm(false);
       setForm({ phone: '+38', fio: '', birthDate: '', notes: '' });
     } catch (e: any) {
+      // показуємо текст помилки
       setError(e.message);
     } finally {
       setLoading(false);
@@ -102,7 +111,13 @@ export default function ClientsManager() {
   return (
     <div className={styles.container}>
       <div className="flex justify-start mb-4">
-        <button onClick={() => setShowForm(s => !s)} className={styles.addButton}>
+        <button
+          onClick={() => {
+            setError(null);
+            setShowForm(s => !s);
+          }}
+          className={styles.addButton}
+        >
           {showForm ? 'Скасувати' : 'Додати клієнта'}
         </button>
       </div>

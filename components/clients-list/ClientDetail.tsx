@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Pencil, Check, X, Plus } from 'lucide-react';
 import styles from '../AdminAppointments.module.css';
@@ -30,7 +30,10 @@ export default function ClientDetail({ client, sessions }: Props) {
   const router = useRouter();
 
   const toLocalDateInputValue = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(
+      2,
+      '0'
+    )}`;
 
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState({
@@ -41,6 +44,17 @@ export default function ClientDetail({ client, sessions }: Props) {
   });
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const notesEditRef = useRef<HTMLTextAreaElement>(null);
+
+  // Автоматичне розтягування textarea нотаток
+  useEffect(() => {
+    if (isEditing && notesEditRef.current) {
+      const ta = notesEditRef.current;
+      ta.style.height = 'auto';
+      ta.style.height = ta.scrollHeight + 'px';
+    }
+  }, [form.notes, isEditing]);
 
   const fmtDate = (d: Date) => d.toLocaleDateString('uk-UA');
   const fmtTime = (d: Date) =>
@@ -82,7 +96,7 @@ export default function ClientDetail({ client, sessions }: Props) {
       });
       const text = await res.text();
       const json = text ? JSON.parse(text) : {};
-      if (!res.ok) throw new Error(json.error || res.statusText);
+      if (!res.ok) throw new Error(json.message || res.statusText);
 
       setIsEditing(false);
       router.refresh();
@@ -94,6 +108,15 @@ export default function ClientDetail({ client, sessions }: Props) {
   };
 
   const todayIso = new Date().toISOString().split('T')[0];
+
+  // Стиль заголовків
+  const headerStyle: React.CSSProperties = {
+    margin: 0,
+    fontSize: '1rem',
+    fontWeight: 'bold',
+    color: '#249b89',
+    textAlign: 'center',
+  };
 
   return (
     <div className={styles.container}>
@@ -145,15 +168,21 @@ export default function ClientDetail({ client, sessions }: Props) {
           </div>
 
           <div className={styles.field}>
-            <label htmlFor="notes" className={styles.label}>
+            <label
+              htmlFor="notes"
+              className={styles.label}
+              style={{ color: '#249b89', fontWeight: 'bold' }}
+            >
               Нотатки
             </label>
             <textarea
               id="notes"
               name="notes"
+              ref={notesEditRef}
               value={form.notes}
               onChange={handleChange}
               className={styles.textarea}
+              style={{ overflow: 'hidden' }}
             />
           </div>
 
@@ -182,10 +211,17 @@ export default function ClientDetail({ client, sessions }: Props) {
         </div>
       ) : (
         <div className={styles.formCard}>
-          <div className={styles.detailHeader}>
-            <h2 className={styles.title} style={{ margin: 0 }}>
-              Профіль клієнта
-            </h2>
+          {/* Ім’я клієнта з кнопкою редагування */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              marginBottom: '1rem',
+            }}
+          >
+            <h2 style={headerStyle}>{client.name}</h2>
             <button
               onClick={() => setIsEditing(true)}
               className={styles.submitButton}
@@ -196,19 +232,25 @@ export default function ClientDetail({ client, sessions }: Props) {
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>Телефон</label>
+            <label className={styles.label} style={{ color: '#249b89', fontWeight: 'bold' }}>
+              Телефон
+            </label>
             <a href={`tel:${client.phone}`} className={styles.staticField}>
               {client.phone}
             </a>
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>Дата народження</label>
+            <label className={styles.label} style={{ color: '#249b89', fontWeight: 'bold' }}>
+              Дата народження
+            </label>
             <div className={styles.staticField}>{fmtDate(client.birthDate)}</div>
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>Нотатки</label>
+            <label className={styles.label} style={{ color: '#249b89', fontWeight: 'bold' }}>
+              Нотатки
+            </label>
             <div className={styles.staticField} style={{ whiteSpace: 'pre-wrap' }}>
               {client.notes || '—'}
             </div>
@@ -216,10 +258,17 @@ export default function ClientDetail({ client, sessions }: Props) {
         </div>
       )}
 
-      <div style={{ display: 'flex', alignItems: 'center', marginTop: '1rem' }}>
-        <h2 className={styles.title} style={{ margin: 0, flex: 1 }}>
-          Сеанси клієнта
-        </h2>
+      {/* Сеанси клієнта з кнопкою "+" поруч */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '0.5rem',
+          margin: '1rem 0',
+        }}
+      >
+        <h2 style={headerStyle}>Сеанси клієнта</h2>
         <button
           onClick={() => router.push(`/admin/appointments?date=${todayIso}`)}
           className={styles.addButton}

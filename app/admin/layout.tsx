@@ -18,7 +18,7 @@ export default async function AdminLayout({ children }: Props) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <AdminMenu />
-      <main style={{ flex: 1 }}>{children}</main>
+      <main style={{ flex: 1, margin: 5 }}>{children}</main>
     </div>
   );
 }

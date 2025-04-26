@@ -8,25 +8,26 @@ import { requireAdmin } from '@lib/auth';
 
 const TZ = 'Europe/Kyiv';
 
-/** Универсальный парсер дат: поддерживает ISO и DMY */
+/**
+ * Универсальный парсер дат:
+ * - ISO 8601 (с 'T' или без) => new Date(str)
+ * - DMY "dd.mm.yyyy" или "dd.mm.yyyy HH:mm"
+ */
 function parseAnyDate(str: string): Date {
-  if (str.includes('.')) {
-    // DMY => "dd.mm.yyyy" или "dd.mm.yyyy HH:mm"
-    const [datePart, timePart] = str.split(' ');
-    const [d, m, y] = datePart.split('.');
-    const dt = new Date(`${y}-${m}-${d}`);
-    if (timePart) {
-      const [hh, mm] = timePart.split(':').map(Number);
-      dt.setHours(hh, mm, 0, 0);
-    }
-    return dt;
-  } else {
-    // ISO => "yyyy-mm-dd" или полный ISO с временем
+  if (str.includes('T') || !str.includes('.')) {
     return new Date(str);
   }
+  const [datePart, timePart] = str.split(' ');
+  const [d, m, y] = datePart.split('.');
+  const dt = new Date(`${y}-${m}-${d}`);
+  if (timePart) {
+    const [hh, mm] = timePart.split(':').map(Number);
+    dt.setHours(hh, mm, 0, 0);
+  }
+  return dt;
 }
 
-/** Вспомогательная: извлекает числовой id сеанса из URL */
+/** Извлекает числовой id из URL */
 function getIdFromUrl(url: string): number {
   const parts = new URL(url).pathname.split('/');
   return Number(parts[parts.length - 1]);
@@ -37,27 +38,33 @@ export async function PUT(req: NextRequest) {
   const denied = await requireAdmin();
   if (denied) return denied;
 
-  // 2) Парсим id и тело запроса
+  // 2) Парсим id и тело
   const id = getIdFromUrl(req.url);
   const { startTime, duration, client, clientId, notes, price } = await req.json();
 
-  // 3) Парсим дату начала через универсальный парсер
+  // 3) Парсим новую дату начала
   const newStart = parseAnyDate(startTime as string);
+  if (isNaN(newStart.getTime())) {
+    return NextResponse.json(
+      { error: 'Невірний формат дати та часу початку сеансу.' },
+      { status: 400 }
+    );
+  }
   const newEnd = new Date(newStart.getTime() + duration * 60000);
 
-  // 4) Определяем границы дня
+  // 4) Границы дня
   const dayStart = new Date(newStart.getFullYear(), newStart.getMonth(), newStart.getDate());
   const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
 
-  // 5) Ищем другие сеансы в этот же день (кроме текущего)
+  // 5) Ищем другие сеансы в тот же день (кроме текущего)
   const existing = await prisma.appointment.findMany({
     where: {
       AND: [
         { id: { not: id } },
         {
           startTime: {
-            gte: dayStart.toISOString(),
-            lt: dayEnd.toISOString(),
+            gte: dayStart,
+            lt: dayEnd,
           },
         },
       ],
@@ -72,17 +79,23 @@ export async function PUT(req: NextRequest) {
   });
 
   if (conflict) {
-    const conflictStr = formatInTimeZone(new Date(conflict.startTime), TZ, 'dd.MM.yyyy HH:mm');
-    const newStr = formatInTimeZone(newStart, TZ, 'dd.MM.yyyy HH:mm');
+    // Формируем диапазоны в нужном формате
+    const newRange = `${formatInTimeZone(newStart, TZ, 'dd.MM.yyyy HH:mm')}-${formatInTimeZone(newEnd, TZ, 'HH:mm')}`;
+    const conflictStart = new Date(conflict.startTime);
+    const conflictEnd = new Date(conflictStart.getTime() + conflict.duration * 60000);
+    const conflictRange = `${formatInTimeZone(conflictStart, TZ, 'dd.MM.yyyy HH:mm')}-${formatInTimeZone(conflictEnd, TZ, 'HH:mm')}`;
+
     return NextResponse.json(
-      { error: `Неможливо на ${newStr}, бо вже є сеанс ${conflictStr}` },
+      {
+        error: `Неможливо призначити на ${newRange}, бо вже є сеанс ${conflictRange}`,
+      },
       { status: 400 }
     );
   }
 
-  // 7) Формируем объект обновления
+  // 7) Формируем данные для обновления
   const updateData: any = {
-    startTime: newStart.toISOString(),
+    startTime: newStart,
     duration,
     clientId: clientId ?? null,
     notes: notes?.trim() || null,
@@ -92,7 +105,7 @@ export async function PUT(req: NextRequest) {
     updateData.client = client.trim();
   }
 
-  // 8) Обновляем сеанс в базе
+  // 8) Обновляем запись
   const updated = await prisma.appointment.update({
     where: { id },
     data: updateData,
@@ -104,15 +117,10 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  // 1) Авторизация
   const denied = await requireAdmin();
   if (denied) return denied;
-
-  // 2) Парсим id и удаляем
   const id = getIdFromUrl(req.url);
   await prisma.appointment.delete({ where: { id } });
-
-  // 3) Сбрасываем кеш и возвращаем результат
   revalidatePath('/api/appointments');
   return NextResponse.json({ success: true }, { status: 200 });
 }

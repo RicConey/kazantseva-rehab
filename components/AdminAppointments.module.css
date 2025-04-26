@@ -748,3 +748,9 @@
   font-weight: 500;
   line-height: 1.5;
 }
+.highlight {
+  background-color: #7ecabe; /* основной цвет сайта */
+  color: #ffffff;
+  padding: 0 0.2em;
+  border-radius: 2px;
+}
