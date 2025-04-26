@@ -1,14 +1,29 @@
+// components/clients-list/ClientDetailPage.tsx
 'use client';
 
-import ClientDetail, { Client as ClientType, Session } from './ClientDetail';
+import React, { useState, useEffect } from 'react';
+import ClientDetail, { Client, Session } from './ClientDetail';
 
 interface Props {
-  client: ClientType; // уже содержит id, name, phone, birthDate, notes
-  sessions: Session[]; // список всех сеансов
+  client: Client;
+  sessions?: Session[];
+  sessionsLoading?: boolean;
 }
 
-export default function ClientDetailPage({ client, sessions }: Props) {
-  // Просто прокидываем в низ,
-  // вся логика отображения и редактирования — внутри ClientDetail
-  return <ClientDetail client={client} sessions={sessions} />;
+export default function ClientDetailPage({
+  client,
+  sessions: initialSessions,
+  sessionsLoading: initialLoading = true,
+}: Props) {
+  const [sessions, setSessions] = useState<Session[] | undefined>(initialSessions);
+  const [loading, setLoading] = useState(initialLoading);
+
+  // Если данные пришли сразу — отключаем спиннер
+  useEffect(() => {
+    if (initialLoading && initialSessions !== undefined) {
+      setLoading(false);
+    }
+  }, [initialLoading, initialSessions]);
+
+  return <ClientDetail client={client} sessions={sessions} sessionsLoading={loading} />;
 }

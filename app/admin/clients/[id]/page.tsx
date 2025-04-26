@@ -40,17 +40,18 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     })
     .sort((a, b) => b.start.getTime() - a.start.getTime());
 
-  // Рендерим страницу
+  // Рендерим страницу с флагом загрузки false
   return (
     <ClientDetailPage
       client={{
-        id: clientData.id, // ← обязательно передаём UUID
+        id: clientData.id,
         name: clientData.name,
         phone: clientData.phone,
         birthDate: new Date(clientData.birthDate),
         notes: clientData.notes ?? null,
       }}
       sessions={sessions}
+      sessionsLoading={false}
     />
   );
 }

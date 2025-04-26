@@ -1,5 +1,4 @@
 // components/AdminAppointments.tsx
-
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
@@ -10,13 +9,16 @@ import AppointmentTable from './AdminAppointments/AppointmentTable';
 import NewAppointmentForm from './AdminAppointments/NewAppointmentForm/NewAppointmentForm';
 import AppointmentTimeline from './AdminAppointments/AppointmentTimeline';
 import { validateSessionTime } from '../utils/appointmentValidation';
+import styles from './AdminAppointments.module.css';
 
 export default function AdminAppointments() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialDate = searchParams.get('date') || new Date().toISOString().slice(0, 10);
   const [date, setDate] = useState(initialDate);
-  const { data: list, mutate } = useAppointments(date);
+
+  // Теперь хук отдаёт appointments и isLoading
+  const { appointments: list, isLoading, error, mutate } = useAppointments(date);
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState({
@@ -32,7 +34,6 @@ export default function AdminAppointments() {
   const [editErrorMessage, setEditErrorMessage] = useState<string | null>(null);
   const [loadingSaveId, setLoadingSaveId] = useState<number | null>(null);
   const [loadingDeleteId, setLoadingDeleteId] = useState<number | null>(null);
-  const [errorEditId, setErrorEditId] = useState<number | null>(null);
 
   const startEdit = (a: any) => {
     const dt = new Date(a.startTime);
@@ -48,30 +49,29 @@ export default function AdminAppointments() {
     });
     setEditFormErrors({});
     setEditErrorMessage(null);
-    setErrorEditId(null);
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setEditFormErrors({});
     setEditErrorMessage(null);
-    setErrorEditId(null);
   };
 
   const isOverlap = (start: Date, duration: number, excludeId?: number): boolean => {
     const end = new Date(start.getTime() + duration * 60000);
-    return list.some(a => {
-      if (a.id === excludeId) return false;
-      const aStart = new Date(a.startTime);
-      const aEnd = new Date(aStart.getTime() + a.duration * 60000);
-      return start < aEnd && end > aStart;
-    });
+    return (
+      list.some(a => {
+        if (a.id === excludeId) return false;
+        const aStart = new Date(a.startTime);
+        const aEnd = new Date(aStart.getTime() + a.duration * 60000);
+        return start < aEnd && end > aStart;
+      }) ?? false
+    );
   };
 
   async function saveEdit(id: number) {
     setEditFormErrors({});
     setEditErrorMessage(null);
-    setErrorEditId(null);
 
     const errs: Record<string, boolean> = {};
     const { date: d, time, duration, client, notes, price, clientId } = editForm;
@@ -87,7 +87,6 @@ export default function AdminAppointments() {
     if (Object.keys(errs).length) {
       setEditFormErrors(errs);
       setEditErrorMessage('Поля заповнені некоректно');
-      setErrorEditId(id);
       return;
     }
 
@@ -95,17 +94,13 @@ export default function AdminAppointments() {
     const [h, m] = time.split(':').map(Number);
     const ld = new Date(Y, M - 1, D, h, m);
 
-    // перевірка часових меж
     const timeError = validateSessionTime(ld, durNum);
     if (timeError) {
       setEditErrorMessage(timeError);
-      setErrorEditId(id);
       return;
     }
-
     if (isOverlap(ld, durNum, id)) {
       setEditErrorMessage('Час перекривається з іншими сеансами');
-      setErrorEditId(id);
       return;
     }
 
@@ -129,14 +124,12 @@ export default function AdminAppointments() {
       const json = await res.json();
       if (!res.ok) {
         setEditErrorMessage(json.error || 'Не вдалося зберегти');
-        setErrorEditId(id);
       } else {
         await mutate();
         cancelEdit();
       }
     } catch {
       setEditErrorMessage('Не вдалося зберегти');
-      setErrorEditId(id);
     } finally {
       setLoadingSaveId(null);
     }
@@ -159,52 +152,30 @@ export default function AdminAppointments() {
     const map: Record<string, string> = {};
     list.forEach(a => {
       const key = a.clientRel?.name ?? a.client;
-      map[key] = stringToHSLColor(key);
+      let hash = 0;
+      for (let i = 0; i < key.length; i++) {
+        hash = key.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      map[key] = `hsl(${Math.abs(hash) % 360},65%,55%)`;
     });
     return map;
   }, [list]);
 
-  const [activeTooltipId, setActiveTooltipId] = useState<number | null>(null);
-  function stringToHSLColor(str: string, saturation = 65, lightness = 55): string {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = str.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return `hsl(${Math.abs(hash) % 360}, ${saturation}%, ${lightness}%)`;
-  }
-
   return (
     <>
       <NewAppointmentForm todayStr={todayStr} onCreated={mutate} />
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          margin: '0',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <label htmlFor="dayPicker" style={{ fontWeight: 500 }}>
-            Дата:
-          </label>
-          <input
-            id="dayPicker"
-            type="date"
-            value={date}
-            onChange={e => {
-              const newDate = e.target.value;
-              setDate(newDate);
-              router.push(`/admin/appointments?date=${newDate}`);
-            }}
-            style={{
-              padding: '6px 10px',
-              fontSize: '14px',
-              borderRadius: '4px',
-              border: '1px solid #ccc',
-            }}
-          />
-        </div>
+
+      <div className={styles.datePickerRow}>
+        <label htmlFor="dayPicker">Дата:</label>
+        <input
+          id="dayPicker"
+          type="date"
+          value={date}
+          onChange={e => {
+            setDate(e.target.value);
+            router.push(`/admin/appointments?date=${e.target.value}`);
+          }}
+        />
       </div>
 
       <AppointmentTimeline
@@ -213,8 +184,8 @@ export default function AdminAppointments() {
         scaleDuration={scaleDuration}
         colorMap={colorMap}
         timelineRef={timelineRef}
-        activeTooltipId={activeTooltipId}
-        toggleTooltip={setActiveTooltipId}
+        activeTooltipId={null}
+        toggleTooltip={() => {}}
         kyivFormatter={
           new Intl.DateTimeFormat('uk-UA', {
             timeZone: 'Europe/Kyiv',
@@ -226,6 +197,7 @@ export default function AdminAppointments() {
 
       <AppointmentTable
         list={list}
+        isLoading={isLoading}
         todayStr={todayStr}
         kyivFormatter={
           new Intl.DateTimeFormat('uk-UA', {

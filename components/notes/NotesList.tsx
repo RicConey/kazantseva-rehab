@@ -61,8 +61,24 @@ export default function NotesList({ notes, loading, onEdit, onDelete }: NotesLis
     setDeletingId(null);
   };
 
-  if (loading) return <p>Завантаження…</p>;
-  if (notes.length === 0) return <p>Немає жодної нотатки.</p>;
+  // Спиннер при загрузке
+  if (loading) {
+    return (
+      <div className={adminStyles.loadingWrapper}>
+        <FaSpinner className={adminStyles.spin} />
+        <span className={adminStyles.loadingText}>Завантаження нотаток…</span>
+      </div>
+    );
+  }
+
+  // Сообщение, если нет заметок
+  if (notes.length === 0) {
+    return (
+      <div className={adminStyles.loadingWrapper}>
+        <span>Немає жодної нотатки.</span>
+      </div>
+    );
+  }
 
   return (
     <ul className={notesStyles.notesList}>

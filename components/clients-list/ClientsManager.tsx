@@ -5,6 +5,7 @@ import React, { useState, useEffect, FormEvent, ChangeEvent, useRef } from 'reac
 import ClientsList, { Client as ClientType } from './ClientsList';
 import styles from '../AdminAppointments.module.css';
 import mobileStyles from './ClientsManager.module.css';
+import { Loader2 } from 'lucide-react'; // импорт спиннера
 
 function parseDateDMY(str: string): string {
   const [y, m, d] = str.split('-');
@@ -77,16 +78,13 @@ export default function ClientsManager() {
         }),
       });
 
-      // парсимо тіло відповіді (якщо сервер повернув JSON з { message })
       const data = await res.json().catch(() => ({}) as { message?: string });
 
       if (!res.ok) {
-        // використовуємо message від сервера або загальний текст
         const message = data.message || 'Помилка створення клієнта';
         throw new Error(message);
       }
 
-      // успішно створено — додаємо до списку
       const newClient = data;
       setClients(prev => [
         {
@@ -97,11 +95,9 @@ export default function ClientsManager() {
         ...prev,
       ]);
 
-      // очищуємо форму
       setShowForm(false);
       setForm({ phone: '+38', fio: '', birthDate: '', notes: '' });
     } catch (e: any) {
-      // показуємо текст помилки
       setError(e.message);
     } finally {
       setLoading(false);
@@ -174,7 +170,10 @@ export default function ClientsManager() {
       )}
 
       {loading ? (
-        <p className={styles.error}>Завантаження...</p>
+        <div className={mobileStyles.loadingWrapper}>
+          <Loader2 className={mobileStyles.spinner} />
+          <span className={mobileStyles.loadingText}>Завантаження даних…</span>
+        </div>
       ) : (
         <ClientsList clients={clients} />
       )}

@@ -41,7 +41,6 @@ export default function AdminPrices(): ReactElement {
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
-  // Определяем мобильный режим
   useEffect(() => {
     const updateMobile = () => setIsMobile(window.innerWidth <= 768);
     updateMobile();
@@ -49,7 +48,6 @@ export default function AdminPrices(): ReactElement {
     return () => window.removeEventListener('resize', updateMobile);
   }, []);
 
-  // Загрузка списка цен с skeleton
   const fetchPrices = async () => {
     setIsLoadingPrices(true);
     try {
@@ -70,7 +68,6 @@ export default function AdminPrices(): ReactElement {
     fetchPrices();
   }, []);
 
-  // Сброс формы
   const resetForm = () => {
     setForm({ service: '', duration: ['', '', '', ''], price: ['', '', '', ''] });
     setEditingId(null);
@@ -78,7 +75,6 @@ export default function AdminPrices(): ReactElement {
     setError('');
   };
 
-  // Обработка изменений формы
   const handleChange = (
     e: ChangeEvent<HTMLInputElement>,
     index?: number,
@@ -94,7 +90,6 @@ export default function AdminPrices(): ReactElement {
     }
   };
 
-  // Отправка формы (добавление или обновление)
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (loadingAction) return;
@@ -131,7 +126,6 @@ export default function AdminPrices(): ReactElement {
     }
   };
 
-  // Подготовка к редактированию
   const handleEdit = (item: PriceItem) => {
     setEditingId(item.id);
     setForm({
@@ -146,7 +140,6 @@ export default function AdminPrices(): ReactElement {
     setFormVisible(false);
   };
 
-  // Удаление
   const handleDelete = async (id: string) => {
     if (!confirm('Ви впевнені, що хочете видалити запис?') || loadingAction) return;
     setLoadingAction(`delete-${id}`);
@@ -164,7 +157,6 @@ export default function AdminPrices(): ReactElement {
     }
   };
 
-  // Перемещение
   const moveRecord = async (id: string, dir: 'up' | 'down') => {
     if (loadingAction) return;
     setLoadingAction(`move-${id}-${dir}`);
@@ -248,11 +240,10 @@ export default function AdminPrices(): ReactElement {
       )}
 
       <div className={styles.tableWrapper}>
-        {isLoadingPrices && isMobile ? (
-          <div className={styles.skeletonMobileWrapper}>
-            {Array.from({ length: 5 }).map((_, idx) => (
-              <div key={idx} className={styles.skeletonMobileBlock} />
-            ))}
+        {isLoadingPrices ? (
+          <div className={styles.loadingWrapper}>
+            <FaSpinner className={styles.spin} />
+            <span className={styles.loadingText}>Завантаження даних…</span>
           </div>
         ) : (
           <table className={styles.table}>
@@ -265,116 +256,102 @@ export default function AdminPrices(): ReactElement {
               </tr>
             </thead>
             <tbody>
-              {isLoadingPrices && !isMobile
-                ? Array.from({ length: 5 }).map((_, idx) => (
-                    <tr key={idx} className={styles.skeletonRow}>
-                      <td colSpan={4}>
-                        <div className={styles.skeletonCell} />
-                      </td>
-                    </tr>
-                  ))
-                : prices.map((item, index) => (
-                    <tr key={item.id}>
-                      <td className={styles.inlineLabel}>№ {index + 1}</td>
-                      {editingId === item.id ? (
-                        <td colSpan={3}>
-                          <form onSubmit={handleSubmit}>
+              {prices.map((item, index) => (
+                <tr key={item.id}>
+                  <td className={styles.inlineLabel}>№ {index + 1}</td>
+                  {editingId === item.id ? (
+                    <td colSpan={3}>
+                      <form onSubmit={handleSubmit}>
+                        <input
+                          type="text"
+                          name="service"
+                          value={form.service}
+                          onChange={e => handleChange(e)}
+                          placeholder="Послуга"
+                          required
+                          style={{ marginBottom: 8, width: '100%' }}
+                        />
+                        {form.duration.map((d, i) => (
+                          <div key={i} className={styles.pair}>
                             <input
                               type="text"
-                              name="service"
-                              value={form.service}
-                              onChange={e => handleChange(e)}
-                              placeholder="Послуга"
-                              required
-                              style={{ marginBottom: 8, width: '100%' }}
+                              placeholder={`Тривалість ${i + 1}`}
+                              value={form.duration[i]}
+                              onChange={e => handleChange(e, i, 'duration')}
                             />
-                            {form.duration.map((d, i) => (
-                              <div key={i} className={styles.pair}>
-                                <input
-                                  type="text"
-                                  placeholder={`Тривалість ${i + 1}`}
-                                  value={form.duration[i]}
-                                  onChange={e => handleChange(e, i, 'duration')}
-                                />
-                                <input
-                                  type="text"
-                                  placeholder={`Ціна ${i + 1}`}
-                                  value={form.price[i]}
-                                  onChange={e => handleChange(e, i, 'price')}
-                                />
-                              </div>
-                            ))}
-                            <div className={styles.actions}>
-                              <button type="submit" disabled={loadingAction === 'update'}>
-                                {loadingAction === 'update' ? (
-                                  <FaSpinner className={styles.spin} />
-                                ) : (
-                                  <>
-                                    <FaCheck /> Оновити
-                                  </>
-                                )}
-                              </button>
-                              <button type="button" onClick={resetForm}>
-                                <FaTimes /> Скасувати
-                              </button>
-                            </div>
-                          </form>
-                        </td>
-                      ) : (
-                        <>
-                          <td>{item.service}</td>
-                          <td>
-                            {Array.isArray(item.duration) ? (
-                              item.duration.map((d, i) => (
-                                <div key={i}>
-                                  {d} — {item.price[i] || ''}
-                                </div>
-                              ))
+                            <input
+                              type="text"
+                              placeholder={`Ціна ${i + 1}`}
+                              value={form.price[i]}
+                              onChange={e => handleChange(e, i, 'price')}
+                            />
+                          </div>
+                        ))}
+                        <div className={styles.actions}>
+                          <button type="submit" disabled={loadingAction === 'update'}>
+                            {loadingAction === 'update' ? (
+                              <FaSpinner className={styles.spin} />
                             ) : (
-                              <div>
-                                {item.duration} — {item.price}
-                              </div>
+                              <>
+                                <FaCheck /> Оновити
+                              </>
                             )}
-                          </td>
-                          <td className={styles.actions}>
-                            <button
-                              onClick={() => moveRecord(item.id, 'up')}
-                              disabled={loadingAction === `move-${item.id}-up`}
-                            >
-                              {loadingAction === `move-${item.id}-up` ? (
-                                <FaSpinner className={styles.spin} />
-                              ) : (
-                                <FaArrowUp />
-                              )}
-                            </button>
-                            <button
-                              onClick={() => moveRecord(item.id, 'down')}
-                              disabled={loadingAction === `move-${item.id}-down`}
-                            >
-                              {loadingAction === `move-${item.id}-down` ? (
-                                <FaSpinner className={styles.spin} />
-                              ) : (
-                                <FaArrowDown />
-                              )}
-                            </button>
-                            <button onClick={() => handleEdit(item)}>
-                              <FaEdit />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(item.id)}
-                              disabled={loadingAction === `delete-${item.id}`}
-                            >
-                              {loadingAction === `delete-${item.id}` ? (
-                                <FaSpinner className={styles.spin} />
-                              ) : (
-                                <FaTrash />
-                              )}
-                            </button>
-                          </td>
-                        </>
-                      )}
-                    </tr>
-                  ))}
+                          </button>
+                          <button type="button" onClick={resetForm}>
+                            <FaTimes /> Скасувати
+                          </button>
+                        </div>
+                      </form>
+                    </td>
+                  ) : (
+                    <>
+                      <td>{item.service}</td>
+                      <td>
+                        {item.duration.map((d, i) => (
+                          <div key={i}>
+                            {d} — {item.price[i] || ''}
+                          </div>
+                        ))}
+                      </td>
+                      <td className={styles.actions}>
+                        <button
+                          onClick={() => moveRecord(item.id, 'up')}
+                          disabled={loadingAction === `move-${item.id}-up`}
+                        >
+                          {loadingAction === `move-${item.id}-up` ? (
+                            <FaSpinner className={styles.spin} />
+                          ) : (
+                            <FaArrowUp />
+                          )}
+                        </button>
+                        <button
+                          onClick={() => moveRecord(item.id, 'down')}
+                          disabled={loadingAction === `move-${item.id}-down`}
+                        >
+                          {loadingAction === `move-${item.id}-down` ? (
+                            <FaSpinner className={styles.spin} />
+                          ) : (
+                            <FaArrowDown />
+                          )}
+                        </button>
+                        <button onClick={() => handleEdit(item)}>
+                          <FaEdit />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          disabled={loadingAction === `delete-${item.id}`}
+                        >
+                          {loadingAction === `delete-${item.id}` ? (
+                            <FaSpinner className={styles.spin} />
+                          ) : (
+                            <FaTrash />
+                          )}
+                        </button>
+                      </td>
+                    </>
+                  )}
+                </tr>
+              ))}
             </tbody>
           </table>
         )}

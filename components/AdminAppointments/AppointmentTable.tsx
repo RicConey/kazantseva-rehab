@@ -1,5 +1,4 @@
-// components/AppointmentTable.tsx
-
+// components/AdminAppointments/AppointmentTable.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -7,24 +6,20 @@ import Link from 'next/link';
 import { FaEdit, FaTrash, FaCheck, FaTimes, FaSpinner } from 'react-icons/fa';
 import styles from '../AdminAppointments.module.css';
 
-const TZ = 'Europe/Kyiv';
-
 interface Appointment {
   id: number;
   startTime: string;
   duration: number;
   client: string;
   clientId?: string | null;
-  clientRel?: {
-    id: string;
-    name: string;
-  } | null;
+  clientRel?: { id: string; name: string } | null;
   notes?: string | null;
   price: number;
 }
 
 interface Props {
-  list: Appointment[];
+  list?: Appointment[];
+  isLoading: boolean;
   todayStr: string;
   kyivFormatter: Intl.DateTimeFormat;
   editingId: number | null;
@@ -50,6 +45,7 @@ interface Props {
 
 export default function AppointmentTable({
   list,
+  isLoading,
   todayStr,
   kyivFormatter,
   editingId,
@@ -65,27 +61,36 @@ export default function AppointmentTable({
   errorFields,
   errorMessage,
 }: Props) {
-  const cls = (field: string) => (errorFields[field] ? styles.inputError : '');
+  const cls = (f: string) => (errorFields[f] ? styles.inputError : '');
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  const handleSave = (a: Appointment) => {
-    const payload = {
-      ...editForm,
-      id: a.id,
-    };
-    if (a.clientId) {
-      delete payload.client;
-    }
-    saveEdit(a.id, payload);
-  };
+  // 1) Показ спиннера під час завантаження
+  if (isLoading) {
+    return (
+      <div className={styles.loadingWrapper}>
+        <FaSpinner className={styles.spin} />
+        <span className={styles.loadingText}>Завантаження сеансів…</span>
+      </div>
+    );
+  }
 
+  // 2) Повідомлення, якщо сеансів немає
+  if (!list || list.length === 0) {
+    return (
+      <div className={styles.loadingWrapper}>
+        <span>Немає сеансів на {todayStr}</span>
+      </div>
+    );
+  }
+
+  // 3) Обчислення суми та рендер таблиці
   const totalForDay = list.reduce((sum, a) => sum + a.price, 0);
 
   return (
@@ -108,6 +113,7 @@ export default function AppointmentTable({
             const endDt = new Date(startDt.getTime() + a.duration * 60000);
             const displayTime = `${kyivFormatter.format(startDt)}–${kyivFormatter.format(endDt)}`;
 
+            // Режим редагування
             if (editingId === a.id) {
               const clientField =
                 a.clientId && a.clientRel ? (
@@ -122,7 +128,7 @@ export default function AppointmentTable({
                   />
                 );
 
-              const baseFields = (
+              const fields = (
                 <>
                   <div className={styles.field}>
                     <label>Дата / Час</label>
@@ -188,13 +194,14 @@ export default function AppointmentTable({
                 </>
               );
 
+              // Мобільна версія редактора
               if (isMobile) {
                 return (
                   <tr key={a.id} className={styles.mobileEditingRow}>
                     <td colSpan={5}>
-                      {baseFields}
+                      {fields}
                       <div className={styles.actionsMobile}>
-                        <button onClick={() => handleSave(a)} disabled={isSaving}>
+                        <button onClick={() => saveEdit(a.id, editForm)} disabled={isSaving}>
                           {isSaving ? <FaSpinner className={styles.spin} /> : <FaCheck />}
                         </button>
                         <button onClick={cancelEdit} disabled={isSaving}>
@@ -207,6 +214,7 @@ export default function AppointmentTable({
                 );
               }
 
+              // Десктоп-версія редактора
               return (
                 <tr key={a.id} className={styles.editingRow}>
                   <td data-label="Час">{displayTime}</td>
@@ -218,7 +226,7 @@ export default function AppointmentTable({
                     <strong>{a.price} ₴</strong>
                   </td>
                   <td className={styles.actions}>
-                    <button onClick={() => handleSave(a)} disabled={isSaving}>
+                    <button onClick={() => saveEdit(a.id, editForm)} disabled={isSaving}>
                       {isSaving ? <FaSpinner className={styles.spin} /> : <FaCheck />}
                     </button>
                     <button onClick={cancelEdit} disabled={isSaving}>
@@ -230,6 +238,7 @@ export default function AppointmentTable({
               );
             }
 
+            // Обычная строка таблицы
             return (
               <tr key={a.id}>
                 <td data-label="Час">{displayTime}</td>
@@ -254,8 +263,8 @@ export default function AppointmentTable({
                   >
                     <FaEdit />
                   </button>
-                  <button onClick={() => deleteItem(a.id)} disabled={isDeleting}>
-                    {isDeleting ? <FaSpinner className={styles.spin} /> : <FaTrash />}
+                  <button onClick={() => deleteItem(a.id)} disabled={loadingDeleteId === a.id}>
+                    {loadingDeleteId === a.id ? <FaSpinner className={styles.spin} /> : <FaTrash />}
                   </button>
                 </td>
               </tr>

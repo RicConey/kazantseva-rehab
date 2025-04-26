@@ -1,9 +1,11 @@
+// components/clients-list/ClientDetail.tsx
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Pencil, Check, X, Plus } from 'lucide-react';
 import styles from '../AdminAppointments.module.css';
+import { FaSpinner } from 'react-icons/fa';
 
 export interface Session {
   id: number;
@@ -23,18 +25,21 @@ export interface Client {
 
 interface Props {
   client: Client;
-  sessions: Session[];
+  sessions?: Session[];
+  sessionsLoading: boolean;
 }
 
-export default function ClientDetail({ client, sessions }: Props) {
+export default function ClientDetail({ client, sessions = [], sessionsLoading }: Props) {
   const router = useRouter();
 
+  // Перевод даты в value для <input type="date">
   const toLocalDateInputValue = (d: Date) =>
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(
       2,
       '0'
     )}`;
 
+  // --- редактирование клиента (было без изменений) ---
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState({
     name: client.name,
@@ -44,10 +49,8 @@ export default function ClientDetail({ client, sessions }: Props) {
   });
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-
   const notesEditRef = useRef<HTMLTextAreaElement>(null);
 
-  // Автоматичне розтягування textarea нотаток
   useEffect(() => {
     if (isEditing && notesEditRef.current) {
       const ta = notesEditRef.current;
@@ -55,25 +58,6 @@ export default function ClientDetail({ client, sessions }: Props) {
       ta.style.height = ta.scrollHeight + 'px';
     }
   }, [form.notes, isEditing]);
-
-  const fmtDate = (d: Date) => d.toLocaleDateString('uk-UA');
-  const fmtTime = (d: Date) =>
-    d.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const getRowClass = (start: Date) => {
-    const d = new Date(start);
-    d.setHours(0, 0, 0, 0);
-    if (d.getTime() === today.getTime()) return styles.currentSession;
-    else if (d.getTime() < today.getTime()) return styles.pastSession;
-    else return styles.futureSession;
-  };
-
-  const handleRowClick = (date: Date) => {
-    const iso = date.toISOString().split('T')[0];
-    router.push(`/admin/appointments?date=${iso}`);
-  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -97,7 +81,6 @@ export default function ClientDetail({ client, sessions }: Props) {
       const text = await res.text();
       const json = text ? JSON.parse(text) : {};
       if (!res.ok) throw new Error(json.message || res.statusText);
-
       setIsEditing(false);
       router.refresh();
     } catch (e: any) {
@@ -107,23 +90,12 @@ export default function ClientDetail({ client, sessions }: Props) {
     }
   };
 
-  const todayIso = new Date().toISOString().split('T')[0];
-
-  // Стиль заголовків
-  const headerStyle: React.CSSProperties = {
-    margin: 0,
-    fontSize: '1rem',
-    fontWeight: 'bold',
-    color: '#249b89',
-    textAlign: 'center',
-  };
-
+  // --- отображение блока клиента ---
   return (
     <div className={styles.container}>
       {isEditing ? (
         <div className={styles.formCard}>
           <h2 className={styles.title}>Редагування клієнта</h2>
-
           <div className={styles.field}>
             <label htmlFor="name" className={styles.label}>
               Ім’я
@@ -137,7 +109,6 @@ export default function ClientDetail({ client, sessions }: Props) {
               className={styles.input}
             />
           </div>
-
           <div className={styles.twoColumnsRow}>
             <div className={styles.field}>
               <label htmlFor="phone" className={styles.label}>
@@ -166,7 +137,6 @@ export default function ClientDetail({ client, sessions }: Props) {
               />
             </div>
           </div>
-
           <div className={styles.field}>
             <label
               htmlFor="notes"
@@ -185,9 +155,7 @@ export default function ClientDetail({ client, sessions }: Props) {
               style={{ overflow: 'hidden' }}
             />
           </div>
-
           {error && <p className={styles.error}>{error}</p>}
-
           <div className={styles.modeButtonsRow}>
             <button
               type="button"
@@ -211,7 +179,6 @@ export default function ClientDetail({ client, sessions }: Props) {
         </div>
       ) : (
         <div className={styles.formCard}>
-          {/* Ім’я клієнта з кнопкою редагування */}
           <div
             style={{
               display: 'flex',
@@ -221,7 +188,17 @@ export default function ClientDetail({ client, sessions }: Props) {
               marginBottom: '1rem',
             }}
           >
-            <h2 style={headerStyle}>{client.name}</h2>
+            <h2
+              style={{
+                margin: 0,
+                fontSize: '1rem',
+                fontWeight: 'bold',
+                color: '#249b89',
+                textAlign: 'center',
+              }}
+            >
+              {client.name}
+            </h2>
             <button
               onClick={() => setIsEditing(true)}
               className={styles.submitButton}
@@ -230,7 +207,6 @@ export default function ClientDetail({ client, sessions }: Props) {
               <Pencil size={16} />
             </button>
           </div>
-
           <div className={styles.field}>
             <label className={styles.label} style={{ color: '#249b89', fontWeight: 'bold' }}>
               Телефон
@@ -239,14 +215,12 @@ export default function ClientDetail({ client, sessions }: Props) {
               {client.phone}
             </a>
           </div>
-
           <div className={styles.field}>
             <label className={styles.label} style={{ color: '#249b89', fontWeight: 'bold' }}>
               Дата народження
             </label>
-            <div className={styles.staticField}>{fmtDate(client.birthDate)}</div>
+            <div className={styles.staticField}>{client.birthDate.toLocaleDateString('uk-UA')}</div>
           </div>
-
           <div className={styles.field}>
             <label className={styles.label} style={{ color: '#249b89', fontWeight: 'bold' }}>
               Нотатки
@@ -258,7 +232,7 @@ export default function ClientDetail({ client, sessions }: Props) {
         </div>
       )}
 
-      {/* Сеанси клієнта з кнопкою "+" поруч */}
+      {/* Сеанси клієнта */}
       <div
         style={{
           display: 'flex',
@@ -268,9 +242,21 @@ export default function ClientDetail({ client, sessions }: Props) {
           margin: '1rem 0',
         }}
       >
-        <h2 style={headerStyle}>Сеанси клієнта</h2>
+        <h2
+          style={{
+            margin: 0,
+            fontSize: '1rem',
+            fontWeight: 'bold',
+            color: '#249b89',
+            textAlign: 'center',
+          }}
+        >
+          Сеанси клієнта
+        </h2>
         <button
-          onClick={() => router.push(`/admin/appointments?date=${todayIso}`)}
+          onClick={() =>
+            router.push(`/admin/appointments?date=${new Date().toISOString().slice(0, 10)}`)
+          }
           className={styles.addButton}
           aria-label="Додати сеанс"
         >
@@ -278,35 +264,58 @@ export default function ClientDetail({ client, sessions }: Props) {
         </button>
       </div>
 
-      <div className={styles.tableWrapper}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Дата</th>
-              <th>Час</th>
-              <th>Тривалість</th>
-              <th>Ціна</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sessions.map(s => (
-              <tr
-                key={s.id}
-                className={getRowClass(s.start)}
-                style={{ cursor: 'pointer' }}
-                onClick={() => handleRowClick(s.start)}
-              >
-                <td>{fmtDate(s.start)}</td>
-                <td>
-                  {fmtTime(s.start)}–{fmtTime(s.end)}
-                </td>
-                <td>{s.duration} хв</td>
-                <td>{s.price} ₴</td>
+      {/* Спиннер при завантаженні сеансів */}
+      {sessionsLoading ? (
+        <div className={styles.loadingWrapper}>
+          <FaSpinner className={styles.spin} />
+          <span className={styles.loadingText}>Завантаження сеансів…</span>
+        </div>
+      ) : sessions.length === 0 ? (
+        <div className={styles.loadingWrapper}>
+          <span>Немає сеансів</span>
+        </div>
+      ) : (
+        <div className={styles.tableWrapper}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Дата</th>
+                <th>Час</th>
+                <th>Тривалість</th>
+                <th>Ціна</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {sessions.map(s => (
+                <tr
+                  key={s.id}
+                  className={(() => {
+                    const d = new Date(s.start);
+                    d.setHours(0, 0, 0, 0);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    if (d.getTime() === today.getTime()) return styles.currentSession;
+                    if (d < today) return styles.pastSession;
+                    return styles.futureSession;
+                  })()}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() =>
+                    router.push(`/admin/appointments?date=${s.start.toISOString().slice(0, 10)}`)
+                  }
+                >
+                  <td>{s.start.toLocaleDateString('uk-UA')}</td>
+                  <td>
+                    {s.start.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}–
+                    {s.end.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}
+                  </td>
+                  <td>{s.duration} хв</td>
+                  <td>{s.price} ₴</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

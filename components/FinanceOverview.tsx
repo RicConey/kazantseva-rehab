@@ -1,8 +1,10 @@
+// components/FinanceOverview.tsx
 'use client';
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import WeeklyTable from './WeeklyTable';
+import { FaSpinner } from 'react-icons/fa';
 import styles from './AdminAppointments.module.css';
 
 interface MonthRow {
@@ -11,29 +13,54 @@ interface MonthRow {
 }
 
 export default function FinanceOverview() {
-  const today = new Date();
   const [monthData, setMonthData] = useState<MonthRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    (async () => {
+    let cancelled = false;
+
+    async function fetchMonths() {
       setLoading(true);
-      const year = today.getFullYear();
-      const res = await axios.get<MonthRow[]>(`/api/finance/monthly-range?year=${year}`);
-      setMonthData(res.data);
-      setLoading(false);
-    })();
-  }, []);
+      setError(null);
+      try {
+        const year = new Date().getFullYear();
+        const res = await axios.get<MonthRow[]>(`/api/finance/monthly-range?year=${year}`);
+        if (!cancelled) {
+          setMonthData(res.data);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setError('Не вдалося завантажити дані');
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchMonths();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []); // пустой массив — эффект запускается один раз
 
   if (loading) {
     return (
-      <p style={{ color: '#249b89', textAlign: 'center', margin: '1rem 0' }}>
-        Завантаженя місяців…
-      </p>
+      <div style={{ textAlign: 'center', margin: '2rem 0' }}>
+        <FaSpinner className={styles.spin} />
+        <span className={styles.loadingText}>Завантаження даних…</span>
+      </div>
     );
   }
 
-  // Подготовка месяцев
+  if (error) {
+    return <p style={{ color: 'red', textAlign: 'center', margin: '2rem 0' }}>{error}</p>;
+  }
+
+  // Подготовка данных для таблицы
   const ukMonths = [
     'Січень',
     'Лютий',
@@ -48,8 +75,10 @@ export default function FinanceOverview() {
     'Листопад',
     'Грудень',
   ];
+  const today = new Date();
+  const year = today.getFullYear();
   const monthTotals = ukMonths.map((name, idx) => {
-    const key = `${today.getFullYear()}-${String(idx + 1).padStart(2, '0')}-01`;
+    const key = `${year}-${String(idx + 1).padStart(2, '0')}-01`;
     const row = monthData.find(m => m.periodStart === key);
     return { name, total: row?.total ?? 0 };
   });
@@ -59,29 +88,21 @@ export default function FinanceOverview() {
     <div className={styles.container}>
       <h1 className={styles.title}>Фінансова звітність</h1>
 
-      {/* Недельная таблица */}
       <section>
         <h2 className={styles.title}>Доходи по дням тижня</h2>
         <WeeklyTable />
       </section>
 
-      {/* Месячная таблица */}
       <section>
         <h2 className={styles.title}>Доходи за місяцями</h2>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            margin: '1rem 0',
-          }}
-        >
+        <div style={{ display: 'flex', justifyContent: 'center', margin: '1rem 0' }}>
           <table className={styles.table}>
             <tbody>
               {monthTotals.map((m, i) => (
                 <tr key={i}>
                   <td className={styles.tableCell}>{m.name}</td>
                   <td className={styles.tableCell} style={{ textAlign: 'right' }}>
-                    {m.total.toLocaleString()} грн
+                    {m.total.toLocaleString()} грн
                   </td>
                 </tr>
               ))}
@@ -90,7 +111,6 @@ export default function FinanceOverview() {
         </div>
       </section>
 
-      {/* Итог за год */}
       <section>
         <h2 className={styles.title}>Підсумок за рік</h2>
         <p
@@ -102,7 +122,7 @@ export default function FinanceOverview() {
             margin: '1rem 0',
           }}
         >
-          {yearTotal.toLocaleString()} грн
+          {yearTotal.toLocaleString()} грн
         </p>
       </section>
     </div>

@@ -1,5 +1,4 @@
 // lib/useAppointments.ts
-
 import useSWR from 'swr';
 
 export function useAppointments(date: string) {
@@ -8,8 +7,11 @@ export function useAppointments(date: string) {
   );
 
   return {
-    data: data || [],
+    // окончательный список — либо data, либо пустой массив
+    appointments: data || [],
+    // считаем, что мы в лоадинге, пока data === undefined и нет ошибки
+    isLoading: data === undefined && !error,
     error,
-    mutate, // функция для обновления
+    mutate,
   };
 }
