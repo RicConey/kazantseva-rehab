@@ -1,6 +1,9 @@
 // components/AppointmentTable.tsx
 
+'use client';
+
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { FaEdit, FaTrash, FaCheck, FaTimes, FaSpinner } from 'react-icons/fa';
 import styles from '../AdminAppointments.module.css';
 
@@ -11,15 +14,20 @@ interface Appointment {
   startTime: string;
   duration: number;
   client: string;
+  clientId?: string | null;
+  clientRel?: {
+    id: string;
+    name: string;
+  } | null;
   notes?: string | null;
   price: number;
 }
 
 interface Props {
   list: Appointment[];
-  todayStr: string; // локальная дата “YYYY-MM-DD” в зоне Europe/Kyiv
+  todayStr: string;
   kyivFormatter: Intl.DateTimeFormat;
-  editingId: number;
+  editingId: number | null;
   editForm: {
     date: string;
     time: string;
@@ -34,7 +42,7 @@ interface Props {
   loadingDeleteId: number | null;
   startEdit: (a: Appointment) => void;
   cancelEdit: () => void;
-  saveEdit: (id: number) => void;
+  saveEdit: (id: number, payload: any) => void;
   deleteItem: (id: number) => void;
   errorFields: Record<string, boolean>;
   errorMessage?: string;
@@ -57,20 +65,28 @@ export default function AppointmentTable({
   errorFields,
   errorMessage,
 }: Props) {
-  const cls = (f: string) => (errorFields[f] ? styles.inputError : '');
-
-  // Сумма за день: просто по всему списку,
-  // потому что запрос уже возвращает только нужную дату
-  const totalForDay = list.reduce((sum, a) => sum + a.price, 0);
-
-  // состояние для мобильной адаптации
+  const cls = (field: string) => (errorFields[field] ? styles.inputError : '');
   const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
-    const handle = () => setIsMobile(window.innerWidth < 768);
-    handle();
-    window.addEventListener('resize', handle);
-    return () => window.removeEventListener('resize', handle);
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
   }, []);
+
+  const handleSave = (a: Appointment) => {
+    const payload = {
+      ...editForm,
+      id: a.id,
+    };
+    if (a.clientId) {
+      delete payload.client;
+    }
+    saveEdit(a.id, payload);
+  };
+
+  const totalForDay = list.reduce((sum, a) => sum + a.price, 0);
 
   return (
     <div className={styles.tableWrapper}>
@@ -93,168 +109,91 @@ export default function AppointmentTable({
             const displayTime = `${kyivFormatter.format(startDt)}–${kyivFormatter.format(endDt)}`;
 
             if (editingId === a.id) {
-              // Desktop-редактирование
-              if (!isMobile) {
-                return (
-                  <tr key={a.id} className={styles.editingRow}>
-                    <td data-label="Дата / Час">
-                      <input
-                        type="date"
-                        min={todayStr}
-                        value={editForm.date}
-                        onChange={e =>
-                          setEditForm((f: any) => ({
-                            ...f,
-                            date: e.target.value,
-                          }))
-                        }
-                        disabled={isSaving}
-                        className={cls('date')}
-                      />
-                      <input
-                        type="time"
-                        value={editForm.time}
-                        onChange={e =>
-                          setEditForm((f: any) => ({
-                            ...f,
-                            time: e.target.value,
-                          }))
-                        }
-                        disabled={isSaving}
-                        className={cls('time')}
-                      />
-                    </td>
-                    <td data-label="Хв">
-                      <input
-                        type="text"
-                        className={`${styles.durationInput} ${cls('duration')}`}
-                        value={editForm.duration}
-                        onChange={e => {
-                          const v = e.target.value.replace(/\D/g, '').slice(0, 3);
-                          setEditForm((f: any) => ({ ...f, duration: v }));
-                        }}
-                        disabled={isSaving}
-                      />
-                    </td>
-                    <td data-label="ФІО">
-                      <input
-                        type="text"
-                        value={editForm.client}
-                        onChange={e =>
-                          setEditForm((f: any) => ({
-                            ...f,
-                            client: e.target.value,
-                          }))
-                        }
-                        disabled={isSaving}
-                        className={cls('client')}
-                      />
-                    </td>
-                    <td data-label="Заметки / Сума">
-                      <input
-                        type="text"
-                        value={editForm.notes}
-                        onChange={e => setEditForm((f: any) => ({ ...f, notes: e.target.value }))}
-                        disabled={isSaving}
-                      />
-                      <input
-                        type="text"
-                        placeholder="Сума"
-                        value={editForm.price}
-                        onChange={e =>
-                          setEditForm((f: any) => ({
-                            ...f,
-                            price: e.target.value.replace(/\D/g, '').slice(0, 7),
-                          }))
-                        }
-                        disabled={isSaving}
-                        className={cls('price')}
-                      />
-                    </td>
-                    <td className={styles.actions}>
-                      <button onClick={() => saveEdit(a.id)} disabled={isSaving}>
-                        {isSaving ? <FaSpinner className={styles.spin} /> : <FaCheck />}
-                      </button>
-                      <button onClick={cancelEdit} disabled={isSaving}>
-                        <FaTimes />
-                      </button>
-                      {errorMessage && <div className={styles.errorField}>{errorMessage}</div>}
-                    </td>
-                  </tr>
+              const clientField =
+                a.clientId && a.clientRel ? (
+                  <div className={styles.staticField}>{a.clientRel.name}</div>
+                ) : (
+                  <input
+                    type="text"
+                    value={editForm.client}
+                    onChange={e => setEditForm((f: any) => ({ ...f, client: e.target.value }))}
+                    disabled={isSaving}
+                    className={cls('client')}
+                  />
                 );
-              }
 
-              // Mobile-редактирование
-              return (
+              const baseFields = (
+                <>
+                  <div className={styles.field}>
+                    <label>Дата / Час</label>
+                    <input
+                      type="date"
+                      min={todayStr}
+                      value={editForm.date}
+                      onChange={e => setEditForm((f: any) => ({ ...f, date: e.target.value }))}
+                      disabled={isSaving}
+                      className={cls('date')}
+                    />
+                    <input
+                      type="time"
+                      value={editForm.time}
+                      onChange={e => setEditForm((f: any) => ({ ...f, time: e.target.value }))}
+                      disabled={isSaving}
+                      className={cls('time')}
+                    />
+                  </div>
+                  <div className={styles.field}>
+                    <label>Хв</label>
+                    <input
+                      type="text"
+                      value={editForm.duration}
+                      onChange={e =>
+                        setEditForm((f: any) => ({
+                          ...f,
+                          duration: e.target.value.replace(/\\D/g, '').slice(0, 3),
+                        }))
+                      }
+                      disabled={isSaving}
+                      className={`${styles.durationInput} ${cls('duration')}`}
+                    />
+                  </div>
+                  <div className={styles.field}>
+                    <label>ФІО</label>
+                    {clientField}
+                  </div>
+                  <div className={styles.field}>
+                    <label>Заметки</label>
+                    <input
+                      type="text"
+                      value={editForm.notes}
+                      onChange={e => setEditForm((f: any) => ({ ...f, notes: e.target.value }))}
+                      disabled={isSaving}
+                    />
+                  </div>
+                  <div className={styles.field}>
+                    <label>Сума</label>
+                    <input
+                      type="text"
+                      value={editForm.price}
+                      onChange={e =>
+                        setEditForm((f: any) => ({
+                          ...f,
+                          price: e.target.value.replace(/\\D/g, '').slice(0, 7),
+                        }))
+                      }
+                      disabled={isSaving}
+                      className={cls('price')}
+                    />
+                  </div>
+                </>
+              );
+
+              return isMobile ? (
                 <tr key={a.id} className={styles.mobileEditingRow}>
                   <td colSpan={5}>
-                    <div className={styles.field}>
-                      <label>Дата / Час</label>
-                      <input
-                        type="date"
-                        min={todayStr}
-                        value={editForm.date}
-                        onChange={e => setEditForm((f: any) => ({ ...f, date: e.target.value }))}
-                        disabled={isSaving}
-                        className={cls('date')}
-                      />
-                      <input
-                        type="time"
-                        value={editForm.time}
-                        onChange={e => setEditForm((f: any) => ({ ...f, time: e.target.value }))}
-                        disabled={isSaving}
-                        className={cls('time')}
-                      />
-                    </div>
-                    <div className={styles.field}>
-                      <label>Хв</label>
-                      <input
-                        type="text"
-                        className={`${styles.durationInput} ${cls('duration')}`}
-                        value={editForm.duration}
-                        onChange={e => {
-                          const v = e.target.value.replace(/\D/g, '').slice(0, 3);
-                          setEditForm((f: any) => ({ ...f, duration: v }));
-                        }}
-                        disabled={isSaving}
-                      />
-                    </div>
-                    <div className={styles.field}>
-                      <label>ФІО</label>
-                      <input
-                        type="text"
-                        value={editForm.client}
-                        onChange={e => setEditForm((f: any) => ({ ...f, client: e.target.value }))}
-                        disabled={isSaving}
-                        className={cls('client')}
-                      />
-                    </div>
-                    <div className={styles.field}>
-                      <label>Заметки</label>
-                      <input
-                        type="text"
-                        value={editForm.notes}
-                        onChange={e => setEditForm((f: any) => ({ ...f, notes: e.target.value }))}
-                        disabled={isSaving}
-                      />
-                    </div>
-                    <div className={styles.field}>
-                      <label>Сума</label>
-                      <input
-                        type="text"
-                        value={editForm.price}
-                        onChange={e =>
-                          setEditForm((f: any) => ({
-                            ...f,
-                            price: e.target.value.replace(/\D/g, '').slice(0, 7),
-                          }))
-                        }
-                        disabled={isSaving}
-                        className={cls('price')}
-                      />
-                    </div>
+                    {baseFields}
                     <div className={styles.actionsMobile}>
-                      <button onClick={() => saveEdit(a.id)} disabled={isSaving}>
+                      <button onClick={() => handleSave(a)} disabled={isSaving}>
                         {isSaving ? <FaSpinner className={styles.spin} /> : <FaCheck />}
                       </button>
                       <button onClick={cancelEdit} disabled={isSaving}>
@@ -263,15 +202,39 @@ export default function AppointmentTable({
                     </div>
                   </td>
                 </tr>
+              ) : (
+                <tr key={a.id} className={styles.editingRow}>
+                  <td data-label="Дата / Час">{baseFields.props.children[0].props.children}</td>
+                  <td data-label="Хв">{baseFields.props.children[1].props.children}</td>
+                  <td data-label="ФІО">{clientField}</td>
+                  <td data-label="Заметки / Сума">
+                    {baseFields.props.children[3].props.children}
+                    {baseFields.props.children[4].props.children}
+                  </td>
+                  <td className={styles.actions}>
+                    <button onClick={() => handleSave(a)} disabled={isSaving}>
+                      {isSaving ? <FaSpinner className={styles.spin} /> : <FaCheck />}
+                    </button>
+                    <button onClick={cancelEdit} disabled={isSaving}>
+                      <FaTimes />
+                    </button>
+                    {errorMessage && <div className={styles.errorField}>{errorMessage}</div>}
+                  </td>
+                </tr>
               );
             }
 
-            // Обычная строка
             return (
               <tr key={a.id}>
                 <td data-label="Час">{displayTime}</td>
                 <td data-label="Хв">{a.duration}</td>
-                <td data-label="ФІО">{a.client}</td>
+                <td data-label="ФІО">
+                  {a.clientId && a.clientRel ? (
+                    <Link href={`/admin/clients/${a.clientRel.id}`}>{a.clientRel.name}</Link>
+                  ) : (
+                    a.client
+                  )}
+                </td>
                 <td data-label="Заметки / Сума">
                   {a.notes || '-'}
                   <br />
@@ -295,7 +258,6 @@ export default function AppointmentTable({
         </tbody>
       </table>
 
-      {/* Сумма за день */}
       <div className={styles.totalForDay}>
         <strong>Сума за сьогодні: {totalForDay} ₴</strong>
       </div>

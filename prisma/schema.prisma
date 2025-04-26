@@ -17,7 +17,9 @@ model prices {
 
 model Appointment {
   id         Int      @id @default(autoincrement())
-  client     String
+  client     String?
+  clientId    String?   // опциональный FK на Client.id
+  clientRel   Client?   @relation(fields: [clientId], references: [id])
   startTime  DateTime
   duration   Int      // длительность в минутах
   notes      String?  // необязательные заметки
@@ -81,4 +83,16 @@ model Note {
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Client {
+  id        String   @id @default(uuid())
+  phone     String   @unique
+  name      String
+  birthDate DateTime
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  appointments Appointment[]
 }

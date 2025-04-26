@@ -1,11 +1,8 @@
 import SeoText from './SeoText';
-import BackButton from './BackButton';
 
 export default function ClientRulesPage() {
   return (
     <section className="baseText">
-      <BackButton />
-
       <h1 className="pageTitle" style={{ color: '#249B89' }}>
         Правила для клієнтів
       </h1>
@@ -124,8 +121,6 @@ export default function ClientRulesPage() {
       </div>
 
       <SeoText slug={undefined} />
-
-      <BackButton />
     </section>
   );
 }

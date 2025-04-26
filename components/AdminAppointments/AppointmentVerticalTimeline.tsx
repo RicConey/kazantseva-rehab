@@ -1,14 +1,16 @@
-// components/AdminAppointments/AppointmentVerticalTimeline.tsx
 'use client';
 
 import React, { useRef, useLayoutEffect, useState } from 'react';
+import Link from 'next/link';
 import styles from '../AdminAppointments.module.css';
 
 export interface Appointment {
   id: number;
   startTime: string;
   duration: number;
-  client: string;
+  client: string; // свободное текстовое поле
+  clientId?: string | null; // опциональный FK на Client.id
+  clientRel?: { id: string; name: string } | null; // загруженный объект клиента
   notes?: string | null;
 }
 
@@ -21,7 +23,6 @@ interface Props {
   activeTooltipId: number | null;
   toggleTooltip: (id: number | null) => void;
   kyivFormatter: Intl.DateTimeFormat;
-  /** Новое: рисовать метки часов (только для первого столбца) */
   showTimeLabels: boolean;
 }
 
@@ -69,8 +70,7 @@ export default function AppointmentVerticalTimeline({
       shift = tlRect.bottom - EDGE_GAP - bottomFree;
     }
 
-    const local = wrapRect.height / 2 - tipRect.height / 2 + shift;
-    setClampedTop(local);
+    setClampedTop(wrapRect.height / 2 - tipRect.height / 2 + shift);
   }, [activeTooltipId, list, timelineRef]);
 
   const tickCount = Math.floor(scaleDuration) + 1;
@@ -97,7 +97,12 @@ export default function AppointmentVerticalTimeline({
         const startH = dt.getHours() + dt.getMinutes() / 60;
         const topPct = ((startH - scaleStart) / scaleDuration) * 100;
         const heightPct = (a.duration / 60 / scaleDuration) * 100;
-        const bg = colorMap[a.client] || '#249b89';
+
+        // окончательное имя клиента
+        const displayName = a.clientId && a.clientRel ? a.clientRel.name : a.client;
+
+        // цвет по ключу displayName
+        const bg = colorMap[displayName] || '#249b89';
         const isActive = activeTooltipId === a.id;
 
         return (
@@ -105,10 +110,7 @@ export default function AppointmentVerticalTimeline({
             key={a.id}
             data-appt-id={a.id}
             className={styles.apptWrapperVertical}
-            style={{
-              top: `${topPct}%`,
-              height: `${heightPct}%`,
-            }}
+            style={{ top: `${topPct}%`, height: `${heightPct}%` }}
             onMouseEnter={() => toggleTooltip(a.id)}
             onMouseLeave={() => toggleTooltip(null)}
             onTouchEnd={e => {
@@ -135,7 +137,13 @@ export default function AppointmentVerticalTimeline({
                 </strong>
               </div>
               <div>
-                <strong>{a.client}</strong>
+                <strong>
+                  {a.clientId && a.clientRel ? (
+                    <Link href={`/admin/clients/${a.clientRel.id}`}>{a.clientRel.name}</Link>
+                  ) : (
+                    a.client
+                  )}
+                </strong>
               </div>
               <div>хв: {a.duration}</div>
               {a.notes && <div>📝 {a.notes}</div>}

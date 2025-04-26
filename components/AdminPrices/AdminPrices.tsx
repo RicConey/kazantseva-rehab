@@ -13,7 +13,6 @@ import {
   FaCheck,
   FaSpinner,
 } from 'react-icons/fa';
-import BackButton from '../../components/BackButton';
 
 interface PriceItem {
   id: string;
@@ -185,7 +184,6 @@ export default function AdminPrices(): ReactElement {
 
   return (
     <div className={styles.container}>
-      <BackButton />
       <h1 className={styles.title}>Адмінка: керування цінами</h1>
       {error && <div className={styles.error}>{error}</div>}
 
@@ -381,8 +379,6 @@ export default function AdminPrices(): ReactElement {
           </table>
         )}
       </div>
-
-      <BackButton />
     </div>
   );
 }

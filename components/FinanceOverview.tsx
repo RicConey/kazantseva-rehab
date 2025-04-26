@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import WeeklyTable from './WeeklyTable';
 import styles from './AdminAppointments.module.css';
-import BackButton from '@components/BackButton';
 
 interface MonthRow {
   periodStart: string;
@@ -58,7 +57,6 @@ export default function FinanceOverview() {
 
   return (
     <div className={styles.container}>
-      <BackButton />
       <h1 className={styles.title}>Фінансова звітність</h1>
 
       {/* Недельная таблица */}
@@ -107,7 +105,6 @@ export default function FinanceOverview() {
           {yearTotal.toLocaleString()} грн
         </p>
       </section>
-      <BackButton />
     </div>
   );
 }

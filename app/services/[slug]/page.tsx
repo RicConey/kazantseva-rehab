@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import SeoText from '@components/SeoText';
 import type { ServiceMetadata } from '@lib/getServices';
-import BackButton from '@components/BackButton';
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -28,12 +27,8 @@ export default async function ServiceDetailPage({ params }: PageProps) {
 
   return (
     <section className="baseText">
-      <BackButton />
-
       <service.Component />
       <SeoText slug={slug} />
-
-      <BackButton />
     </section>
   );
 }

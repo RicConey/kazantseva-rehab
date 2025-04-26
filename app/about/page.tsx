@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import CertificateGallery from './CertificateGallery';
 import styles from './About.module.css';
-import { BackButton, SeoText } from '@components';
+import { SeoText } from '@components';
 
 export default function AboutPage() {
   const [showCerts, setShowCerts] = useState(false);
@@ -78,8 +78,6 @@ export default function AboutPage() {
         />
       </Head>
       <section className="baseText">
-        <BackButton />
-
         <h2 className={styles.title}>Про мене</h2>
 
         <p>
@@ -150,8 +148,6 @@ export default function AboutPage() {
         </div>
 
         {showCerts && <CertificateGallery certs={certFiles} />}
-
-        <BackButton />
       </section>
     </>
   );

@@ -2,15 +2,17 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { formatInTimeZone } from 'date-fns-tz';
 import styles from '../AdminAppointments.module.css';
-import BackButton from '@components/BackButton';
 
 export interface Appointment {
   id: number;
   startTime: string;
   duration: number;
   client: string;
+  clientId?: string | null;
+  clientRel?: { id: string; name: string } | null;
   notes?: string | null;
 }
 
@@ -21,7 +23,7 @@ const SCALE_DURATION = 13.5;
 export default function WeeklySchedule() {
   const router = useRouter();
 
-  // 1) State для понедельника недели 00:00
+  // вычисление понедельника недели
   const [mondayStart, setMondayStart] = useState<Date>(() => {
     const now = new Date();
     const diff = (now.getDay() + 6) % 7;
@@ -31,7 +33,6 @@ export default function WeeklySchedule() {
     return m;
   });
 
-  // 2) Навигация между неделями
   const prevWeek = () =>
     setMondayStart(d => {
       const p = new Date(d);
@@ -45,7 +46,6 @@ export default function WeeklySchedule() {
       return n;
     });
 
-  // 3) Список из 7 дней (понедельник + i)
   const days = useMemo(
     () =>
       Array.from({ length: 7 }).map((_, i) => {
@@ -56,7 +56,6 @@ export default function WeeklySchedule() {
     [mondayStart]
   );
 
-  // 4) Загрузка приёмов + флаг loading
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -70,20 +69,20 @@ export default function WeeklySchedule() {
       .finally(() => setLoading(false));
   }, [mondayStart]);
 
-  // 5) Цвета клиентов чуть ярче
+  // строим colorMap по окончательному имени
   const colorMap = useMemo(() => {
     const map: Record<string, string> = {};
     appointments.forEach(a => {
-      if (!map[a.client]) {
+      const name = a.clientId && a.clientRel ? a.clientRel.name : a.client;
+      if (!map[name]) {
         let h = 0;
-        for (const c of a.client) h = c.charCodeAt(0) + ((h << 5) - h);
-        map[a.client] = `hsl(${Math.abs(h) % 360},80%,65%)`;
+        for (const c of name) h = c.charCodeAt(0) + ((h << 5) - h);
+        map[name] = `hsl(${Math.abs(h) % 360},80%,65%)`;
       }
     });
     return map;
   }, [appointments]);
 
-  // 6) Форматер времени (Киев)
   const kyivFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat('ru-RU', {
@@ -94,23 +93,17 @@ export default function WeeklySchedule() {
     []
   );
 
-  // 7) Часовые метки
   const hours = useMemo(
     () => Array.from({ length: Math.floor(SCALE_DURATION) + 1 }, (_, i) => SCALE_START + i),
     []
   );
 
-  // 8) Месяц для шапки
   const monthLabel = mondayStart
     .toLocaleDateString('uk-UA', { month: 'long', year: 'numeric' })
     .replace(/^./, s => s.toUpperCase());
 
   return (
     <div className={styles.container}>
-      {/* Назад */}
-      <BackButton />
-
-      {/* Хедер: заголовок и навигация */}
       <div className={styles.weeklyHeader}>
         <h1 className={styles.title}>Тижневий розклад</h1>
         <div className={styles.weekNav}>
@@ -120,9 +113,8 @@ export default function WeeklySchedule() {
         </div>
       </div>
 
-      {/* Сетка: часы + дни */}
       <div className={styles.weeklyGrid}>
-        {/* Колонка часов */}
+        {/* колонка с часами */}
         <div className={styles.timeColumn}>
           <div className={styles.dayHeaderPlaceholder} />
           {hours.map(h => (
@@ -132,7 +124,7 @@ export default function WeeklySchedule() {
           ))}
         </div>
 
-        {/* 7 дней */}
+        {/* по дням */}
         {days.map(d => {
           const dateKey = formatInTimeZone(d, TZ, 'yyyy-MM-dd');
           const isToday =
@@ -140,6 +132,7 @@ export default function WeeklySchedule() {
             formatInTimeZone(new Date(), TZ, 'yyyy-MM-dd');
           const weekdayAbbrev = d.toLocaleDateString('uk-UA', { weekday: 'narrow' }).toUpperCase();
           const dayNumber = d.getDate();
+
           const dayAppts = appointments.filter(
             a => formatInTimeZone(new Date(a.startTime), TZ, 'yyyy-MM-dd') === dateKey
           );
@@ -156,7 +149,7 @@ export default function WeeklySchedule() {
               </div>
 
               <div className={styles.eventsContainer}>
-                {/* Фоновые линии */}
+                {/* линии разметки */}
                 {hours.map((_, i) => (
                   <div
                     key={i}
@@ -165,7 +158,7 @@ export default function WeeklySchedule() {
                   />
                 ))}
 
-                {/* Если loading — рисуем скелетон, иначе реальные события */}
+                {/* события */}
                 {loading
                   ? Array.from({ length: 5 }).map((_, i) => (
                       <div
@@ -182,6 +175,9 @@ export default function WeeklySchedule() {
                       const startH = dt.getHours() + dt.getMinutes() / 60;
                       const topPct = ((startH - SCALE_START) / SCALE_DURATION) * 100;
                       const heightPct = (a.duration / 60 / SCALE_DURATION) * 100;
+
+                      const name = a.clientId && a.clientRel ? a.clientRel.name : a.client;
+
                       return (
                         <div
                           key={a.id}
@@ -190,10 +186,18 @@ export default function WeeklySchedule() {
                           style={{
                             top: `${topPct}%`,
                             height: `${heightPct}%`,
-                            backgroundColor: colorMap[a.client],
+                            backgroundColor: colorMap[name],
                           }}
                         >
-                          <div className={styles.eventContent}>{a.client}</div>
+                          <div className={styles.eventContent}>
+                            {a.clientId && a.clientRel ? (
+                              <Link href={`/admin/clients/${a.clientRel.id}`}>
+                                {a.clientRel.name}
+                              </Link>
+                            ) : (
+                              a.client
+                            )}
+                          </div>
                         </div>
                       );
                     })}
@@ -202,9 +206,6 @@ export default function WeeklySchedule() {
           );
         })}
       </div>
-
-      {/* Кнопка назад внизу */}
-      <BackButton />
     </div>
   );
 }

@@ -5,7 +5,6 @@ export const revalidate = false;
 import styles from './Prices.module.css';
 import PromoBlock from '@components/PromoBlock';
 import SeoText from '@components/SeoText';
-import BackButton from '@components/BackButton';
 
 type PriceItem = {
   id: number;
@@ -24,8 +23,6 @@ export default async function PricesPage() {
 
   return (
     <div className="baseText" style={{ padding: '0 0 24px' }}>
-      <BackButton />
-
       <h1 className={styles.title}>Ціни на послуги</h1>
 
       <div className={styles.container}>
@@ -77,8 +74,6 @@ export default async function PricesPage() {
 
       <PromoBlock />
       <SeoText slug={undefined} />
-
-      <BackButton />
     </div>
   );
 }

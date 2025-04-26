@@ -1,9 +1,9 @@
 // app/admin/page.tsx
 
-import AdminHome from '@components/AdminHome';
 import { getServerSession } from 'next-auth';
 import { authConfig } from '../api/auth/[...nextauth]/auth.config';
 import { redirect } from 'next/navigation';
+import WeeklySchedule from '@components/AdminAppointments/WeeklySchedule';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,5 +16,5 @@ export default async function AdminHomePage() {
   }
 
   // Иначе рендерим защищённый UI
-  return <AdminHome />;
+  return <WeeklySchedule />;
 }

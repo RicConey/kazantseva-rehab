@@ -1,0 +1,263 @@
+'use client';
+
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Pencil, Check, X, Plus } from 'lucide-react';
+import styles from '../AdminAppointments.module.css';
+
+export interface Session {
+  id: number;
+  start: Date;
+  end: Date;
+  duration: number;
+  price: number;
+}
+
+export interface Client {
+  id: string;
+  name: string;
+  phone: string;
+  birthDate: Date;
+  notes?: string | null;
+}
+
+interface Props {
+  client: Client;
+  sessions: Session[];
+}
+
+export default function ClientDetail({ client, sessions }: Props) {
+  const router = useRouter();
+
+  const toLocalDateInputValue = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [form, setForm] = useState({
+    name: client.name,
+    phone: client.phone,
+    birthDate: toLocalDateInputValue(client.birthDate),
+    notes: client.notes || '',
+  });
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const fmtDate = (d: Date) => d.toLocaleDateString('uk-UA');
+  const fmtTime = (d: Date) =>
+    d.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const getRowClass = (start: Date) => {
+    const d = new Date(start);
+    d.setHours(0, 0, 0, 0);
+    if (d.getTime() === today.getTime()) return styles.currentSession;
+    else if (d.getTime() < today.getTime()) return styles.pastSession;
+    else return styles.futureSession;
+  };
+
+  const handleRowClick = (date: Date) => {
+    const iso = date.toISOString().split('T')[0];
+    router.push(`/admin/appointments?date=${iso}`);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setForm(f => ({ ...f, [name]: value }));
+  };
+
+  const handleSave = async () => {
+    setError(null);
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/clients/${client.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          phone: form.phone.trim(),
+          birthDate: form.birthDate,
+          notes: form.notes.trim() || null,
+        }),
+      });
+      const text = await res.text();
+      const json = text ? JSON.parse(text) : {};
+      if (!res.ok) throw new Error(json.error || res.statusText);
+
+      setIsEditing(false);
+      router.refresh();
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const todayIso = new Date().toISOString().split('T')[0];
+
+  return (
+    <div className={styles.container}>
+      {isEditing ? (
+        <div className={styles.formCard}>
+          <h2 className={styles.title}>Редагування клієнта</h2>
+
+          <div className={styles.field}>
+            <label htmlFor="name" className={styles.label}>
+              Ім’я
+            </label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              value={form.name}
+              onChange={handleChange}
+              className={styles.input}
+            />
+          </div>
+
+          <div className={styles.twoColumnsRow}>
+            <div className={styles.field}>
+              <label htmlFor="phone" className={styles.label}>
+                Телефон
+              </label>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                value={form.phone}
+                onChange={handleChange}
+                className={styles.input}
+              />
+            </div>
+            <div className={styles.field}>
+              <label htmlFor="birthDate" className={styles.label}>
+                Дата народження
+              </label>
+              <input
+                id="birthDate"
+                name="birthDate"
+                type="date"
+                value={form.birthDate}
+                onChange={handleChange}
+                className={styles.input}
+              />
+            </div>
+          </div>
+
+          <div className={styles.field}>
+            <label htmlFor="notes" className={styles.label}>
+              Нотатки
+            </label>
+            <textarea
+              id="notes"
+              name="notes"
+              value={form.notes}
+              onChange={handleChange}
+              className={styles.textarea}
+            />
+          </div>
+
+          {error && <p className={styles.error}>{error}</p>}
+
+          <div className={styles.modeButtonsRow}>
+            <button
+              type="button"
+              onClick={() => setIsEditing(false)}
+              className={styles.cancelButton}
+              disabled={saving}
+              aria-label="Скасувати"
+            >
+              <X size={16} />
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              className={styles.submitButton}
+              disabled={saving}
+              aria-label="Зберегти"
+            >
+              <Check size={16} />
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className={styles.formCard}>
+          <div className={styles.detailHeader}>
+            <h2 className={styles.title} style={{ margin: 0 }}>
+              Профіль клієнта
+            </h2>
+            <button
+              onClick={() => setIsEditing(true)}
+              className={styles.submitButton}
+              aria-label="Редагувати"
+            >
+              <Pencil size={16} />
+            </button>
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label}>Телефон</label>
+            <a href={`tel:${client.phone}`} className={styles.staticField}>
+              {client.phone}
+            </a>
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label}>Дата народження</label>
+            <div className={styles.staticField}>{fmtDate(client.birthDate)}</div>
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label}>Нотатки</label>
+            <div className={styles.staticField} style={{ whiteSpace: 'pre-wrap' }}>
+              {client.notes || '—'}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', alignItems: 'center', marginTop: '1rem' }}>
+        <h2 className={styles.title} style={{ margin: 0, flex: 1 }}>
+          Сеанси клієнта
+        </h2>
+        <button
+          onClick={() => router.push(`/admin/appointments?date=${todayIso}`)}
+          className={styles.addButton}
+          aria-label="Додати сеанс"
+        >
+          <Plus size={16} />
+        </button>
+      </div>
+
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Час</th>
+              <th>Тривалість</th>
+              <th>Ціна</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sessions.map(s => (
+              <tr
+                key={s.id}
+                className={getRowClass(s.start)}
+                style={{ cursor: 'pointer' }}
+                onClick={() => handleRowClick(s.start)}
+              >
+                <td>{fmtDate(s.start)}</td>
+                <td>
+                  {fmtTime(s.start)}–{fmtTime(s.end)}
+                </td>
+                <td>{s.duration} хв</td>
+                <td>{s.price} ₴</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

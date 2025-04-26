@@ -7,7 +7,13 @@ export interface Appointment {
   id: number;
   startTime: string;
   duration: number;
-  client: string;
+  client: string; // свободное текстовое поле (имя/телефон)
+  clientId?: string | null; // опциональный FK на Client.id
+  clientRel?: {
+    // связанный клиент, если выбран из базы
+    id: string;
+    name: string;
+  } | null;
   notes?: string | null;
 }
 
@@ -36,24 +42,24 @@ export default function AppointmentTimeline({
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [clampedLeft, setClampedLeft] = useState<number | null>(null);
 
+  // Корректируем позицию тултипа, чтобы не выходить за границы
   useLayoutEffect(() => {
     if (activeTooltipId === null) {
       setClampedLeft(null);
       return;
     }
-    const wrapperEl = document.querySelector(
+    const wrapper = document.querySelector(
       `[data-appt-id="${activeTooltipId}"]`
     ) as HTMLElement | null;
-    const tipEl = tooltipRef.current;
-    const timelineEl = timelineRef.current;
-    if (!wrapperEl || !tipEl || !timelineEl) {
+    const tip = tooltipRef.current;
+    const tl = timelineRef.current;
+    if (!wrapper || !tip || !tl) {
       setClampedLeft(null);
       return;
     }
-
-    const wrapRect = wrapperEl.getBoundingClientRect();
-    const tipRect = tipEl.getBoundingClientRect();
-    const tlRect = timelineEl.getBoundingClientRect();
+    const wrapRect = wrapper.getBoundingClientRect();
+    const tipRect = tip.getBoundingClientRect();
+    const tlRect = tl.getBoundingClientRect();
 
     const centerX = wrapRect.left + wrapRect.width / 2;
     const leftFree = centerX - tipRect.width / 2;
@@ -66,14 +72,14 @@ export default function AppointmentTimeline({
       shiftX = tlRect.right - EDGE_GAP - rightFree;
     }
 
-    const local = wrapRect.width / 2 - tipRect.width / 2 + shiftX;
-    setClampedLeft(local);
+    setClampedLeft(wrapRect.width / 2 - tipRect.width / 2 + shiftX);
   }, [activeTooltipId, list, timelineRef]);
 
   const tickCount = Math.floor(scaleDuration) + 1;
 
   return (
     <div className={styles.timeline} ref={timelineRef}>
+      {/* Шкала времени */}
       {Array.from({ length: tickCount }, (_, i) => {
         const leftPct = (i / scaleDuration) * 100;
         return (
@@ -86,16 +92,21 @@ export default function AppointmentTimeline({
         );
       })}
 
+      {/* Блоки приёмов */}
       {list.map(a => {
         const dt = new Date(a.startTime);
         const endDt = new Date(dt.getTime() + a.duration * 60000);
         const startStr = kyivFormatter.format(dt);
         const endStr = kyivFormatter.format(endDt);
-        const startH = dt.getHours() + dt.getMinutes() / 60;
-        const leftPct = ((startH - scaleStart) / scaleDuration) * 100;
+        const startHour = dt.getHours() + dt.getMinutes() / 60;
+        const leftPct = ((startHour - scaleStart) / scaleDuration) * 100;
         const widthPct = (a.duration / 60 / scaleDuration) * 100;
-        const bg = colorMap[a.client] || '#249b89';
 
+        // Отображаемое имя
+        const displayName = a.clientRel?.name ?? a.client;
+
+        // Цвет по имени
+        const bg = colorMap[displayName] || '#249b89';
         const isActive = activeTooltipId === a.id;
 
         return (
@@ -128,7 +139,7 @@ export default function AppointmentTimeline({
                 </strong>
               </div>
               <div>
-                <strong>{a.client}</strong>
+                <strong>{displayName}</strong>
               </div>
               <div>хв: {a.duration}</div>
               {a.notes && <div>📝 {a.notes}</div>}

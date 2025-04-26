@@ -210,19 +210,27 @@
 /* 10. РЕДАКТИРОВАНИЕ (desktop & mobile) */
 /* ----------------------------------- */
 
-/* desktop */
+/* по умолчанию скрываем мобильную версию */
+.mobileEditingRow {
+  display: none;
+}
+
+/* desktop: показываем только desktop-ряд */
+.editingRow {
+  display: table-row;
+}
 .editingRow td {
   vertical-align: top;
 }
 
-/* mobile */
+/* mobile: при ширине ≤768px наоборот */
 @media (max-width: 768px) {
-  /* Скрыть редактирование для десктопа */
+  /* прячем десктопный ряд */
   .editingRow {
     display: none;
   }
 
-  /* Показываем мобильную версию редактирования */
+  /* показываем мобильный ряд */
   .mobileEditingRow {
     display: table-row;
   }
@@ -295,7 +303,6 @@
   from {
     transform: rotate(0deg);
   }
-
   to {
     transform: rotate(360deg);
   }
@@ -555,4 +562,189 @@
   border: 2px solid #249b89;
   border-radius: 8px;
   background-color: rgba(36, 155, 137, 0.07);
+}
+
+/* карточка формы */
+.formCard {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1rem;
+}
+
+.formGrid {
+  display: grid;
+  gap: 4px;
+}
+
+.modeButtonsRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.modeButton {
+  flex: 1;
+  padding: 6px 8px;
+  background: #eee;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.activeMode {
+  background: #249b89;
+  color: #fff;
+  border-color: #249b89;
+}
+.modeButton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+.field label {
+  margin-bottom: 2px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.input,
+.textarea {
+  padding: 4px 6px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Дата + Час */
+.dateTimeRow {
+  display: flex;
+  gap: 12px;
+}
+.dateTimeRow .field {
+  flex: 1;
+}
+
+/* Тривалість + Ціна */
+.twoColumnsRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(80px, 1fr));
+  gap: 8px;
+}
+
+.shortInput {
+  width: 5ch;
+}
+.shortInputPrice {
+  width: 6ch;
+}
+
+/* автокомплит */
+.suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 2px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  max-height: 12rem;
+  overflow-y: auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+.suggestionItem {
+  padding: 6px 8px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+.suggestionItem:hover {
+  background: #f0f0f0;
+}
+
+.submitButton {
+  background: #249b89;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.submitButton:hover {
+  opacity: 0.8;
+}
+
+.errorField {
+  color: red;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
+/* адаптив */
+@media (max-width: 600px) {
+  .twoColumnsRow,
+  .dateTimeRow {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* flex-ряд для Даты+Времени */
+.dateTimeRow {
+  display: flex;
+  gap: 12px;
+}
+.dateTimeRow .field {
+  flex: 1;
+}
+.addButton {
+  background: #249b89;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.cancelButton {
+  background: #ccc;
+  color: #333;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+/* Подсветка сеансов в списке клиента */
+.pastSession {
+  background-color: #f5f5f5; /* светло-серый для прошедших */
+}
+
+.currentSession {
+  background-color: #e0f7fa; /* светло-голубой для сегодня */
+}
+
+.futureSession {
+  background-color: #e8f5e9; /* светло-зеленый для будущих */
+}
+
+.staticField {
+  padding: 10px 12px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  font-weight: 500;
+  line-height: 1.5;
 }

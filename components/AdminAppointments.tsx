@@ -1,184 +1,39 @@
-// components/AdminAppointments.tsx
 'use client';
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
-import styles from './AdminAppointments.module.css';
-import { parseISO, format } from 'date-fns';
-import { toast } from 'react-toastify';
-import NewAppointmentForm from './AdminAppointments/NewAppointmentForm';
-import DateFilter from './AdminAppointments/DateFilter';
-import AppointmentTimeline from './AdminAppointments/AppointmentTimeline';
+import { useMemo, useRef, useState } from 'react';
+import { useAppointments } from '@lib/useAppointments';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { format } from 'date-fns';
 import AppointmentTable from './AdminAppointments/AppointmentTable';
-import SkeletonTable from './AdminAppointments/SkeletonTable';
-import BackButton from '@components/BackButton';
-
-interface Appointment {
-  id: number;
-  startTime: string;
-  duration: number;
-  client: string;
-  notes?: string | null;
-  price: number;
-}
+import NewAppointmentForm from './AdminAppointments/NewAppointmentForm';
+import AppointmentTimeline from './AdminAppointments/AppointmentTimeline';
 
 export default function AdminAppointments() {
   const searchParams = useSearchParams();
-  const dateParam = searchParams.get('date');
-
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const [date, setDate] = useState<string>(dateParam ?? todayStr);
-
-  const timelineRef = useRef<HTMLDivElement>(null);
-  const kyivFormatter = useMemo(
-    () =>
-      new Intl.DateTimeFormat('ru-RU', {
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'Europe/Kyiv',
-      }),
-    []
-  );
-
-  // ——— Общее состояние ———
-  const [list, setList] = useState<Appointment[]>([]);
-  const [loadingAdd, setLoadingAdd] = useState(false);
-  const [loadingSaveId, setLoadingSaveId] = useState<number | null>(null);
-  const [loadingDeleteId, setLoadingDeleteId] = useState<number | null>(null);
-  const [loadingList, setLoadingList] = useState(true);
-  const [activeTooltipId, setActiveTooltipId] = useState<number | null>(null);
-
-  // ——— Новая форма ———
-  const [newForm, setNewForm] = useState({
-    date: todayStr,
+  const router = useRouter();
+  // если в URL есть ?date=YYYY-MM-DD — берем его, иначе today
+  const initialDate = searchParams.get('date') || new Date().toISOString().slice(0, 10);
+  const [date, setDate] = useState(initialDate);
+  const { data: list, mutate } = useAppointments(date);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editForm, setEditForm] = useState({
+    date: '',
     time: '',
     duration: '',
     client: '',
     notes: '',
-    price: '', // поле для суммы
+    price: '',
+    clientId: '', // важное добавление
   });
-  const [newFormErrors, setNewFormErrors] = useState<Record<string, boolean>>({});
-  const [newFormErrorMessage, setNewFormErrorMessage] = useState<string | null>(null);
 
-  // ——— Редактирование ———
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editForm, setEditForm] = useState(newForm);
   const [editFormErrors, setEditFormErrors] = useState<Record<string, boolean>>({});
   const [editErrorMessage, setEditErrorMessage] = useState<string | null>(null);
+  const [loadingSaveId, setLoadingSaveId] = useState<number | null>(null);
+  const [loadingDeleteId, setLoadingDeleteId] = useState<number | null>(null);
   const [errorEditId, setErrorEditId] = useState<number | null>(null);
 
-  // ——— Цвета клиентов ———
-  const [colorMap, setColorMap] = useState<Record<string, string>>({});
-  useEffect(() => {
-    const m: Record<string, string> = {};
-    list.forEach(a => {
-      if (!m[a.client]) {
-        let h = 0;
-        for (const c of a.client) h = c.charCodeAt(0) + ((h << 5) - h);
-        m[a.client] = `hsl(${Math.abs(h) % 360},80%,65%)`;
-      }
-    });
-    setColorMap(m);
-  }, [list]);
-
-  // ——— Загрузка списка по дате ———
-  useEffect(() => {
-    setLoadingList(true);
-    fetch(`/api/appointments?date=${encodeURIComponent(date)}`)
-      .then(r => (r.ok ? r.json() : Promise.reject()))
-      .then((data: Appointment[]) => setList(data))
-      .catch(() => setList([]))
-      .finally(() => setLoadingList(false));
-
-    setNewForm(f => ({ ...f, date }));
-  }, [date]);
-
-  // клик вне — закрываем тултип
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (!(e.target as HTMLElement).closest('[data-appt-id]')) {
-        setActiveTooltipId(null);
-      }
-    };
-    document.addEventListener('click', handler);
-    return () => document.removeEventListener('click', handler);
-  }, []);
-
-  function isOverlap(start: Date, dur: number, skipId?: number) {
-    const end = new Date(start.getTime() + dur * 60000);
-    return list.some(appt => {
-      if (appt.id === skipId) return false;
-      const s = new Date(appt.startTime);
-      const e = new Date(s.getTime() + appt.duration * 60000);
-      return start < e && s < end;
-    });
-  }
-
-  // ——— Добавление ———
-  async function handleAdd(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setNewFormErrors({});
-    setNewFormErrorMessage(null);
-
-    const errs: Record<string, boolean> = {};
-    const { date: d, time, duration, client, notes, price } = newForm;
-    const durNum = parseInt(duration, 10);
-    const priceNum = parseInt(price, 10);
-
-    if (!d) errs.date = true;
-    if (!time) errs.time = true;
-    if (isNaN(durNum)) errs.duration = true;
-    if (!client.trim()) errs.client = true;
-    if (isNaN(priceNum)) errs.price = true; // проверка суммы
-    if (Object.keys(errs).length) {
-      setNewFormErrors(errs);
-      setNewFormErrorMessage('Поля заповнені некоректно');
-      return;
-    }
-
-    const [Y, M, D] = d.split('-').map(Number);
-    const [h, m] = time.split(':').map(Number);
-    const ld = new Date(Y, M - 1, D, h, m);
-
-    if (isOverlap(ld, durNum)) {
-      setNewFormErrorMessage('Час перекривається з іншими сеансами');
-      return;
-    }
-
-    setLoadingAdd(true);
-    try {
-      const res = await fetch('/api/appointments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          startTime: ld.toISOString(),
-          duration: durNum,
-          client: client.trim(),
-          notes: notes.trim() || null,
-          price: priceNum, // передаём сумму
-        }),
-      });
-      const json = await res.json();
-      if (!res.ok) {
-        setNewFormErrorMessage(json.error || 'Не вдалося додати запис');
-      } else {
-        setList(prev =>
-          [...prev, json]
-            .filter(a => parseISO(a.startTime).toISOString().slice(0, 10) === date)
-            .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
-        );
-        setNewForm({ date: todayStr, time: '', duration: '', client: '', notes: '', price: '' });
-      }
-    } catch {
-      setNewFormErrorMessage('Не вдалося додати запис');
-    } finally {
-      setLoadingAdd(false);
-    }
-  }
-
-  // ——— Редактирование ———
-  function startEdit(a: Appointment) {
-    const dt = parseISO(a.startTime);
+  const startEdit = (a: any) => {
+    const dt = new Date(a.startTime);
     setEditingId(a.id);
     setEditForm({
       date: format(dt, 'yyyy-MM-dd'),
@@ -186,19 +41,30 @@ export default function AdminAppointments() {
       duration: String(a.duration),
       client: a.client,
       notes: a.notes || '',
-      price: String(a.price), // наполняем сумму
+      price: String(a.price),
+      clientId: a.clientId || '',
     });
     setEditFormErrors({});
     setEditErrorMessage(null);
     setErrorEditId(null);
-  }
+  };
 
-  function cancelEdit() {
+  const cancelEdit = () => {
     setEditingId(null);
     setEditFormErrors({});
     setEditErrorMessage(null);
     setErrorEditId(null);
-  }
+  };
+
+  const isOverlap = (start: Date, duration: number, excludeId?: number): boolean => {
+    const end = new Date(start.getTime() + duration * 60000);
+    return list.some(a => {
+      if (a.id === excludeId) return false;
+      const aStart = new Date(a.startTime);
+      const aEnd = new Date(aStart.getTime() + a.duration * 60000);
+      return start < aEnd && end > aStart;
+    });
+  };
 
   async function saveEdit(id: number) {
     setEditFormErrors({});
@@ -206,15 +72,16 @@ export default function AdminAppointments() {
     setErrorEditId(null);
 
     const errs: Record<string, boolean> = {};
-    const { date: d, time, duration, client, notes, price } = editForm;
+    const { date: d, time, duration, client, notes, price, clientId } = editForm;
     const durNum = parseInt(duration, 10);
     const priceNum = parseInt(price, 10);
 
     if (!d) errs.date = true;
     if (!time) errs.time = true;
     if (isNaN(durNum)) errs.duration = true;
-    if (!client.trim()) errs.client = true;
-    if (isNaN(priceNum)) errs.price = true; // проверка суммы
+    if (!client?.trim() && !clientId) errs.client = true;
+    if (isNaN(priceNum)) errs.price = true;
+
     if (Object.keys(errs).length) {
       setEditFormErrors(errs);
       setEditErrorMessage('Поля заповнені некоректно');
@@ -232,30 +99,34 @@ export default function AdminAppointments() {
       return;
     }
 
+    const payload: any = {
+      startTime: ld.toISOString(),
+      duration: durNum,
+      notes: notes.trim() || null,
+      price: priceNum,
+      id,
+    };
+
+    if (clientId) {
+      payload.clientId = clientId;
+    } else {
+      payload.client = client.trim();
+    }
+
     setLoadingSaveId(id);
     try {
       const res = await fetch(`/api/appointments/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          startTime: ld.toISOString(),
-          duration: durNum,
-          client: client.trim(),
-          notes: notes.trim() || null,
-          price: priceNum, // передаём сумму
-        }),
+        body: JSON.stringify(payload),
       });
+
       const json = await res.json();
       if (!res.ok) {
         setEditErrorMessage(json.error || 'Не вдалося зберегти');
         setErrorEditId(id);
       } else {
-        setList(prev =>
-          prev
-            .map(x => (x.id === id ? json : x))
-            .filter(a => parseISO(a.startTime).toISOString().slice(0, 10) === date)
-            .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
-        );
+        await mutate();
         cancelEdit();
       }
     } catch {
@@ -266,72 +137,117 @@ export default function AdminAppointments() {
     }
   }
 
-  // ——— Удаление ———
-  async function deleteItem(id: number) {
+  const deleteItem = async (id: number) => {
+    if (!confirm('Видалити сеанс?')) return;
     setLoadingDeleteId(id);
     try {
-      const res = await fetch(`/api/appointments/${id}`, { method: 'DELETE' });
-      if (!res.ok) toast.error('Не вдалося видалити');
-      else setList(prev => prev.filter(x => x.id !== id));
-    } catch {
-      toast.error('Не вдалося видалити');
+      await fetch(`/api/appointments/${id}`, { method: 'DELETE' });
+      await mutate();
     } finally {
       setLoadingDeleteId(null);
     }
+  };
+
+  const todayStr = new Date().toISOString().slice(0, 10);
+
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const scaleStart = 8;
+  const scaleDuration = 13.5; // до 21:30
+
+  const colorMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    list.forEach(a => {
+      const key = a.clientRel?.name ?? a.client;
+      map[key] = stringToHSLColor(key);
+    });
+    return map;
+  }, [list]);
+
+  const [activeTooltipId, setActiveTooltipId] = useState<number | null>(null);
+
+  function stringToHSLColor(str: string, saturation = 65, lightness = 55): string {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const hue = Math.abs(hash) % 360;
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   }
 
   return (
-    <div className={styles.container}>
-      <BackButton />
-
-      <h1 className={styles.title}>Запис клієнтів</h1>
-
-      <NewAppointmentForm
-        todayStr={todayStr}
-        newForm={newForm}
-        setNewForm={setNewForm}
-        loadingAdd={loadingAdd}
-        handleAdd={handleAdd}
-        errorFields={newFormErrors}
-        errorMessage={newFormErrorMessage}
-      />
-
-      <DateFilter date={date} setDate={setDate} disabled={loadingAdd} />
-
+    <>
+      <NewAppointmentForm todayStr={todayStr} onCreated={mutate} />
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+          gap: '0.5rem',
+          marginBottom: '1rem',
+          marginTop: '1rem',
+        }}
+      >
+        <label htmlFor="dayPicker" style={{ fontWeight: 500 }}>
+          Дата:
+        </label>
+        <input
+          id="dayPicker"
+          type="date"
+          value={date}
+          onChange={e => {
+            const newDate = e.target.value;
+            setDate(newDate);
+            // подтягиваем URL — необязательно, но удобно для "поделиться"
+            router.push(`/admin/appointments?date=${newDate}`);
+          }}
+          style={{
+            padding: '6px 10px',
+            fontSize: '14px',
+            borderRadius: '4px',
+            border: '1px solid #ccc',
+          }}
+        />
+      </div>
       <AppointmentTimeline
         list={list}
-        scaleStart={8}
-        scaleDuration={13.5}
+        scaleStart={scaleStart}
+        scaleDuration={scaleDuration}
         colorMap={colorMap}
         timelineRef={timelineRef}
         activeTooltipId={activeTooltipId}
-        toggleTooltip={id => setActiveTooltipId(prev => (prev === id ? null : id))}
-        kyivFormatter={kyivFormatter}
+        toggleTooltip={setActiveTooltipId}
+        kyivFormatter={
+          new Intl.DateTimeFormat('uk-UA', {
+            timeZone: 'Europe/Kyiv',
+            hour: '2-digit',
+            minute: '2-digit',
+          })
+        }
       />
 
-      {loadingList ? (
-        <SkeletonTable />
-      ) : (
-        <AppointmentTable
-          list={list}
-          todayStr={todayStr}
-          editingId={editingId!}
-          editForm={editForm}
-          setEditForm={setEditForm}
-          loadingAdd={loadingAdd}
-          loadingSaveId={loadingSaveId}
-          loadingDeleteId={loadingDeleteId}
-          startEdit={startEdit}
-          cancelEdit={cancelEdit}
-          saveEdit={saveEdit}
-          deleteItem={deleteItem}
-          kyivFormatter={kyivFormatter}
-          errorFields={editFormErrors}
-          errorMessage={errorEditId === editingId ? editErrorMessage : undefined}
-        />
-      )}
-
-      <BackButton />
-    </div>
+      <AppointmentTable
+        list={list}
+        todayStr={todayStr}
+        kyivFormatter={
+          new Intl.DateTimeFormat('uk-UA', {
+            timeZone: 'Europe/Kyiv',
+            hour: '2-digit',
+            minute: '2-digit',
+          })
+        }
+        editingId={editingId}
+        editForm={editForm}
+        setEditForm={setEditForm}
+        loadingAdd={false}
+        loadingSaveId={loadingSaveId}
+        loadingDeleteId={loadingDeleteId}
+        startEdit={startEdit}
+        cancelEdit={cancelEdit}
+        saveEdit={saveEdit}
+        deleteItem={deleteItem}
+        errorFields={editFormErrors}
+        errorMessage={editErrorMessage}
+      />
+    </>
   );
 }

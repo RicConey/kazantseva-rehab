@@ -1,21 +1,17 @@
-// app/api/appointments/route.ts
-
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { formatInTimeZone } from 'date-fns-tz';
-import { requireAdmin } from '@lib/auth'; // защита всех методов
+import { requireAdmin } from '@lib/auth';
 
 const TZ = 'Europe/Kyiv';
 
-// Вспомогательная функция для вычленения id из URL
 function getIdFromUrl(url: string): number {
   const parts = new URL(url).pathname.split('/');
   return Number(parts[parts.length - 1]);
 }
 
 export async function GET(req: NextRequest) {
-  // защита: если нет сессии — 401
   const denied = await requireAdmin();
   if (denied) return denied;
 
@@ -32,10 +28,7 @@ export async function GET(req: NextRequest) {
   if (date) {
     const d0 = new Date(date);
     const d1 = new Date(d0.getTime() + 24 * 60 * 60 * 1000);
-    where.startTime = {
-      gte: d0.toISOString(),
-      lt: d1.toISOString(),
-    };
+    where.startTime = { gte: d0.toISOString(), lt: d1.toISOString() };
   } else {
     where.startTime = {
       gte: new Date(from!).toISOString(),
@@ -46,21 +39,24 @@ export async function GET(req: NextRequest) {
   const appointments = await prisma.appointment.findMany({
     where,
     orderBy: { startTime: 'asc' },
+    include: {
+      clientRel: {
+        select: { id: true, name: true },
+      },
+    },
   });
 
   return NextResponse.json(appointments, { status: 200 });
 }
 
 export async function POST(req: NextRequest) {
-  // защита
   const denied = await requireAdmin();
   if (denied) return denied;
 
-  const { startTime, duration, client, notes, price } = await req.json();
+  const { startTime, duration, client, clientId, notes, price } = await req.json();
   const newStart = new Date(startTime);
   const newEnd = new Date(newStart.getTime() + duration * 60000);
 
-  // проверяем пересечения
   const list = await prisma.appointment.findMany();
   for (const appt of list) {
     const s = new Date(appt.startTime);
@@ -75,68 +71,104 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  const data: any = {
+    startTime: newStart.toISOString(),
+    duration,
+    clientId: clientId || null,
+    notes: notes?.trim() || null,
+    price,
+  };
+
+  if (!clientId && typeof client === 'string') {
+    data.client = client.trim();
+  }
+
   const appt = await prisma.appointment.create({
-    data: {
-      startTime: newStart.toISOString(),
-      duration,
-      client: client.trim(),
-      notes: notes?.trim() || null,
-      price,
+    data,
+    include: {
+      clientRel: {
+        select: { id: true, name: true },
+      },
     },
   });
 
-  revalidatePath('/api/appointments');
+  revalidatePath('/admin/appointments');
   return NextResponse.json(appt, { status: 201 });
 }
 
 export async function PUT(req: NextRequest) {
-  // защита
   const denied = await requireAdmin();
   if (denied) return denied;
 
   const id = getIdFromUrl(req.url);
-  const { startTime, duration, client, notes, price } = await req.json();
+  const { startTime, duration, client, clientId, notes, price } = await req.json();
   const newStart = new Date(startTime);
   const newEnd = new Date(newStart.getTime() + duration * 60000);
 
-  // проверяем пересечения (skip self)
-  const list = await prisma.appointment.findMany();
-  for (const appt of list) {
-    if (appt.id === id) continue;
-    const s = new Date(appt.startTime);
-    const e = new Date(s.getTime() + appt.duration * 60000);
-    if (newStart < e && s < newEnd) {
-      const conflictStr = formatInTimeZone(s, TZ, 'dd.MM.yyyy HH:mm');
-      const newStr = formatInTimeZone(newStart, TZ, 'dd.MM.yyyy HH:mm');
-      return NextResponse.json(
-        { error: `Неможливо на ${newStr}, бо вже є сеанс ${conflictStr}` },
-        { status: 400 }
-      );
-    }
+  const dayStart = new Date(newStart.getFullYear(), newStart.getMonth(), newStart.getDate());
+  const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+  const existing = await prisma.appointment.findMany({
+    where: {
+      AND: [
+        { id: { not: id } },
+        {
+          startTime: {
+            gte: dayStart.toISOString(),
+            lt: dayEnd.toISOString(),
+          },
+        },
+      ],
+    },
+  });
+
+  const conflict = existing.find(a => {
+    const s = new Date(a.startTime);
+    const e = new Date(s.getTime() + a.duration * 60000);
+    return newStart < e && s < newEnd;
+  });
+
+  if (conflict) {
+    const conflictStr = formatInTimeZone(new Date(conflict.startTime), TZ, 'dd.MM.yyyy HH:mm');
+    const newStr = formatInTimeZone(newStart, TZ, 'dd.MM.yyyy HH:mm');
+    return NextResponse.json(
+      { error: `Неможливо на ${newStr}, бо вже є сеанс ${conflictStr}` },
+      { status: 400 }
+    );
+  }
+
+  const data: any = {
+    startTime: newStart.toISOString(),
+    duration,
+    clientId: clientId || null,
+    notes: notes?.trim() || null,
+    price,
+  };
+
+  if (!clientId && typeof client === 'string') {
+    data.client = client.trim();
   }
 
   const updated = await prisma.appointment.update({
     where: { id },
-    data: {
-      startTime: newStart.toISOString(),
-      duration,
-      client: client.trim(),
-      notes: notes?.trim() || null,
-      price,
+    data,
+    include: {
+      clientRel: {
+        select: { id: true, name: true },
+      },
     },
   });
 
-  revalidatePath('/api/appointments');
+  revalidatePath('/admin/appointments');
   return NextResponse.json(updated, { status: 200 });
 }
 
 export async function DELETE(req: NextRequest) {
-  // защита
   const denied = await requireAdmin();
   if (denied) return denied;
 
   const id = getIdFromUrl(req.url);
   await prisma.appointment.delete({ where: { id } });
-  revalidatePath('/api/appointments');
+
+  revalidatePath('/admin/appointments');
   return NextResponse.json({ success: true }, { status: 200 });
 }

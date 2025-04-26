@@ -1,13 +1,10 @@
 import Image from 'next/image';
 import SeoText from '@components/SeoText';
 import styles from './Contact.module.css';
-import BackButton from '@components/BackButton';
 
 export default function ContactPage() {
   return (
     <section className={`baseText ${styles.contactSection}`}>
-      <BackButton />
-
       {/* ——— телефони ——— */}
       <h2 className={styles.contactTitle} style={{ textAlign: 'center' }}>
         Телефони:
@@ -79,7 +76,6 @@ export default function ContactPage() {
       </div>
 
       <SeoText slug={undefined} />
-      <BackButton />
     </section>
   );
 }

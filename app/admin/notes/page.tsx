@@ -7,7 +7,6 @@ import { redirect } from 'next/navigation';
 import NotesPanel from '@components/notes/NotesPanel';
 import adminStyles from '@components/AdminAppointments.module.css';
 import notesStyles from '@components/notes/Notes.module.css';
-import BackButton from '@components/BackButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,10 +21,8 @@ export default async function NotesPage() {
   // Иначе рендерим защищённый UI
   return (
     <div className={`${adminStyles.container} ${notesStyles.notesContainer}`}>
-      <BackButton />
       <h1 className={adminStyles.title}>Нотатки</h1>
       <NotesPanel />
-      <BackButton />
     </div>
   );
 }

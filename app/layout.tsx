@@ -2,7 +2,6 @@ import '../styles/globals.css';
 import AnalyticsProvider from './analytics-provider';
 import Header from './Header';
 import Head from 'next/head';
-import Script from 'next/script';
 import Providers from './providers'; // наш клиентский провайдер
 
 export const viewport = {
@@ -72,8 +71,6 @@ export default function RootLayout({ children }) {
         />
       </Head>
       <body>
-        {/* Глобальное подключение Web Component "back-button" */}
-        <Script src="/back-button.js" strategy="beforeInteractive" />
         <Providers>
           <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
             <Header />

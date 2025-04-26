@@ -1,0 +1,14 @@
+/* components/clients-list/ClientsManager.module.css */
+
+/* По умолчанию поля рядом, на мобилке — столбцом */
+.formMobile {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 600px) {
+  .formMobile {
+    flex-direction: column;
+  }
+}
