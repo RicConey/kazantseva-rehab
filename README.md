@@ -30,8 +30,6 @@
 | https://kazantseva-rehabilitation.com.ua | 🌐 **Public site** / Публічний сайт |
 | `/admin` | 🔒 **Admin dashboard** (JWT‑protected) / Адмін‑панель (лише admin) |
 
-![landing](docs/screens/landing.webp)  
-*Public landing — SSR + ISR*
 
 ---
 
@@ -42,8 +40,6 @@
 | **Публічний сайт**<br>• SSR + ISR на Next.js<br>• SEO: sitemap.xml, OG, structured data<br>• Контент українською, мінімум JS<br>• Динамічний прайс із Neon PostgreSQL (кеш з адмінки) | **Public site**<br>• SSR + ISR with Next.js<br>• SEO‑ready: sitemap, OpenGraph, structured data<br>• Ukrainian primary content, ultra‑lean JS bundle<br>• Dynamic price list from Neon PostgreSQL (cache invalidated from admin) |
 | **Адмін‑панель**<br>• JWT‑авторизація та Edge‑middleware guard<br>• Повний CRUD: Клієнти, Сеанси, Таймлайн, Фінанси, Локації, Прайс<br>• Таймлайн з drag‑scroll та мобільними жестами<br>• Фінзвіти: день, тиждень, місяць, рік<br>• Експорт у CSV (в розробці) | **Admin dashboard**<br>• JWT authentication + Edge middleware guard<br>• Full CRUD: Clients, Appointments, Timeline, Finance, Locations, Price List<br>• Interactive timeline with drag‑scroll & mobile gestures<br>• Finance reports: day, week, month, year<br>• CSV export (work in progress) |
 
-![timeline](docs/screens/timeline.webp)  
-*Appointment Timeline on desktop*
 
 ---
 
