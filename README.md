@@ -44,13 +44,13 @@
 ---
 
 ## 🛠 Tech Stack / Тех‑стек <a id="tech-stack"></a>
-| Layer | 🇺🇦 Інструменти | EN Tools |
-|-------|----------------|-----------|
-| Frontend | Next.js 14, React 19, Tailwind CSS | Same |
-| Backend  | Next.js API routes, Prisma ORM, Neon PostgreSQL | Same |
-| Auth     | NextAuth (JWT) + bcrypt | Same |
-| UI / Viz | Recharts, react‑calendar‑timeline | Same |
-| DevOps   | Vercel, ESLint / Prettier, pnpm | Same |
+| Layer | Інструменти/Tools |
+|-------|----------------|
+| Frontend | Next.js 14, React 19, Tailwind CSS |
+| Backend  | Next.js API routes, Prisma ORM, Neon PostgreSQL |
+| Auth     | NextAuth (JWT) + bcrypt |
+| UI / Viz | Recharts, react‑calendar‑timeline |
+| DevOps   | Vercel, ESLint / Prettier, pnpm |
 
 ---
 
