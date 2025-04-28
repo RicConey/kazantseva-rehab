@@ -18,7 +18,7 @@ export async function middleware(req: NextRequest) {
     // если нет токена или нет роли admin — редиректим на login
     if (!token || token.role !== 'admin') {
       const loginUrl = req.nextUrl.clone();
-      loginUrl.pathname = '/auth/login';         // ваш роут авторизации
+      loginUrl.pathname = '/auth/login'; // ваш роут авторизации
       loginUrl.searchParams.set('from', pathname);
       return NextResponse.redirect(loginUrl);
     }
@@ -40,10 +40,7 @@ export async function middleware(req: NextRequest) {
 
     // если не авторизован — возвращаем 401 JSON
     if (!token || token.role !== 'admin') {
-      return NextResponse.json(
-          { message: 'Not authorized' },
-          { status: 401 },
-      );
+      return NextResponse.json({ message: 'Not authorized' }, { status: 401 });
     }
     // иначе пропускаем дальше к вашему API-хендлеру
   }

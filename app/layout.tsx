@@ -10,14 +10,14 @@ import 'tippy.js/themes/light.css';
 export const metadata = {
   title: 'Kazantseva Rehabilitation – Реабілітація Наталія Казанцева у Вишневому',
   description:
-      "Професійна реабілітація, остеопатія, масаж, фітобочка, краніосакральна терапія у Вишневому Київська область. Відновлення здоров'я, зменшення болю, корекція постави.",
+    "Професійна реабілітація, остеопатія, масаж, фітобочка, краніосакральна терапія у Вишневому Київська область. Відновлення здоров'я, зменшення болю, корекція постави.",
   keywords:
-      'реабілітація Вишневе, остеопатія Вишневе, масаж Вишневе, краніосакральна терапія Вишневе, фітобочка Вишневе, вісцеральна терапія Вишневе',
+    'реабілітація Вишневе, остеопатія Вишневе, масаж Вишневе, краніосакральна терапія Вишневе, фітобочка Вишневе, вісцеральна терапія Вишневе',
   icons: { icon: '/favicon.ico' },
   openGraph: {
     title: 'Kazantseva Rehabilitation – Реабілітація Наталія Казанцева у Вишневому',
     description:
-        "Реабілітація, остеопатія, масаж, краніосакральна терапія у Вишневому. Відновлення здоров'я професійно!",
+      "Реабілітація, остеопатія, масаж, краніосакральна терапія у Вишневому. Відновлення здоров'я професійно!",
     url: 'https://kazantseva-rehabilitation.com.ua/',
     type: 'website',
     images: [
@@ -41,19 +41,19 @@ export const viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-      <html lang="uk">
+    <html lang="uk">
       <body>
-      <Providers>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
-          <Header />
-          <main style={{ padding: '20px' }}>{children}</main>
-        </div>
-        <footer style={{ textAlign: 'center', padding: '10px 0' }}>
-          &copy; {new Date().getFullYear()} Kazantseva Rehabilitation. Всі права захищені.
-        </footer>
-      </Providers>
-      <AnalyticsProvider />
+        <Providers>
+          <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+            <Header />
+            <main style={{ padding: '20px' }}>{children}</main>
+          </div>
+          <footer style={{ textAlign: 'center', padding: '10px 0' }}>
+            &copy; {new Date().getFullYear()} Kazantseva Rehabilitation. Всі права захищені.
+          </footer>
+        </Providers>
+        <AnalyticsProvider />
       </body>
-      </html>
+    </html>
   );
 }

@@ -89,7 +89,7 @@ export default function ClientsManager() {
           messengerTypes: form.messengerTypes,
         }),
       });
-      const data = await res.json().catch(() => (({}) as any));
+      const data = await res.json().catch(() => ({}) as any);
       if (!res.ok) throw new Error(data.message || 'Помилка створення клієнта');
 
       setClients(prev => [

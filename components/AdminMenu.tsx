@@ -41,27 +41,27 @@ export default function AdminMenu() {
 
       <nav className={`${styles.menu} ${open ? styles.open : ''}`}>
         {items.map(({ href, label, Icon }) => {
-          const isLogout = href === '/api/auth/signout';
-          const isActive = !isLogout && path === href;
-
-          if (isLogout) {
+          // Обрабатываем ссылку «Вихід» отдельно
+          if (href === '/api/auth/signout') {
             return (
-              <a key={href} href={href} className={styles.link}>
+              <a key={href} href={href} className={styles.link} onClick={() => setOpen(false)}>
                 <Icon className={styles.icon} />
                 <span className={styles.label}>{label}</span>
               </a>
             );
           }
 
+          // Для внутренних маршрутов Next.js
+          const isActive = path === href;
           return (
-            <Link key={href} href={href} legacyBehavior>
-              <a
-                className={`${styles.link} ${isActive ? styles.active : ''}`}
-                onClick={() => setOpen(false)}
-              >
-                <Icon className={styles.icon} />
-                <span className={styles.label}>{label}</span>
-              </a>
+            <Link
+              key={href}
+              href={href}
+              className={`${styles.link} ${isActive ? styles.active : ''}`}
+              onClick={() => setOpen(false)}
+            >
+              <Icon className={styles.icon} />
+              <span className={styles.label}>{label}</span>
             </Link>
           );
         })}

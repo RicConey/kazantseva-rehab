@@ -12,7 +12,7 @@ function sanitizeInput(input: unknown): input is string {
 
 // лимит: 5 попыток за 15 минут
 const loginLimiter = new RateLimiterMemory({
-  points:   5,
+  points: 5,
   duration: 15 * 60,
 });
 
@@ -21,11 +21,14 @@ export const authConfig: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
-      credentials: { username: { label: 'Имя', type: 'text' }, password: { label: 'Пароль', type: 'password' } },
+      credentials: {
+        username: { label: 'Имя', type: 'text' },
+        password: { label: 'Пароль', type: 'password' },
+      },
       async authorize(credentials, req) {
         // IP из заголовков
         const header = req.headers['x-forwarded-for'] || req.headers['x-real-ip'];
-        const ip = Array.isArray(header) ? header[0] : (header || 'unknown');
+        const ip = Array.isArray(header) ? header[0] : header || 'unknown';
 
         // проверяем лимит
         try {
@@ -34,14 +37,21 @@ export const authConfig: NextAuthOptions = {
           throw new Error('TooManyRequests');
         }
 
-        if (!credentials || !sanitizeInput(credentials.username) || !sanitizeInput(credentials.password)) {
+        if (
+          !credentials ||
+          !sanitizeInput(credentials.username) ||
+          !sanitizeInput(credentials.password)
+        ) {
           throw new Error('CredentialsSignin');
         }
         // анти-брутфорс задержка
         await new Promise(r => setTimeout(r, 1000));
 
         const validUser = credentials.username === process.env.ADMIN_USERNAME;
-        const validPass = await bcrypt.compare(credentials.password, process.env.ADMIN_PASSWORD_HASH!);
+        const validPass = await bcrypt.compare(
+          credentials.password,
+          process.env.ADMIN_PASSWORD_HASH!
+        );
         if (validUser && validPass) {
           return { id: 'admin', name: 'Admin', role: 'admin' };
         }
@@ -51,7 +61,7 @@ export const authConfig: NextAuthOptions = {
   ],
   pages: {
     signIn: '/auth/signin',
-    error:  '/auth/signin',
+    error: '/auth/signin',
   },
   session: { strategy: 'jwt', maxAge: 7 * 24 * 3600, updateAge: 24 * 3600 },
   secret: process.env.NEXTAUTH_SECRET,

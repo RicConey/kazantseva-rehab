@@ -295,7 +295,9 @@ export default function AppointmentTable({
         <td data-label="Хв">{a.duration}</td>
         <td data-label="ФІО">
           {a.clientId && a.clientRel ? (
-            <Link href={`/admin/clients/${a.clientRel.id}`} legacyBehavior>{a.clientRel.name}</Link>
+            <Link href={`/admin/clients/${a.clientRel.id}`} legacyBehavior>
+              {a.clientRel.name}
+            </Link>
           ) : (
             a.client
           )}

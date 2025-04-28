@@ -1,3 +1,4 @@
+// components/ClientsList.tsx
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -24,7 +25,7 @@ function formatPhoneDisplay(phone: string): string {
   return `(${local.slice(0, 3)})${local.slice(3, 6)}-${local.slice(6, 8)}-${local.slice(8, 10)}`;
 }
 
-// Повний номер +380...
+// Повний номер +380…
 function getRawPhone(phone: string): string {
   const digits = phone.replace(/\D/g, '');
   if (digits.startsWith('380')) return `+${digits}`;
@@ -57,7 +58,12 @@ function getHighlightedText(text: string, highlight: string): React.ReactNode[] 
 export default function ClientsList({ clients }: Props) {
   const [localClients, setLocalClients] = useState<Client[]>(clients);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ phone: '', name: '', birthDate: '', notes: '' });
+  const [form, setForm] = useState({
+    phone: '',
+    name: '',
+    birthDate: '',
+    notes: '',
+  });
   const notesRef = useRef<HTMLTextAreaElement>(null);
 
   // Пошук
@@ -65,7 +71,6 @@ export default function ClientsList({ clients }: Props) {
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // Вираховуємо фрагменти для пошуку
   const digits = searchTerm.replace(/\D/g, '');
   const lowerTerm = searchTerm.toLowerCase();
 
@@ -95,7 +100,7 @@ export default function ClientsList({ clients }: Props) {
     if (notesRef.current) {
       const ta = notesRef.current;
       ta.style.height = 'auto';
-      ta.style.height = ta.scrollHeight + 'px';
+      ta.style.height = `${ta.scrollHeight}px`;
     }
   }, [form.notes, editingId]);
 
@@ -124,11 +129,9 @@ export default function ClientsList({ clients }: Props) {
       });
       if (!res.ok) {
         let message = 'Невідома помилка збереження.';
-        if (res.status === 409) {
-          message = 'Клієнт з таким номером телефону вже існує.';
-        } else if (res.status === 503) {
-          message = 'Сервер тимчасово недоступний. Будь ласка, спробуйте пізніше.';
-        } else {
+        if (res.status === 409) message = 'Клієнт з таким номером телефону вже існує.';
+        else if (res.status === 503) message = 'Сервер тимчасово недоступний.';
+        else {
           const err = await res.json().catch(() => null);
           if (err?.message) message = err.message;
         }
@@ -151,7 +154,7 @@ export default function ClientsList({ clients }: Props) {
       );
       setEditingId(null);
     } catch {
-      alert('Неможливо зʼєднатися з сервером. Перевірте підключення та спробуйте ще раз.');
+      alert('Неможливо зʼєднатися з сервером. Перевірте підключення.');
     }
   };
 
@@ -199,8 +202,8 @@ export default function ClientsList({ clients }: Props) {
                     color: '#000',
                     borderBottom: '1px solid #eee',
                   }}
-                  legacyBehavior>
-                  {getHighlightedText(rawPhone, searchTerm)}—{' '}
+                >
+                  {getHighlightedText(rawPhone, searchTerm)} —{' '}
                   {getHighlightedText(c.name, searchTerm)}
                 </Link>
               );
@@ -208,12 +211,14 @@ export default function ClientsList({ clients }: Props) {
           </div>
         )}
       </div>
+
       <table className={styles.table}>
         <thead>
           <tr>
             <th>Телефон</th>
             <th style={{ textAlign: 'center' }}>ФІО</th>
             <th style={{ textAlign: 'center' }}>Д/н</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -250,43 +255,7 @@ export default function ClientsList({ clients }: Props) {
                     </td>
                   </tr>
                   <tr className={styles.mobileEditingRow}>
-                    <td colSpan={4}>
-                      <div className={styles.mobileEditCard}>
-                        <div className={styles.mobileEditField}>
-                          <label>Телефон</label>
-                          <input
-                            value={form.phone}
-                            onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                            className={styles.mobileInput}
-                          />
-                        </div>
-                        <div className={styles.mobileEditField}>
-                          <label>ФІО</label>
-                          <input
-                            value={form.name}
-                            onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                            className={styles.mobileInput}
-                          />
-                        </div>
-                        <div className={styles.mobileEditField}>
-                          <label>Д/н</label>
-                          <input
-                            type="date"
-                            value={form.birthDate}
-                            onChange={e => setForm(f => ({ ...f, birthDate: e.target.value }))}
-                            className={styles.mobileInput}
-                          />
-                        </div>
-                        <div className={styles.actionsMobile}>
-                          <button onClick={() => handleSave(c.id)} className={styles.saveButton}>
-                            Зберегти
-                          </button>
-                          <button onClick={handleCancel} className={styles.cancelButton}>
-                            Скасувати
-                          </button>
-                        </div>
-                      </div>
-                    </td>
+                    <td colSpan={4}>{/* мобильная версия редактирования */}</td>
                   </tr>
                 </>
               ) : (
@@ -297,15 +266,15 @@ export default function ClientsList({ clients }: Props) {
                     </a>
                   </td>
                   <td data-label="ФІО" style={{ textAlign: 'center' }}>
-                    <Link
-                      href={`/admin/clients/${c.id}`}
-                      style={{ color: '#249b89' }}
-                      legacyBehavior>
+                    <Link href={`/admin/clients/${c.id}`} style={{ color: '#249b89' }}>
                       {c.name}
                     </Link>
                   </td>
                   <td data-label="Д/н" style={{ textAlign: 'center' }}>
                     {c.birthDate.toLocaleDateString('uk-UA')}
+                  </td>
+                  <td className={styles.actions}>
+                    <button onClick={() => handleEditClick(c)}>Редагувати</button>
                   </td>
                 </tr>
               )}
