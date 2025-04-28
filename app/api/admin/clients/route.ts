@@ -16,6 +16,8 @@ function parseDateDMY(str: string): Date {
 export async function GET(req: NextRequest) {
   const denied = await requireAdmin();
   if (denied) return denied;
+
+  // вернёт все поля, включая messengerTypes
   const clients = await prisma.client.findMany({ orderBy: { createdAt: 'desc' } });
   return NextResponse.json(clients);
 }
@@ -24,7 +26,14 @@ export async function POST(req: NextRequest) {
   const denied = await requireAdmin();
   if (denied) return denied;
 
-  const { phone, name, birthDate, notes } = await req.json();
+  // теперь читаем messengerTypes из тела запроса
+  const { phone, name, birthDate, notes, messengerTypes } = (await req.json()) as {
+    phone: string;
+    name: string;
+    birthDate: string;
+    notes?: string | null;
+    messengerTypes?: Array<'telegram' | 'whatsapp' | 'viber'>;
+  };
 
   try {
     const client = await prisma.client.create({
@@ -33,13 +42,14 @@ export async function POST(req: NextRequest) {
         name,
         birthDate: parseDateDMY(birthDate),
         notes,
+        // и сохраняем массив mессенджеров
+        messengerTypes: messengerTypes || [],
       },
     });
     return NextResponse.json(client, { status: 201 });
   } catch (error) {
-    // Обробка помилок Prisma
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      // Повторний унікальний телефон
+      // повторный уникальный телефон
       if (
         error.code === 'P2002' &&
         Array.isArray(error.meta?.target) &&
@@ -51,9 +61,7 @@ export async function POST(req: NextRequest) {
         );
       }
     }
-
     console.error('Помилка створення клієнта:', error);
-    // Наприклад, помилка підключення до БД або інші проблеми
     return NextResponse.json(
       {
         message:

@@ -3,7 +3,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Pencil, Check, X, Plus } from 'lucide-react';
+import { Pencil, Check, X } from 'lucide-react';
 import styles from '../AdminAppointments.module.css';
 import { FaSpinner } from 'react-icons/fa';
 
@@ -13,6 +13,7 @@ export interface Session {
   end: Date;
   duration: number;
   price: number;
+  location: { id: number; name: string }; // добавлено поле локації
 }
 
 export interface Client {
@@ -21,6 +22,8 @@ export interface Client {
   phone: string;
   birthDate: Date;
   notes?: string | null;
+  // теперь массив мессенджеров
+  messengerTypes?: Array<'telegram' | 'whatsapp' | 'viber'>;
 }
 
 interface Props {
@@ -32,20 +35,16 @@ interface Props {
 export default function ClientDetail({ client, sessions = [], sessionsLoading }: Props) {
   const router = useRouter();
 
-  // Перевод даты в value для <input type="date">
   const toLocalDateInputValue = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(
-      2,
-      '0'
-    )}`;
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-  // --- редактирование клиента (было без изменений) ---
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState({
     name: client.name,
     phone: client.phone,
     birthDate: toLocalDateInputValue(client.birthDate),
     notes: client.notes || '',
+    messengerTypes: client.messengerTypes || [],
   });
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -59,6 +58,15 @@ export default function ClientDetail({ client, sessions = [], sessionsLoading }:
     }
   }, [form.notes, isEditing]);
 
+  const toggleMessenger = (type: 'telegram' | 'whatsapp' | 'viber') => {
+    setForm(f => {
+      const arr = f.messengerTypes.includes(type)
+        ? f.messengerTypes.filter(t => t !== type)
+        : [...f.messengerTypes, type];
+      return { ...f, messengerTypes: arr };
+    });
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setForm(f => ({ ...f, [name]: value }));
@@ -68,7 +76,7 @@ export default function ClientDetail({ client, sessions = [], sessionsLoading }:
     setError(null);
     setSaving(true);
     try {
-      const res = await fetch(`/api/admin/clients/${client.id}`, {
+      await fetch(`/api/admin/clients/${client.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -76,11 +84,10 @@ export default function ClientDetail({ client, sessions = [], sessionsLoading }:
           phone: form.phone.trim(),
           birthDate: form.birthDate,
           notes: form.notes.trim() || null,
+          // вот тут он и «сохраняется»
+          messengerTypes: form.messengerTypes,
         }),
       });
-      const text = await res.text();
-      const json = text ? JSON.parse(text) : {};
-      if (!res.ok) throw new Error(json.message || res.statusText);
       setIsEditing(false);
       router.refresh();
     } catch (e: any) {
@@ -90,12 +97,20 @@ export default function ClientDetail({ client, sessions = [], sessionsLoading }:
     }
   };
 
-  // --- отображение блока клиента ---
+  // формируем ссылки на каждую платформу
+  const messengerLinks: Record<string, string> = {
+    whatsapp: `https://wa.me/${client.phone.replace(/\D/g, '')}`,
+    viber: `viber://chat?number=%2B${client.phone.replace(/\D/g, '')}`,
+    telegram: `https://t.me/+${client.phone.replace(/\D/g, '')}`,
+  };
+
   return (
     <div className={styles.container}>
       {isEditing ? (
         <div className={styles.formCard}>
           <h2 className={styles.title}>Редагування клієнта</h2>
+
+          {/* Ім’я */}
           <div className={styles.field}>
             <label htmlFor="name" className={styles.label}>
               Ім’я
@@ -109,34 +124,68 @@ export default function ClientDetail({ client, sessions = [], sessionsLoading }:
               className={styles.input}
             />
           </div>
-          <div className={styles.twoColumnsRow}>
-            <div className={styles.field}>
-              <label htmlFor="phone" className={styles.label}>
-                Телефон
-              </label>
-              <input
-                id="phone"
-                name="phone"
-                type="tel"
-                value={form.phone}
-                onChange={handleChange}
-                className={styles.input}
-              />
-            </div>
-            <div className={styles.field}>
-              <label htmlFor="birthDate" className={styles.label}>
-                Дата народження
-              </label>
-              <input
-                id="birthDate"
-                name="birthDate"
-                type="date"
-                value={form.birthDate}
-                onChange={handleChange}
-                className={styles.input}
-              />
+
+          {/* Телефон */}
+          <div className={styles.field}>
+            <label htmlFor="phone" className={styles.label}>
+              Телефон
+            </label>
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              value={form.phone}
+              onChange={handleChange}
+              className={styles.input}
+            />
+          </div>
+
+          {/* Мессенджери – три иконки-чекбокса */}
+          <div className={styles.field}>
+            <label className={styles.label}>Месенджери</label>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              {(['telegram', 'whatsapp', 'viber'] as const).map(type => (
+                <label key={type} style={{ cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={form.messengerTypes.includes(type)}
+                    onChange={() => toggleMessenger(type)}
+                    style={{ display: 'none' }}
+                  />
+                  <img
+                    src={`/icons/${type}.svg`}
+                    alt={type}
+                    style={{
+                      width: 24,
+                      height: 24,
+                      opacity: form.messengerTypes.includes(type) ? 1 : 0.3,
+                      border: form.messengerTypes.includes(type)
+                        ? '2px solid #249b89'
+                        : '2px solid transparent',
+                      borderRadius: 4,
+                    }}
+                  />
+                </label>
+              ))}
             </div>
           </div>
+
+          {/* Дата народження */}
+          <div className={styles.field}>
+            <label htmlFor="birthDate" className={styles.label}>
+              Дата народження
+            </label>
+            <input
+              id="birthDate"
+              name="birthDate"
+              type="date"
+              value={form.birthDate}
+              onChange={handleChange}
+              className={styles.input}
+            />
+          </div>
+
+          {/* Нотатки */}
           <div className={styles.field}>
             <label
               htmlFor="notes"
@@ -155,14 +204,15 @@ export default function ClientDetail({ client, sessions = [], sessionsLoading }:
               style={{ overflow: 'hidden' }}
             />
           </div>
+
           {error && <p className={styles.error}>{error}</p>}
+
           <div className={styles.modeButtonsRow}>
             <button
               type="button"
               onClick={() => setIsEditing(false)}
               className={styles.cancelButton}
               disabled={saving}
-              aria-label="Скасувати"
             >
               <X size={16} />
             </button>
@@ -171,7 +221,6 @@ export default function ClientDetail({ client, sessions = [], sessionsLoading }:
               onClick={handleSave}
               className={styles.submitButton}
               disabled={saving}
-              aria-label="Зберегти"
             >
               <Check size={16} />
             </button>
@@ -180,47 +229,51 @@ export default function ClientDetail({ client, sessions = [], sessionsLoading }:
       ) : (
         <div className={styles.formCard}>
           <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              marginBottom: '1rem',
-            }}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}
           >
-            <h2
-              style={{
-                margin: 0,
-                fontSize: '1rem',
-                fontWeight: 'bold',
-                color: '#249b89',
-                textAlign: 'center',
-              }}
-            >
+            <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: 'bold', color: '#249b89' }}>
               {client.name}
             </h2>
-            <button
-              onClick={() => setIsEditing(true)}
-              className={styles.submitButton}
-              aria-label="Редагувати"
-            >
+            <button onClick={() => setIsEditing(true)} className={styles.submitButton}>
               <Pencil size={16} />
             </button>
           </div>
-          <div className={styles.field}>
-            <label className={styles.label} style={{ color: '#249b89', fontWeight: 'bold' }}>
+
+          {/* Телефон + иконки */}
+          <div className={styles.field} style={{ justifyContent: 'flex-start' }}>
+            <label
+              className={styles.label}
+              style={{
+                color: '#249b89',
+                fontWeight: 'bold',
+                marginRight: '0.5rem',
+                minWidth: 0,
+              }}
+            >
               Телефон
             </label>
-            <a href={`tel:${client.phone}`} className={styles.staticField}>
-              {client.phone}
-            </a>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <a href={`tel:${client.phone}`} className={styles.staticField}>
+                {client.phone}
+              </a>
+              {client.messengerTypes?.map(type => (
+                <a key={type} href={messengerLinks[type]} target="_blank" rel="noopener noreferrer">
+                  <img src={`/icons/${type}.svg`} alt={type} style={{ width: 20, height: 20 }} />
+                </a>
+              ))}
+            </div>
           </div>
+
+          {/* Дата народження */}
           <div className={styles.field}>
             <label className={styles.label} style={{ color: '#249b89', fontWeight: 'bold' }}>
               Дата народження
             </label>
             <div className={styles.staticField}>{client.birthDate.toLocaleDateString('uk-UA')}</div>
           </div>
+
+          {/* Нотатки */}
           <div className={styles.field}>
             <label className={styles.label} style={{ color: '#249b89', fontWeight: 'bold' }}>
               Нотатки
@@ -242,15 +295,7 @@ export default function ClientDetail({ client, sessions = [], sessionsLoading }:
           margin: '1rem 0',
         }}
       >
-        <h2
-          style={{
-            margin: 0,
-            fontSize: '1rem',
-            fontWeight: 'bold',
-            color: '#249b89',
-            textAlign: 'center',
-          }}
-        >
+        <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: 'bold', color: '#249b89' }}>
           Сеанси клієнта
         </h2>
         <button
@@ -260,11 +305,10 @@ export default function ClientDetail({ client, sessions = [], sessionsLoading }:
           className={styles.addButton}
           aria-label="Додати сеанс"
         >
-          <Plus size={16} />
+          <Pencil size={16} />
         </button>
       </div>
 
-      {/* Спиннер при завантаженні сеансів */}
       {sessionsLoading ? (
         <div className={styles.loadingWrapper}>
           <FaSpinner className={styles.spin} />
@@ -281,7 +325,8 @@ export default function ClientDetail({ client, sessions = [], sessionsLoading }:
               <tr>
                 <th>Дата</th>
                 <th>Час</th>
-                <th>Тривалість</th>
+                <th>Локація</th>
+                <th>Хв</th>
                 <th>Ціна</th>
               </tr>
             </thead>
@@ -308,7 +353,8 @@ export default function ClientDetail({ client, sessions = [], sessionsLoading }:
                     {s.start.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}–
                     {s.end.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}
                   </td>
-                  <td>{s.duration} хв</td>
+                  <td>{s.location?.name ?? '—'}</td>
+                  <td>{s.duration}</td>
                   <td>{s.price} ₴</td>
                 </tr>
               ))}

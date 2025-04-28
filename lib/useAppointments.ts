@@ -2,7 +2,7 @@
 import useSWR from 'swr';
 
 export function useAppointments(date: string) {
-  const { data, error, mutate } = useSWR(`/api/appointments?date=${date}`, url =>
+  const { data, error, mutate } = useSWR(`/api/admin/appointments?date=${date}`, url =>
     fetch(url).then(res => res.json())
   );
 

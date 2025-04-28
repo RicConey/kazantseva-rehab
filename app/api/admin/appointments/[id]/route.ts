@@ -1,7 +1,7 @@
-// app/api/appointments/[id]/route.ts
+// app/api/admin/appointments/[id]/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '../../../../lib/prisma';
+import prisma from '@lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { formatInTimeZone } from 'date-fns-tz';
 import { requireAdmin } from '@lib/auth';
@@ -40,9 +40,17 @@ export async function PUT(req: NextRequest) {
 
   // 2) Парсим id и тело
   const id = getIdFromUrl(req.url);
-  const { startTime, duration, client, clientId, notes, price } = await req.json();
+  const { startTime, duration, client, clientId, notes, price, locationId } = await req.json();
 
-  // 3) Парсим новую дату начала
+  // 3) Проверяем обязательный locationId
+  if (typeof locationId !== 'number') {
+    return NextResponse.json(
+      { error: 'locationId обязателен и должен быть числом' },
+      { status: 400 }
+    );
+  }
+
+  // 4) Парсим новую дату начала
   const newStart = parseAnyDate(startTime as string);
   if (isNaN(newStart.getTime())) {
     return NextResponse.json(
@@ -52,75 +60,70 @@ export async function PUT(req: NextRequest) {
   }
   const newEnd = new Date(newStart.getTime() + duration * 60000);
 
-  // 4) Границы дня
+  // 5) Границы дня
   const dayStart = new Date(newStart.getFullYear(), newStart.getMonth(), newStart.getDate());
   const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
 
-  // 5) Ищем другие сеансы в тот же день (кроме текущего)
+  // 6) Ищем другие сеансы в тот же день (кроме текущего)
   const existing = await prisma.appointment.findMany({
     where: {
-      AND: [
-        { id: { not: id } },
-        {
-          startTime: {
-            gte: dayStart,
-            lt: dayEnd,
-          },
-        },
-      ],
+      AND: [{ id: { not: id } }, { startTime: { gte: dayStart, lt: dayEnd } }],
     },
   });
 
-  // 6) Проверка на пересечение
+  // 7) Проверка на пересечение
   const conflict = existing.find(a => {
     const s = new Date(a.startTime);
     const e = new Date(s.getTime() + a.duration * 60000);
     return newStart < e && s < newEnd;
   });
-
   if (conflict) {
-    // Формируем диапазоны в нужном формате
     const newRange = `${formatInTimeZone(newStart, TZ, 'dd.MM.yyyy HH:mm')}-${formatInTimeZone(newEnd, TZ, 'HH:mm')}`;
     const conflictStart = new Date(conflict.startTime);
     const conflictEnd = new Date(conflictStart.getTime() + conflict.duration * 60000);
     const conflictRange = `${formatInTimeZone(conflictStart, TZ, 'dd.MM.yyyy HH:mm')}-${formatInTimeZone(conflictEnd, TZ, 'HH:mm')}`;
 
     return NextResponse.json(
-      {
-        error: `Неможливо призначити на ${newRange}, бо вже є сеанс ${conflictRange}`,
-      },
+      { error: `Неможливо призначити на ${newRange}, бо вже є сеанс ${conflictRange}` },
       { status: 400 }
     );
   }
 
-  // 7) Формируем данные для обновления
+  // 8) Формируем данные для обновления
   const updateData: any = {
     startTime: newStart,
     duration,
     clientId: clientId ?? null,
     notes: notes?.trim() || null,
     price,
+    locationId, // теперь обязательно включаем
   };
   if (typeof client === 'string') {
     updateData.client = client.trim();
   }
 
-  // 8) Обновляем запись
+  // 9) Выполняем обновление
   const updated = await prisma.appointment.update({
     where: { id },
     data: updateData,
+    include: {
+      clientRel: { select: { id: true, name: true } },
+      location: { select: { id: true, name: true, color: true } }, // возвращаем локацию
+    },
   });
 
-  // 9) Сбрасываем кеш и возвращаем результат
-  revalidatePath('/api/appointments');
+  // 10) Сбрасываем кеш и возвращаем результат
+  revalidatePath('/admin/appointments');
   return NextResponse.json(updated, { status: 200 });
 }
 
 export async function DELETE(req: NextRequest) {
   const denied = await requireAdmin();
   if (denied) return denied;
+
   const id = getIdFromUrl(req.url);
   await prisma.appointment.delete({ where: { id } });
-  revalidatePath('/api/appointments');
+
+  revalidatePath('/admin/appointments');
   return NextResponse.json({ success: true }, { status: 200 });
 }

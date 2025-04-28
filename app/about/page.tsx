@@ -1,22 +1,19 @@
-// pages/about/page.js
-
 'use client';
 
 import { useState, useEffect } from 'react';
-import Head from 'next/head';
 import CertificateGallery from './CertificateGallery';
 import styles from './About.module.css';
 import { SeoText } from '@components';
 
 export default function AboutPage() {
   const [showCerts, setShowCerts] = useState(false);
-  const [certFiles, setCertFiles] = useState([]);
+  const [certFiles, setCertFiles] = useState<string[]>([]);
 
   useEffect(() => {
     async function fetchCertificates() {
       try {
         const response = await fetch('/api/certificates');
-        const data = await response.json();
+        const data: string[] = await response.json();
         setCertFiles(data);
       } catch (error) {
         console.error('Помилка завантаження сертифікатів', error);
@@ -25,58 +22,7 @@ export default function AboutPage() {
     fetchCertificates();
   }, []);
 
-  const localBusinessSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'MedicalBusiness',
-    name: 'Наталія Казанцева',
-    url: 'https://kazantseva-rehabilitation.com.ua/',
-    telephone: '+380503843042',
-    email: 'info@nkz.com.ua',
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: 'вулиця Молодіжна, 16А',
-      addressLocality: 'Вишневе',
-      addressRegion: 'Київська область',
-      postalCode: '08132',
-    },
-    areaServed: ['Вишневе', 'Крюківщина', 'Борщагівка', 'Липки', 'Печерськ', 'Поділ'],
-  };
-
-  const faqSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: [
-      {
-        '@type': 'Question',
-        name: 'Чи потрібне направлення лікаря?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Ні, направлення лікаря не є обов’язковим для запису на прийом.',
-        },
-      },
-      {
-        '@type': 'Question',
-        name: 'Як записатися на прийом?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Запис можна здійснити за телефоном або через месенджери Telegram, Viber, WhatsApp.',
-        },
-      },
-    ],
-  };
-
   return (
-    <>
-      <Head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-        />
-      </Head>
       <section className="baseText">
         <h2 className={styles.title}>Про мене</h2>
 
@@ -142,13 +88,17 @@ export default function AboutPage() {
         <SeoText slug={undefined} />
 
         <div className={styles.certButtonContainer}>
-          <button className={styles.certButton} onClick={() => setShowCerts(prev => !prev)}>
-            {showCerts ? 'Сховати сертифікати та дипломи' : 'Показати сертифікати та дипломи'}
+          <button
+              className={styles.certButton}
+              onClick={() => setShowCerts(prev => !prev)}
+          >
+            {showCerts
+                ? 'Сховати сертифікати та дипломи'
+                : 'Показати сертифікати та дипломи'}
           </button>
         </div>
 
         {showCerts && <CertificateGallery certs={certFiles} />}
       </section>
-    </>
   );
 }

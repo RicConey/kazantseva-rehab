@@ -2,7 +2,7 @@
 
 'use client';
 
-import React, { useState, FormEvent } from 'react';
+import React, { useState, useEffect, FormEvent } from 'react';
 import { FaSpinner } from 'react-icons/fa';
 import { Plus, Check, X } from 'lucide-react';
 import styles from '../../AdminAppointments.module.css';
@@ -17,6 +17,11 @@ interface ClientOption {
   phone: string;
 }
 
+interface LocationOption {
+  id: number;
+  name: string;
+}
+
 interface Props {
   todayStr: string;
   onCreated?: () => void;
@@ -28,10 +33,13 @@ export default function NewAppointmentForm({ todayStr, onCreated }: Props) {
   const [open, setOpen] = useState(false);
   const [clients, setClients] = useState<ClientOption[]>([]);
   const [loadingClients, setLoadingClients] = useState(true);
+  const [locations, setLocations] = useState<LocationOption[]>([]);
+  const [loadingLocations, setLoadingLocations] = useState(true);
   const [mode, setMode] = useState<Mode>('existing');
   const [loadingAdd, setLoadingAdd] = useState(false);
   const [error, setError] = useState<string>();
 
+  // Форма
   const [form, setForm] = useState({
     existingClientId: '',
     freeName: '',
@@ -39,29 +47,58 @@ export default function NewAppointmentForm({ todayStr, onCreated }: Props) {
     newName: '',
     newBirthDate: '',
     newNotes: '',
+    messengerTypes: [] as Array<'telegram' | 'whatsapp' | 'viber'>,
     date: '',
     time: '',
     duration: '',
     notes: '',
     price: '',
+    locationId: '' as number | '', // обязательный кабинет
   });
 
-  React.useEffect(() => {
+  // Загрузка клиентов
+  useEffect(() => {
     fetch('/api/admin/clients')
       .then(r => r.json())
       .then((data: any[]) =>
-        setClients(data.map(c => ({ id: c.id, name: c.name, phone: c.phone })))
+        setClients(
+          data.map(c => ({
+            id: c.id,
+            name: c.name,
+            phone: c.phone,
+          }))
+        )
       )
       .catch(() => setClients([]))
       .finally(() => setLoadingClients(false));
+  }, []);
+
+  // Загрузка кабинетов и установка значения по-умолчанию
+  useEffect(() => {
+    fetch('/api/admin/locations')
+      .then(r => r.json())
+      .then((data: LocationOption[]) => {
+        setLocations(data);
+        if (data.length > 0) {
+          // По умолчанию выбираем первый кабинет
+          setForm(f => ({ ...f, locationId: data[0].id }));
+        }
+      })
+      .catch(() => setLocations([]))
+      .finally(() => setLoadingLocations(false));
   }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(undefined);
 
+    // Проверки обязательных полей
     if (!form.date || !form.time || !form.duration || !form.price) {
       setError('Заповніть всі обовʼязкові поля');
+      return;
+    }
+    if (!form.locationId) {
+      setError('Оберіть кабінет');
       return;
     }
     if (mode === 'existing' && !form.existingClientId) {
@@ -83,7 +120,7 @@ export default function NewAppointmentForm({ todayStr, onCreated }: Props) {
       return;
     }
 
-    // Валідація часу
+    // Валидация времени
     const start = new Date(`${form.date}T${form.time}`);
     const dur = Number(form.duration);
     const timeError = validateSessionTime(start, dur);
@@ -108,6 +145,7 @@ export default function NewAppointmentForm({ todayStr, onCreated }: Props) {
             name: form.newName.trim(),
             birthDate: form.newBirthDate.split('-').reverse().join('.'),
             notes: form.newNotes.trim() || null,
+            messengerTypes: form.messengerTypes,
           }),
         });
         if (!res.ok) throw new Error('Не вдалося створити клієнта');
@@ -122,6 +160,7 @@ export default function NewAppointmentForm({ todayStr, onCreated }: Props) {
         duration: dur,
         notes: form.notes.trim() || null,
         price: Number(form.price),
+        locationId: Number(form.locationId),
       };
       if (mode === 'free') {
         payload.client = clientName;
@@ -130,7 +169,7 @@ export default function NewAppointmentForm({ todayStr, onCreated }: Props) {
         payload.clientId = clientId;
       }
 
-      const r2 = await fetch('/api/appointments', {
+      const r2 = await fetch('/api/admin/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -140,6 +179,7 @@ export default function NewAppointmentForm({ todayStr, onCreated }: Props) {
         throw new Error(j.error || 'Не вдалося створити сеанс');
       }
 
+      // Сброс формы, включая кабинет в дефолт
       setForm({
         existingClientId: '',
         freeName: '',
@@ -147,11 +187,13 @@ export default function NewAppointmentForm({ todayStr, onCreated }: Props) {
         newName: '',
         newBirthDate: '',
         newNotes: '',
+        messengerTypes: [],
         date: '',
         time: '',
         duration: '',
         notes: '',
         price: '',
+        locationId: locations[0]?.id ?? '',
       });
       setMode('existing');
       setOpen(false);
@@ -178,6 +220,7 @@ export default function NewAppointmentForm({ todayStr, onCreated }: Props) {
             <ClientSection
               mode={mode}
               clients={clients}
+              locations={locations}
               loadingClients={loadingClients}
               loadingAdd={loadingAdd}
               form={form}

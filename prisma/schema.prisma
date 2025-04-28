@@ -5,6 +5,16 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+model Location {
+  id           Int           @id @default(autoincrement())
+  name         String        // Название кабинета, например "Главный офис"
+  address      String        // Адрес или описание (этаж, корпус и т.п.)
+  color        String?       // Опционально: цвет для визуализации в UI
+  position     Int           @default(0) // Опционально: порядок в списке
+  appointments Appointment[] // Связь на приёмы
 }
 
 model prices {
@@ -27,6 +37,8 @@ model Appointment {
   price      Int
 
   @@map("appointments")
+  locationId  Int
+  location    Location  @relation(fields: [locationId], references: [id])
 }
 
 model qr_links {
@@ -91,6 +103,7 @@ model Client {
   name      String
   birthDate DateTime
   notes     String?
+  messengerTypes String[]      @default([])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

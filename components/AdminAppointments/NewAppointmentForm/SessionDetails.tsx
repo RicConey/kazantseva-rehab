@@ -43,7 +43,6 @@ export default function SessionDetails({ form, setForm, loadingAdd }: Props) {
           />
         </div>
       </div>
-
       <div className={styles.twoColumnsRow}>
         <div className={styles.field}>
           <label>Тривалість (хв)</label>
@@ -77,7 +76,6 @@ export default function SessionDetails({ form, setForm, loadingAdd }: Props) {
           />
         </div>
       </div>
-
       <div className={styles.field}>
         <label>Нотатки</label>
         <input

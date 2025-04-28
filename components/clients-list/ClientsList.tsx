@@ -199,8 +199,8 @@ export default function ClientsList({ clients }: Props) {
                     color: '#000',
                     borderBottom: '1px solid #eee',
                   }}
-                >
-                  {getHighlightedText(rawPhone, searchTerm)} —{' '}
+                  legacyBehavior>
+                  {getHighlightedText(rawPhone, searchTerm)}—{' '}
                   {getHighlightedText(c.name, searchTerm)}
                 </Link>
               );
@@ -208,7 +208,6 @@ export default function ClientsList({ clients }: Props) {
           </div>
         )}
       </div>
-
       <table className={styles.table}>
         <thead>
           <tr>
@@ -298,7 +297,10 @@ export default function ClientsList({ clients }: Props) {
                     </a>
                   </td>
                   <td data-label="ФІО" style={{ textAlign: 'center' }}>
-                    <Link href={`/admin/clients/${c.id}`} style={{ color: '#249b89' }}>
+                    <Link
+                      href={`/admin/clients/${c.id}`}
+                      style={{ color: '#249b89' }}
+                      legacyBehavior>
                       {c.name}
                     </Link>
                   </td>

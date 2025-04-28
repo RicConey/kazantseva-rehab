@@ -5,7 +5,7 @@ import React, { useState, useEffect, FormEvent, ChangeEvent, useRef } from 'reac
 import ClientsList, { Client as ClientType } from './ClientsList';
 import styles from '../AdminAppointments.module.css';
 import mobileStyles from './ClientsManager.module.css';
-import { Loader2 } from 'lucide-react'; // импорт спиннера
+import { Loader2 } from 'lucide-react';
 
 function parseDateDMY(str: string): string {
   const [y, m, d] = str.split('-');
@@ -24,6 +24,7 @@ export default function ClientsManager() {
     fio: '',
     birthDate: '',
     notes: '',
+    messengerTypes: [] as Array<'telegram' | 'whatsapp' | 'viber'>,
   });
 
   useEffect(() => {
@@ -31,16 +32,26 @@ export default function ClientsManager() {
     fetch('/api/admin/clients')
       .then(res => res.json())
       .then((data: any[]) => {
-        const parsed = data.map(c => ({
-          ...c,
-          birthDate: new Date(c.birthDate),
-          createdAt: new Date(c.createdAt),
-        }));
-        setClients(parsed);
+        setClients(
+          data.map(c => ({
+            ...c,
+            birthDate: new Date(c.birthDate),
+            createdAt: new Date(c.createdAt),
+          }))
+        );
       })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
+
+  const toggleMessenger = (type: 'telegram' | 'whatsapp' | 'viber') => {
+    setForm(f => {
+      const arr = f.messengerTypes.includes(type)
+        ? f.messengerTypes.filter(t => t !== type)
+        : [...f.messengerTypes, type];
+      return { ...f, messengerTypes: arr };
+    });
+  };
 
   const handlePhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
     let digits = e.target.value.replace(/\D/g, '');
@@ -75,28 +86,18 @@ export default function ClientsManager() {
           name: form.fio.trim(),
           birthDate: parseDateDMY(form.birthDate),
           notes: form.notes.trim() || null,
+          messengerTypes: form.messengerTypes,
         }),
       });
+      const data = await res.json().catch(() => (({}) as any));
+      if (!res.ok) throw new Error(data.message || 'Помилка створення клієнта');
 
-      const data = await res.json().catch(() => ({}) as { message?: string });
-
-      if (!res.ok) {
-        const message = data.message || 'Помилка створення клієнта';
-        throw new Error(message);
-      }
-
-      const newClient = data;
       setClients(prev => [
-        {
-          ...newClient,
-          birthDate: new Date(newClient.birthDate),
-          createdAt: new Date(newClient.createdAt),
-        },
+        { ...data, birthDate: new Date(data.birthDate), createdAt: new Date(data.createdAt) },
         ...prev,
       ]);
-
       setShowForm(false);
-      setForm({ phone: '+38', fio: '', birthDate: '', notes: '' });
+      setForm({ phone: '+38', fio: '', birthDate: '', notes: '', messengerTypes: [] });
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -122,14 +123,45 @@ export default function ClientsManager() {
         <form onSubmit={handleAdd} className={`${styles.form} ${mobileStyles.formMobile}`}>
           {error && <p className={styles.error}>{error}</p>}
 
-          <input
-            type="text"
-            value={form.phone}
-            onChange={handlePhoneChange}
-            maxLength={13}
-            required
-            placeholder="Телефон"
-          />
+          {/* Телефон и иконки мессенджеров в одном ряду */}
+          <div
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '8px' }}
+          >
+            <input
+              type="text"
+              value={form.phone}
+              onChange={handlePhoneChange}
+              maxLength={13}
+              required
+              placeholder="Телефон"
+              style={{ flex: '0 0 auto' }}
+            />
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              {(['telegram', 'whatsapp', 'viber'] as const).map(type => (
+                <label key={type} style={{ cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={form.messengerTypes.includes(type)}
+                    onChange={() => toggleMessenger(type)}
+                    style={{ display: 'none' }}
+                  />
+                  <img
+                    src={`/icons/${type}.svg`}
+                    alt={type}
+                    style={{
+                      width: 24,
+                      height: 24,
+                      opacity: form.messengerTypes.includes(type) ? 1 : 0.3,
+                      border: form.messengerTypes.includes(type)
+                        ? '2px solid #249b89'
+                        : '2px solid transparent',
+                      borderRadius: 4,
+                    }}
+                  />
+                </label>
+              ))}
+            </div>
+          </div>
 
           <input
             type="text"
@@ -145,7 +177,6 @@ export default function ClientsManager() {
             value={form.birthDate}
             onChange={e => setForm(f => ({ ...f, birthDate: e.target.value }))}
             required
-            title="Дата народження клієнта"
           />
 
           <textarea
@@ -161,11 +192,9 @@ export default function ClientsManager() {
             style={{ overflow: 'hidden' }}
           />
 
-          <div style={{ marginTop: '8px', textAlign: 'left' }}>
-            <button type="submit" disabled={loading} className={styles.submitButton}>
-              {loading ? 'Завантаження...' : 'Створити клієнта'}
-            </button>
-          </div>
+          <button type="submit" disabled={loading} className={styles.submitButton}>
+            {loading ? 'Завантаження...' : 'Створити клієнта'}
+          </button>
         </form>
       )}
 

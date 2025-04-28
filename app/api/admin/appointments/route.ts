@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '../../../lib/prisma';
+import prisma from '@lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { formatInTimeZone } from 'date-fns-tz';
 import { requireAdmin } from '@lib/auth';
@@ -40,9 +40,8 @@ export async function GET(req: NextRequest) {
     where,
     orderBy: { startTime: 'asc' },
     include: {
-      clientRel: {
-        select: { id: true, name: true },
-      },
+      clientRel: { select: { id: true, name: true } },
+      location: { select: { id: true, name: true, color: true } },
     },
   });
 
@@ -53,12 +52,19 @@ export async function POST(req: NextRequest) {
   const denied = await requireAdmin();
   if (denied) return denied;
 
-  const { startTime, duration, client, clientId, notes, price } = await req.json();
+  const { startTime, duration, client, clientId, notes, price, locationId } = await req.json();
+
+  // Обязательный locationId
+  if (typeof locationId !== 'number') {
+    return NextResponse.json({ error: 'Нужно передать locationId (число)' }, { status: 400 });
+  }
+
   const newStart = new Date(startTime);
   const newEnd = new Date(newStart.getTime() + duration * 60000);
 
-  const list = await prisma.appointment.findMany();
-  for (const appt of list) {
+  // Проверка конфликта
+  const all = await prisma.appointment.findMany();
+  for (const appt of all) {
     const s = new Date(appt.startTime);
     const e = new Date(s.getTime() + appt.duration * 60000);
     if (newStart < e && s < newEnd) {
@@ -77,6 +83,7 @@ export async function POST(req: NextRequest) {
     clientId: clientId || null,
     notes: notes?.trim() || null,
     price,
+    locationId, // <-- сюда
   };
 
   if (!clientId && typeof client === 'string') {
@@ -86,9 +93,8 @@ export async function POST(req: NextRequest) {
   const appt = await prisma.appointment.create({
     data,
     include: {
-      clientRel: {
-        select: { id: true, name: true },
-      },
+      clientRel: { select: { id: true, name: true } },
+      location: { select: { id: true, name: true, color: true } },
     },
   });
 
@@ -101,22 +107,24 @@ export async function PUT(req: NextRequest) {
   if (denied) return denied;
 
   const id = getIdFromUrl(req.url);
-  const { startTime, duration, client, clientId, notes, price } = await req.json();
+  const { startTime, duration, client, clientId, notes, price, locationId } = await req.json();
+
+  // Обязательный locationId
+  if (typeof locationId !== 'number') {
+    return NextResponse.json({ error: 'Нужно передать locationId (число)' }, { status: 400 });
+  }
+
   const newStart = new Date(startTime);
   const newEnd = new Date(newStart.getTime() + duration * 60000);
 
+  // Проверка конфликта только в тот же день
   const dayStart = new Date(newStart.getFullYear(), newStart.getMonth(), newStart.getDate());
   const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
   const existing = await prisma.appointment.findMany({
     where: {
       AND: [
         { id: { not: id } },
-        {
-          startTime: {
-            gte: dayStart.toISOString(),
-            lt: dayEnd.toISOString(),
-          },
-        },
+        { startTime: { gte: dayStart.toISOString(), lt: dayEnd.toISOString() } },
       ],
     },
   });
@@ -142,6 +150,7 @@ export async function PUT(req: NextRequest) {
     clientId: clientId || null,
     notes: notes?.trim() || null,
     price,
+    locationId, // <-- и здесь
   };
 
   if (!clientId && typeof client === 'string') {
@@ -152,9 +161,8 @@ export async function PUT(req: NextRequest) {
     where: { id },
     data,
     include: {
-      clientRel: {
-        select: { id: true, name: true },
-      },
+      clientRel: { select: { id: true, name: true } },
+      location: { select: { id: true, name: true, color: true } },
     },
   });
 

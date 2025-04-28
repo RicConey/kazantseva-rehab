@@ -15,13 +15,26 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const denied = await requireAdmin();
   if (denied) return denied;
 
-  // 2) await params → извлекаем id
+  // 2) извлекаем id
   const { id } = await params;
 
-  // 3) Читаем клиента вместе с сеансами
+  // 3) Читаем клиента вместе с сеансами и их локациями
   const client = await prisma.client.findUnique({
     where: { id },
-    include: { appointments: true },
+    include: {
+      appointments: {
+        include: {
+          location: {
+            select: {
+              id: true,
+              name: true,
+              color: true,
+            },
+          },
+        },
+        orderBy: { startTime: 'asc' },
+      },
+    },
   });
 
   if (!client) {
@@ -35,13 +48,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const denied = await requireAdmin();
   if (denied) return denied;
 
-  // 2) await params → извлекаем id
+  // 2) извлекаем id
   const { id } = await params;
-  // 3) Парсим тело запроса
-  const { phone, name, birthDate, notes } = await req.json();
+
+  // 3) парсим тело запроса
+  const { phone, name, birthDate, notes, messengerTypes } = await req.json();
 
   try {
-    // 4) Обновляем клиента
+    // 4) обновляем клиента
     const updated = await prisma.client.update({
       where: { id },
       data: {
@@ -49,6 +63,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         name,
         birthDate: parseDateDMY(birthDate),
         notes,
+        messengerTypes,
       },
     });
     return NextResponse.json(updated);
@@ -62,11 +77,11 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const denied = await requireAdmin();
   if (denied) return denied;
 
-  // 2) await params → извлекаем id
+  // 2) извлекаем id
   const { id } = await params;
 
   try {
-    // 3) Удаляем клиента
+    // 3) удаляем клиента
     await prisma.client.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (e: any) {

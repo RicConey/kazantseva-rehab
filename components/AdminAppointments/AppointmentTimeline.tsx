@@ -1,20 +1,21 @@
+// components/AdminAppointments/AppointmentTimeline.tsx
 'use client';
 
-import React, { useState, useRef, useLayoutEffect } from 'react';
+import React from 'react';
+import Tippy from '@tippyjs/react';
+import 'tippy.js/dist/svg-arrow.css';
 import styles from '../AdminAppointments.module.css';
 
 export interface Appointment {
   id: number;
   startTime: string;
   duration: number;
-  client: string; // свободное текстовое поле (имя/телефон)
-  clientId?: string | null; // опциональный FK на Client.id
-  clientRel?: {
-    // связанный клиент, если выбран из базы
-    id: string;
-    name: string;
-  } | null;
+  client: string;
+  clientId?: string | null;
+  clientRel?: { id: string; name: string } | null;
   notes?: string | null;
+  location: { id: number; name: string };
+  price: number;
 }
 
 interface Props {
@@ -38,113 +39,97 @@ export default function AppointmentTimeline({
   toggleTooltip,
   kyivFormatter,
 }: Props) {
-  const EDGE_GAP = 8;
-  const tooltipRef = useRef<HTMLDivElement>(null);
-  const [clampedLeft, setClampedLeft] = useState<number | null>(null);
+  const locations = Array.from(new Map(list.map(a => [a.location.id, a.location])).values()).sort(
+    (a, b) => a.id - b.id
+  );
 
-  // Корректируем позицию тултипа, чтобы не выходить за границы
-  useLayoutEffect(() => {
-    if (activeTooltipId === null) {
-      setClampedLeft(null);
-      return;
-    }
-    const wrapper = document.querySelector(
-      `[data-appt-id="${activeTooltipId}"]`
-    ) as HTMLElement | null;
-    const tip = tooltipRef.current;
-    const tl = timelineRef.current;
-    if (!wrapper || !tip || !tl) {
-      setClampedLeft(null);
-      return;
-    }
-    const wrapRect = wrapper.getBoundingClientRect();
-    const tipRect = tip.getBoundingClientRect();
-    const tlRect = tl.getBoundingClientRect();
-
-    const centerX = wrapRect.left + wrapRect.width / 2;
-    const leftFree = centerX - tipRect.width / 2;
-    const rightFree = centerX + tipRect.width / 2;
-
-    let shiftX = 0;
-    if (leftFree < tlRect.left + EDGE_GAP) {
-      shiftX = tlRect.left + EDGE_GAP - leftFree;
-    } else if (rightFree > tlRect.right - EDGE_GAP) {
-      shiftX = tlRect.right - EDGE_GAP - rightFree;
-    }
-
-    setClampedLeft(wrapRect.width / 2 - tipRect.width / 2 + shiftX);
-  }, [activeTooltipId, list, timelineRef]);
-
+  const LANE_HEIGHT = 30;
+  const subLaneHeight = LANE_HEIGHT / locations.length;
   const tickCount = Math.floor(scaleDuration) + 1;
 
   return (
-    <div className={styles.timeline} ref={timelineRef}>
-      {/* Шкала времени */}
+    <div
+      className={styles.timeline}
+      ref={timelineRef}
+      style={{ position: 'relative', overflow: 'visible', height: `${LANE_HEIGHT}px` }}
+    >
       {Array.from({ length: tickCount }, (_, i) => {
+        const hour = scaleStart + i;
         const leftPct = (i / scaleDuration) * 100;
         return (
           <React.Fragment key={i}>
             <div className={styles.timelineTick} style={{ left: `${leftPct}%` }} />
             <span className={styles.timelineLabel} style={{ left: `${leftPct}%` }}>
-              {scaleStart + i}
+              {hour}
             </span>
           </React.Fragment>
         );
       })}
 
-      {/* Блоки приёмов */}
       {list.map(a => {
         const dt = new Date(a.startTime);
-        const endDt = new Date(dt.getTime() + a.duration * 60000);
-        const startStr = kyivFormatter.format(dt);
-        const endStr = kyivFormatter.format(endDt);
         const startHour = dt.getHours() + dt.getMinutes() / 60;
         const leftPct = ((startHour - scaleStart) / scaleDuration) * 100;
         const widthPct = (a.duration / 60 / scaleDuration) * 100;
-
-        // Отображаемое имя
         const displayName = a.clientRel?.name ?? a.client;
-
-        // Цвет по имени
         const bg = colorMap[displayName] || '#249b89';
-        const isActive = activeTooltipId === a.id;
+        const startStr = kyivFormatter.format(dt);
+        const endStr = kyivFormatter.format(new Date(dt.getTime() + a.duration * 60000));
 
         return (
-          <div
+          <Tippy
             key={a.id}
-            data-appt-id={a.id}
-            className={styles.apptWrapper}
-            style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
-            onMouseEnter={() => toggleTooltip(a.id)}
-            onMouseLeave={() => toggleTooltip(null)}
-            onTouchEnd={e => {
-              e.stopPropagation();
-              toggleTooltip(isActive ? null : a.id);
+            content={
+              <>
+                <div>
+                  <strong>
+                    {startStr}–{endStr}
+                  </strong>
+                </div>
+                <div>
+                  <strong>{displayName}</strong>
+                </div>
+                <div>Локація: {a.location.name}</div>
+                <div>Тривалість: {a.duration} хв</div>
+                {a.notes && <div>📝 {a.notes}</div>}
+                <div>{a.price} ₴</div>
+              </>
+            }
+            placement="bottom"
+            theme="light"
+            arrow={true}
+            animation="shift-away"
+            duration={[200, 200]}
+            maxWidth="90vw"
+            popperOptions={{
+              modifiers: [
+                { name: 'preventOverflow', options: { padding: 8 } },
+                { name: 'flip', options: { fallbackPlacements: ['top', 'left', 'right'] } },
+              ],
             }}
           >
-            <div className={styles.apptBlock} style={{ backgroundColor: bg }} />
             <div
-              ref={tooltipRef}
-              className={styles.tooltip}
+              data-appt-id={a.id}
+              className={styles.apptWrapper}
               style={{
-                visibility: isActive ? 'visible' : 'hidden',
-                ...(clampedLeft !== null && isActive
-                  ? { left: `${clampedLeft}px`, transform: 'none' }
-                  : {}),
+                position: 'absolute',
+                left: `${leftPct}%`,
+                width: `${widthPct}%`,
+                top: `${locations.findIndex(loc => loc.id === a.location.id) * subLaneHeight}px`,
+                height: `${subLaneHeight}px`,
+                overflow: 'visible',
+                backgroundColor: bg,
+              }}
+              onMouseEnter={() => toggleTooltip(a.id)}
+              onMouseLeave={() => toggleTooltip(null)}
+              onTouchStart={e => {
+                e.stopPropagation();
+                toggleTooltip(activeTooltipId === a.id ? null : a.id);
               }}
             >
-              <div>
-                <strong>
-                  {startStr}–{endStr}
-                </strong>
-              </div>
-              <div>
-                <strong>{displayName}</strong>
-              </div>
-              <div>хв: {a.duration}</div>
-              {a.notes && <div>📝 {a.notes}</div>}
+              <div className={styles.apptBlock} />
             </div>
-          </div>
+          </Tippy>
         );
       })}
     </div>

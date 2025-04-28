@@ -13,7 +13,7 @@ export default function Header() {
       <div className={styles.headerContainer}>
         {/* Логотип + текст */}
         <div className={styles.logoBlock}>
-          <Link href="/">
+          <Link href="/" legacyBehavior>
             <Image src="/logo.png" alt="Логотип" className={styles.logo} width={120} height={80} />
           </Link>
           <div className={styles.logoText}>
@@ -52,7 +52,6 @@ export default function Header() {
           ☰
         </div>
       </div>
-
       {/* Мобильное меню */}
       {isMenuOpen && (
         <nav className={styles.mobileNav}>

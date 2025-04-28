@@ -1,7 +1,7 @@
 // components/AdminAppointments.tsx
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { useAppointments } from '@lib/useAppointments';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { format } from 'date-fns';
@@ -11,14 +11,27 @@ import AppointmentTimeline from './AdminAppointments/AppointmentTimeline';
 import { validateSessionTime } from '../utils/appointmentValidation';
 import styles from './AdminAppointments.module.css';
 
+interface LocationOption {
+  id: number;
+  name: string;
+}
+
 export default function AdminAppointments() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialDate = searchParams.get('date') || new Date().toISOString().slice(0, 10);
   const [date, setDate] = useState(initialDate);
 
-  // Теперь хук отдаёт appointments и isLoading
   const { appointments: list, isLoading, error, mutate } = useAppointments(date);
+
+  // загрузка кабинетов
+  const [locations, setLocations] = useState<LocationOption[]>([]);
+  useEffect(() => {
+    fetch('/api/admin/locations')
+      .then(r => r.json())
+      .then((data: LocationOption[]) => setLocations(data))
+      .catch(() => setLocations([]));
+  }, []);
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState({
@@ -28,7 +41,8 @@ export default function AdminAppointments() {
     client: '',
     notes: '',
     price: '',
-    clientId: '',
+    clientId: '' as string | null,
+    locationId: 0,
   });
   const [editFormErrors, setEditFormErrors] = useState<Record<string, boolean>>({});
   const [editErrorMessage, setEditErrorMessage] = useState<string | null>(null);
@@ -45,7 +59,8 @@ export default function AdminAppointments() {
       client: a.client,
       notes: a.notes || '',
       price: String(a.price),
-      clientId: a.clientId || '',
+      clientId: a.clientId || null,
+      locationId: a.location.id,
     });
     setEditFormErrors({});
     setEditErrorMessage(null);
@@ -59,22 +74,19 @@ export default function AdminAppointments() {
 
   const isOverlap = (start: Date, duration: number, excludeId?: number): boolean => {
     const end = new Date(start.getTime() + duration * 60000);
-    return (
-      list.some(a => {
-        if (a.id === excludeId) return false;
-        const aStart = new Date(a.startTime);
-        const aEnd = new Date(aStart.getTime() + a.duration * 60000);
-        return start < aEnd && end > aStart;
-      }) ?? false
-    );
+    return list.some(a => {
+      if (a.id === excludeId) return false;
+      const aStart = new Date(a.startTime);
+      const aEnd = new Date(aStart.getTime() + a.duration * 60000);
+      return start < aEnd && end > aStart;
+    });
   };
 
-  async function saveEdit(id: number) {
+  async function saveEdit(id: number, formData: typeof editForm) {
     setEditFormErrors({});
     setEditErrorMessage(null);
-
     const errs: Record<string, boolean> = {};
-    const { date: d, time, duration, client, notes, price, clientId } = editForm;
+    const { date: d, time, duration, client, notes, price, clientId, locationId } = formData;
     const durNum = parseInt(duration, 10);
     const priceNum = parseInt(price, 10);
 
@@ -83,6 +95,7 @@ export default function AdminAppointments() {
     if (isNaN(durNum)) errs.duration = true;
     if (!client?.trim() && !clientId) errs.client = true;
     if (isNaN(priceNum)) errs.price = true;
+    if (!locationId) errs.locationId = true;
 
     if (Object.keys(errs).length) {
       setEditFormErrors(errs);
@@ -110,13 +123,14 @@ export default function AdminAppointments() {
       notes: notes.trim() || null,
       price: priceNum,
       id,
+      locationId,
     };
     if (clientId) payload.clientId = clientId;
     else payload.client = client.trim();
 
     setLoadingSaveId(id);
     try {
-      const res = await fetch(`/api/appointments/${id}`, {
+      const res = await fetch(`/api/admin/appointments/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -138,7 +152,7 @@ export default function AdminAppointments() {
   const deleteItem = async (id: number) => {
     if (!confirm('Видалити сеанс?')) return;
     setLoadingDeleteId(id);
-    await fetch(`/api/appointments/${id}`, { method: 'DELETE' });
+    await fetch(`/api/admin/appointments/${id}`, { method: 'DELETE' });
     await mutate();
     setLoadingDeleteId(null);
   };
@@ -160,6 +174,9 @@ export default function AdminAppointments() {
     });
     return map;
   }, [list]);
+
+  const [activeTooltipId, setActiveTooltipId] = useState<number | null>(null);
+  const toggleTooltip = (id: number | null) => setActiveTooltipId(id);
 
   return (
     <>
@@ -184,8 +201,8 @@ export default function AdminAppointments() {
         scaleDuration={scaleDuration}
         colorMap={colorMap}
         timelineRef={timelineRef}
-        activeTooltipId={null}
-        toggleTooltip={() => {}}
+        activeTooltipId={activeTooltipId}
+        toggleTooltip={toggleTooltip}
         kyivFormatter={
           new Intl.DateTimeFormat('uk-UA', {
             timeZone: 'Europe/Kyiv',
@@ -218,6 +235,7 @@ export default function AdminAppointments() {
         deleteItem={deleteItem}
         errorFields={editFormErrors}
         errorMessage={editErrorMessage}
+        locations={locations}
       />
     </>
   );
