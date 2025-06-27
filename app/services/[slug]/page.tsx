@@ -1,34 +1,51 @@
+// app/services/[slug]/page.tsx
 import { notFound } from 'next/navigation';
-import SeoText from '@components/SeoText';
-import type { ServiceMetadata } from '@lib/getServices';
+import { getServiceSlugs } from '@lib/getServices';
+import type { Metadata } from 'next';
 
+// Тип для 'params' теперь корректный
 type PageProps = {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
 };
 
-async function getServiceBySlug(slug: string) {
+// Генерация метаданных
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = params; // await убран
   try {
     const serviceModule = await import(`../../services-data/${slug}`);
+    const metadata = serviceModule.metadata;
     return {
-      slug,
-      metadata: serviceModule.metadata as ServiceMetadata,
-      Component: serviceModule.default as React.FC,
+      title: `${metadata.title} у Вишневому`,
+      description: metadata.description,
+      alternates: {
+        canonical: `https://kazantseva-rehabilitation.com.ua/services/${slug}`,
+      },
     };
   } catch {
-    return null;
+    return {
+      title: 'Послуга не знайдена',
+    };
   }
 }
 
+// Генерация статических путей
+export async function generateStaticParams() {
+  const slugs = getServiceSlugs();
+  return slugs.map(slug => ({
+    slug,
+  }));
+}
+
+// Основной компонент страницы
 export default async function ServiceDetailPage({ params }: PageProps) {
-  const { slug } = await params;
-  const service = await getServiceBySlug(slug);
+  const { slug } = params; // await убран
 
-  if (!service) return notFound();
-
-  return (
-    <section className="baseText">
-      <service.Component />
-      <SeoText slug={slug} />
-    </section>
-  );
+  try {
+    const serviceModule = await import(`../../services-data/${slug}`);
+    const ServicePageComponent = serviceModule.default;
+    // Мы возвращаем компонент услуги, который уже использует ServiceLayout
+    return <ServicePageComponent />;
+  } catch (error) {
+    return notFound();
+  }
 }

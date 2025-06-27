@@ -1,0 +1,118 @@
+/* app/components/Reviews.module.css */
+.reviewsContainer {
+  background-color: #f8f9fa;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.title {
+  font-size: 1.8rem;
+  margin-bottom: 30px;
+  color: #249b89;
+}
+
+.loading {
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.slider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.reviewWrapper {
+  flex-grow: 1;
+  min-height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* Важно для анимации */
+}
+
+.reviewCard {
+  background: #fff;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e9ecef;
+  width: 100%;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.authorImage {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.authorInfo {
+  text-align: left;
+}
+
+.authorName {
+  font-weight: 600;
+  margin: 0;
+  color: #333;
+}
+
+.rating {
+  display: flex;
+  gap: 2px;
+  color: #fbbc05; /* Цвет звезд Google */
+}
+
+.star {
+  fill: #fbbc05;
+}
+
+.reviewText {
+  font-style: italic;
+  color: #555;
+  line-height: 1.6;
+  text-align: left;
+  margin: 0 0 15px;
+}
+
+.reviewDate {
+  font-size: 0.85rem;
+  color: #888;
+  text-align: right;
+}
+
+.navButton {
+  background: none;
+  border: none;
+  font-size: 2.5rem;
+  color: #aaa;
+  cursor: pointer;
+  padding: 10px;
+  transition: color 0.2s;
+}
+
+.navButton:hover {
+  color: #249b89;
+}
+
+.googleLinkContainer {
+  margin-top: 25px;
+}
+
+.googleLink {
+  color: #4285f4; /* Цвет Google */
+  text-decoration: none;
+  font-weight: 500;
+}
+.googleLink:hover {
+  text-decoration: underline;
+}

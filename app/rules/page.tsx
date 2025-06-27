@@ -1,4 +1,4 @@
-import ClientRulesPage from '@components/ClientRulesPage';
+import ClientRulesPage from 'app/components/ClientRulesPage';
 
 export default function RulesRoutePage() {
   return <ClientRulesPage />;

@@ -5,8 +5,8 @@ import Header from './Header';
 import Providers from './providers';
 import 'tippy.js/dist/tippy.css';
 import 'tippy.js/themes/light.css';
+import BottomNav from 'app/components/BottomNav';
 
-// Это ваши SEO-данные — Next.js сам их вставит в <head>
 export const metadata = {
   title: 'Kazantseva Rehabilitation – Реабілітація Наталія Казанцева у Вишневому',
   description:
@@ -22,7 +22,7 @@ export const metadata = {
     type: 'website',
     images: [
       {
-        url: 'https://kazantseva-rehabilitation.com.ua/og-image.jpg',
+        url: 'https://kazantseva-rehabilitation.com.ua/logo.png',
         width: 1110,
         height: 768,
         alt: "Kazantseva Rehabilitation – Ваш шлях до здоров'я",
@@ -33,25 +33,56 @@ export const metadata = {
   robots: 'index, follow',
 };
 
-// Опционально: viewport можно также экспортировать здесь (Next.js поддерживает)
 export const viewport = {
   width: 'device-width',
   initialScale: 1.0,
+};
+
+const localBusinessSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'MedicalBusiness',
+  name: 'Реабілітація Наталія Казанцева',
+  image: 'https://kazantseva-rehabilitation.com.ua/logo.png', // Убедитесь, что ссылка на логотип правильная
+  url: 'https://kazantseva-rehabilitation.com.ua/',
+  telephone: '+380503843042',
+  email: 'info@nkz.com.ua',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: 'вулиця Молодіжна, 16А',
+    addressLocality: 'Вишневе',
+    addressRegion: 'Київська область',
+    postalCode: '08132',
+    addressCountry: 'UA',
+  },
+  areaServed: ['Вишневе', 'Крюківщина', 'Борщагівка', 'Київ'],
+  priceRange: '$$',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="uk">
       <body>
+        {/* Внедряем JSON-LD скрипт на все страницы сайта */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+        />
         <Providers>
-          <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
-            <Header />
-            <main style={{ padding: '20px' }}>{children}</main>
+          <div className="site-wrapper">
+            <div className="content-pusher">
+              <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+                <Header />
+                <main className="main-content" style={{ padding: '20px' }}>
+                  {children}
+                </main>
+              </div>
+            </div>
+            <footer className="site-footer">
+              &copy; {new Date().getFullYear()} Kazantseva Rehabilitation. Всі права захищені.
+            </footer>
           </div>
-          <footer style={{ textAlign: 'center', padding: '10px 0' }}>
-            &copy; {new Date().getFullYear()} Kazantseva Rehabilitation. Всі права захищені.
-          </footer>
         </Providers>
+        <BottomNav />
         <AnalyticsProvider />
       </body>
     </html>

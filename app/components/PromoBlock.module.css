@@ -1,0 +1,89 @@
+/* app/components/PromoBlock.module.css */
+
+/* Главный контейнер для промо-блока */
+.promoContainer {
+  display: grid;
+  grid-template-columns: 1fr; /* Одна колонка на мобильных */
+  gap: 24px;
+  max-width: 850px;
+  margin: 40px auto;
+  padding: 0 16px;
+}
+
+/* На экранах шире 768px делаем две колонки */
+@media (min-width: 768px) {
+  .promoContainer {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Стиль для каждой карточки */
+.promoCard {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+}
+
+.promoCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Иконка в карточке */
+.icon {
+  font-size: 2.5rem;
+  color: #249b89; /* Фирменный цвет */
+  margin-bottom: 16px;
+}
+
+/* Заголовок карточки */
+.title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+/* Основной текст в карточке */
+.text {
+  color: #555;
+  line-height: 1.6;
+  margin: 0;
+  flex-grow: 1; /* Растягиваем, чтобы карточки были одной высоты */
+}
+
+/* Выделение текста (для скидки и слова "у подарунок") */
+.highlight {
+  color: #249b89;
+  font-weight: 600;
+}
+
+/* Дополнительный класс для карточки с правилами */
+.ruleCard {
+  background-color: #e6f5f3; /* Легкий фирменный фон */
+  border-color: #a3d9d1;
+}
+
+/* Текст-ссылка в карточке правил */
+.ruleLinkText {
+  margin-top: 16px;
+  color: #1d8473;
+  font-weight: bold;
+  text-decoration: none;
+  transition: text-decoration 0.2s;
+}
+
+/* Показываем подчеркивание при наведении на всю карточку */
+.ruleCard:hover .ruleLinkText {
+  text-decoration: underline;
+}

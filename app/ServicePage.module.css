@@ -85,3 +85,50 @@
   object-fit: cover;
   border-radius: 2px;
 }
+
+.pageHeader {
+  max-width: 800px;
+  text-align: center;
+  line-height: 1.1;
+  margin: 24px auto 1em;
+}
+
+.brandTitle {
+  font-size: 1.3rem;
+  text-transform: uppercase;
+  color: #249b89;
+  font-family: 'LogoFont', sans-serif;
+  margin-bottom: 5px;
+  letter-spacing: 1px;
+}
+
+.brandTagline {
+  /* Копируем стили второго параграфа, можно объединить с .brandTitle, если они идентичны */
+  font-size: 1.3rem;
+  text-transform: uppercase;
+  color: #249b89;
+  font-family: 'LogoFont', sans-serif;
+  margin-bottom: 5px;
+  letter-spacing: 1px;
+}
+
+.rulesLink {
+  color: #249b89;
+  font-weight: 500;
+  font-size: 1.3rem;
+  text-decoration: underline;
+  transition: opacity 0.2s;
+}
+
+.rulesLink:hover {
+  opacity: 0.8;
+}
+
+/* Также немного поправим стиль изображения в карточке, убрав инлайн-стили */
+.cardImage {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 2px;
+  margin-bottom: 2px;
+}

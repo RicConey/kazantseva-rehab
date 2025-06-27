@@ -1,6 +1,7 @@
-/* Стиль заголовка */
+/* app/prices/Prices.module.css (Версия без стилей для tooltip) */
+
 .title {
-  margin-bottom: 10px;
+  margin-bottom: 24px;
   text-align: center;
   color: #249b89;
   font-size: 1.5rem;
@@ -15,79 +16,54 @@
   overflow: hidden;
 }
 
-/* Заголовки таблицы */
 .priceTable th {
-  padding: 10px;
-  border: 1px solid #ccc;
-  background: #249b89;
-  color: white;
-  font-weight: bold;
-  text-align: center;
-  vertical-align: top;
+  padding: 12px;
+  border-bottom: 2px solid #249b89;
+  background: #f8f9fa;
+  color: #333;
+  font-weight: 600;
+  text-align: left;
+  vertical-align: middle;
 }
 
-/* Ячейки таблицы */
 .priceTable td {
-  padding: 10px;
-  border: 1px solid #ccc;
+  padding: 12px;
+  border-top: 1px solid #e9ecef;
   text-align: left;
-  vertical-align: center;
+  vertical-align: middle;
+}
+
+/* "Зебра" для строк таблицы */
+.evenRow {
+  background-color: #f8f9fa;
+}
+
+/* Класс для выравнивания по центру */
+.centerAlign {
+  text-align: center;
+}
+
+.rulesLink {
+  color: #249b89;
+  font-weight: 500;
+  font-size: 1.2rem;
+  text-decoration: underline;
+  transition: opacity 0.2s;
+}
+
+.rulesLink:hover {
+  opacity: 0.8;
 }
 
 /* Мобильная версия */
 @media (max-width: 600px) {
-  .priceTable th {
-    font-size: 14px;
-    padding: 6px;
-  }
+  .priceTable th,
   .priceTable td {
     font-size: 14px;
-    padding: 6px;
-    line-height: 1.2;
+    padding: 8px;
+    line-height: 1.3;
   }
   .container {
     padding: 5px;
   }
-}
-
-/* Стили для tooltip */
-.tooltipWrapper {
-  position: relative;
-  display: inline-block;
-}
-
-.tooltipTrigger {
-  color: #249b89;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: underline dotted;
-}
-
-.tooltipText {
-  position: absolute;
-  bottom: 130%;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #249b89;
-  color: white;
-  padding: 8px 10px;
-  border-radius: 8px;
-  font-size: 0.8rem;
-  line-height: 1.2;
-  text-align: justify;
-  z-index: 9999;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease;
-  white-space: normal;
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-  hyphens: auto;
-  min-width: 200px;
-  max-width: 400px;
-}
-
-.tooltipVisible {
-  opacity: 1;
-  visibility: visible;
 }

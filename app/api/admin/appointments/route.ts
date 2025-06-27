@@ -1,10 +1,33 @@
+// app/api/admin/appointments/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { formatInTimeZone } from 'date-fns-tz';
 import { requireAdmin } from '@lib/auth';
+import { verify } from 'jsonwebtoken';
 
 const TZ = 'Europe/Kyiv';
+
+async function authGuard(req: NextRequest): Promise<NextResponse | null> {
+  // 1) Попытка по JWT
+  const auth = req.headers.get('authorization') ?? '';
+  if (auth.startsWith('Bearer ')) {
+    const token = auth.slice('Bearer '.length);
+    try {
+      verify(token, process.env.JWT_SECRET!);
+      return null; // JWT валиден — дальше можно выполнять логику
+    } catch {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+  }
+  // 2) Иначе — проверяем сессию NextAuth
+  const denied = await requireAdmin();
+  if (denied) {
+    // requireAdmin вернул редирект или ошибку
+    return denied;
+  }
+  return null;
+}
 
 function getIdFromUrl(url: string): number {
   const parts = new URL(url).pathname.split('/');
@@ -12,8 +35,9 @@ function getIdFromUrl(url: string): number {
 }
 
 export async function GET(req: NextRequest) {
-  const denied = await requireAdmin();
-  if (denied) return denied;
+  // Авторизация (JWT или cookie-сессия)
+  const guard = await authGuard(req);
+  if (guard) return guard;
 
   const url = new URL(req.url);
   const date = url.searchParams.get('date');
@@ -49,12 +73,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const denied = await requireAdmin();
-  if (denied) return denied;
+  const guard = await authGuard(req);
+  if (guard) return guard;
 
   const { startTime, duration, client, clientId, notes, price, locationId } = await req.json();
-
-  // Обязательный locationId
   if (typeof locationId !== 'number') {
     return NextResponse.json({ error: 'Нужно передать locationId (число)' }, { status: 400 });
   }
@@ -62,7 +84,7 @@ export async function POST(req: NextRequest) {
   const newStart = new Date(startTime);
   const newEnd = new Date(newStart.getTime() + duration * 60000);
 
-  // Проверка конфликта
+  // Проверка конфликтов
   const all = await prisma.appointment.findMany();
   for (const appt of all) {
     const s = new Date(appt.startTime);
@@ -83,9 +105,8 @@ export async function POST(req: NextRequest) {
     clientId: clientId || null,
     notes: notes?.trim() || null,
     price,
-    locationId, // <-- сюда
+    locationId,
   };
-
   if (!clientId && typeof client === 'string') {
     data.client = client.trim();
   }
@@ -103,13 +124,11 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const denied = await requireAdmin();
-  if (denied) return denied;
+  const guard = await authGuard(req);
+  if (guard) return guard;
 
   const id = getIdFromUrl(req.url);
   const { startTime, duration, client, clientId, notes, price, locationId } = await req.json();
-
-  // Обязательный locationId
   if (typeof locationId !== 'number') {
     return NextResponse.json({ error: 'Нужно передать locationId (число)' }, { status: 400 });
   }
@@ -117,7 +136,7 @@ export async function PUT(req: NextRequest) {
   const newStart = new Date(startTime);
   const newEnd = new Date(newStart.getTime() + duration * 60000);
 
-  // Проверка конфликта только в тот же день
+  // Проверяем конфликты в тот же день
   const dayStart = new Date(newStart.getFullYear(), newStart.getMonth(), newStart.getDate());
   const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
   const existing = await prisma.appointment.findMany({
@@ -134,7 +153,6 @@ export async function PUT(req: NextRequest) {
     const e = new Date(s.getTime() + a.duration * 60000);
     return newStart < e && s < newEnd;
   });
-
   if (conflict) {
     const conflictStr = formatInTimeZone(new Date(conflict.startTime), TZ, 'dd.MM.yyyy HH:mm');
     const newStr = formatInTimeZone(newStart, TZ, 'dd.MM.yyyy HH:mm');
@@ -150,9 +168,8 @@ export async function PUT(req: NextRequest) {
     clientId: clientId || null,
     notes: notes?.trim() || null,
     price,
-    locationId, // <-- и здесь
+    locationId,
   };
-
   if (!clientId && typeof client === 'string') {
     data.client = client.trim();
   }
@@ -171,12 +188,12 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const denied = await requireAdmin();
-  if (denied) return denied;
+  const guard = await authGuard(req);
+  if (guard) return guard;
 
   const id = getIdFromUrl(req.url);
   await prisma.appointment.delete({ where: { id } });
-
   revalidatePath('/admin/appointments');
+
   return NextResponse.json({ success: true }, { status: 200 });
 }

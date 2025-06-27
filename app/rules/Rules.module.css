@@ -1,0 +1,25 @@
+/* app/rules/Rules.module.css */
+
+/* Главный контейнер для страницы */
+.container {
+  max-width: 850px;
+  margin: 0 auto;
+  padding: 0 8px;
+}
+
+/* Заголовок страницы */
+.pageTitle {
+  color: #249b89;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+/* Класс для выделения ключевых фраз в тексте */
+.highlight {
+  color: #249b89;
+  font-weight: 500;
+}
+
+.accordionContainer {
+  margin-top: 24px;
+}

@@ -7,7 +7,7 @@ export default function Head() {
     name: 'Наталія Казанцева',
     url: 'https://kazantseva-rehabilitation.com.ua/',
     telephone: '+380503843042',
-    email: 'info@nkz.com.ua',
+    email: 'info@kazantseva-rehabilitation.com.ua',
     address: {
       '@type': 'PostalAddress',
       streetAddress: 'вулиця Молодіжна, 16А',

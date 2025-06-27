@@ -1,0 +1,79 @@
+/* app/components/RuleAccordion.module.css */
+
+.accordionItem {
+  background-color: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s;
+}
+
+/* Применяем тень, когда аккордеон активен */
+.accordionItem.active {
+  box-shadow: 0 4px 15px rgba(36, 155, 137, 0.1);
+  border-color: #dee2e6;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 16px 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.titleContainer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.iconWrapper svg {
+  color: #249b89 !important;
+  font-size: 1.6rem;
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+}
+
+.title {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: #249b89;
+  margin: 0;
+}
+
+.chevronWrapper svg {
+  font-size: 1.5rem;
+  color: #888;
+}
+
+.contentWrapper {
+  overflow: hidden;
+}
+
+.content {
+  padding: 0 5px 20px 5px;
+  color: #555;
+  line-height: 1.6;
+  border-top: 1px solid #e9ecef;
+  margin: 0;
+  text-align: left;
+}
+
+.content ul {
+  padding-left: 20px;
+  margin-top: 16px;
+  margin-bottom: 0;
+}
+
+.content li {
+  margin-bottom: 10px;
+}

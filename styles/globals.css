@@ -139,3 +139,50 @@ p {
   white-space: nowrap;
   border: 0;
 }
+
+/* Додаємо відступ знизу для основного контенту та футера,
+   щоб вони не ховалися за нижньою панеллю навігації на мобільних.
+   80px = висота панелі (65px) + невеликий запас (15px) */
+@media (max-width: 900px) {
+  .main-content {
+    padding-bottom: 100px !important;
+  }
+  footer {
+    padding-bottom: 100px !important;
+  }
+}
+/* Заставляем html и body занимать всю высоту */
+html,
+body {
+  height: 100%;
+}
+
+/* 1. Главная обертка: flex-контейнер высотой в 100% экрана */
+.site-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* 2. Контейнер, который "выталкивает" футер вниз */
+.content-pusher {
+  flex: 1 0 auto; /* Растягивается, чтобы занять все доступное пространство */
+}
+
+/* 3. Футер "прижимается" к низу */
+.site-footer {
+  flex-shrink: 0; /* Не сжимается */
+  text-align: center;
+  padding: 20px 0;
+  background-color: #f8f9fa; /* Добавим легкий фон для визуального отделения */
+  border-top: 1px solid #e9ecef;
+}
+
+/* Отступ для контента, чтобы он не прятался за нижним меню на мобильных.
+  Важно, чтобы отступ был у .site-footer, а не у main-content.
+*/
+@media (max-width: 900px) {
+  .site-footer {
+    padding-bottom: 85px; /* Высота нижнего меню + небольшой запас */
+  }
+}
