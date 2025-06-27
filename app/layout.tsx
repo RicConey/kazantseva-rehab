@@ -5,8 +5,8 @@ import Providers from './providers';
 import 'tippy.js/dist/tippy.css';
 import 'tippy.js/themes/light.css';
 import BottomNav from 'app/components/BottomNav';
-import Script from "next/script";
-import React from "react";
+import Script from 'next/script';
+import React from 'react';
 
 export const metadata = {
   title: 'Kazantseva Rehabilitation – Реабілітація Наталія Казанцева у Вишневому',
@@ -85,9 +85,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Providers>
         <BottomNav />
         <Script
-            src="https://stats.kazantseva-rehabilitation.com.ua/script.js"
-            data-website-id="a4e5e81b-0e89-4195-ab41-ab82b43539d1"
-            strategy="afterInteractive"
+          src="https://stats.kazantseva-rehabilitation.com.ua/script.js"
+          data-website-id="a4e5e81b-0e89-4195-ab41-ab82b43539d1"
+          strategy="afterInteractive"
         />
       </body>
     </html>
