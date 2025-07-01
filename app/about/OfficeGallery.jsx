@@ -5,50 +5,82 @@ import { useState } from 'react';
 import Image from 'next/image';
 import styles from './OfficeGallery.module.css';
 import { useSwipeable } from 'react-swipeable';
+import { useDrag } from '@use-gesture/react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function OfficeGallery({ images }) {
   const [selectedIndex, setSelectedIndex] = useState(null);
-  // 1. Новий стан для відстеження зуму
   const [isZoomed, setIsZoomed] = useState(false);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [direction, setDirection] = useState(0);
 
-  // --- Функції для управління станом ---
+  const resetState = () => {
+    setIsZoomed(false);
+    setPan({ x: 0, y: 0 });
+  };
 
   const openModal = index => {
     setSelectedIndex(index);
-    setIsZoomed(false); // Скидаємо зум при відкритті нового фото
+    resetState();
   };
 
   const closeModal = () => {
     setSelectedIndex(null);
-    setIsZoomed(false); // Скидаємо зум при закритті
   };
 
   const handleNext = () => {
     if (selectedIndex === null) return;
+    setDirection(1);
     const nextIndex = (selectedIndex + 1) % images.length;
     setSelectedIndex(nextIndex);
-    setIsZoomed(false); // Скидаємо зум при переході
+    resetState();
   };
 
   const handlePrev = () => {
     if (selectedIndex === null) return;
+    setDirection(-1);
     const prevIndex = (selectedIndex - 1 + images.length) % images.length;
     setSelectedIndex(prevIndex);
-    setIsZoomed(false); // Скидаємо зум при переході
+    resetState();
   };
 
-  // 2. Функція для зуму по кліку на фото
-  const handleImageClick = e => {
-    e.stopPropagation(); // Не даємо кліку "спливти" до оверлея, щоб не закрити вікно
-    setIsZoomed(prev => !prev);
-  };
-
-  const handlers = useSwipeable({
-    onSwipedLeft: () => handleNext(),
-    onSwipedRight: () => handlePrev(),
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => !isZoomed && handleNext(),
+    onSwipedRight: () => !isZoomed && handlePrev(),
     trackMouse: true,
     preventScrollOnSwipe: true,
   });
+
+  const bind = useDrag(
+    ({ tap, movement: [mx, my] }) => {
+      if (tap) {
+        setIsZoomed(prev => !prev);
+        setPan({ x: 0, y: 0 });
+        return;
+      }
+      if (isZoomed) {
+        setPan({ x: mx, y: my });
+      }
+    },
+    { from: [pan.x, pan.y] }
+  );
+
+  const variants = {
+    enter: direction => ({
+      x: direction > 0 ? '100%' : '-100%',
+      opacity: 0,
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1,
+    },
+    exit: direction => ({
+      zIndex: 0,
+      x: direction < 0 ? '100%' : '-100%',
+      opacity: 0,
+    }),
+  };
 
   return (
     <>
@@ -57,7 +89,7 @@ export default function OfficeGallery({ images }) {
           <Image
             key={i}
             src={`/images/office/${file}`}
-            alt={`Фото кабінету ${i + 1}`}
+            alt={`Фото кабинета ${i + 1}`}
             width={800}
             height={600}
             className={styles.officeImage}
@@ -67,53 +99,85 @@ export default function OfficeGallery({ images }) {
         ))}
       </div>
 
-      {selectedIndex !== null && (
-        <div {...handlers} className={styles.modalOverlay} onClick={closeModal}>
-          {/* 3. Хрестик для закриття */}
-          <button
-            className={styles.closeButton}
-            onClick={e => {
-              e.stopPropagation();
-              closeModal();
-            }}
+      <AnimatePresence>
+        {selectedIndex !== null && (
+          <motion.div
+            className={styles.modalOverlay}
+            onClick={closeModal}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            {...swipeHandlers}
           >
-            &times;
-          </button>
+            <button
+              className={styles.closeButton}
+              onClick={e => {
+                e.stopPropagation();
+                closeModal();
+              }}
+            >
+              &times;
+            </button>
 
-          {/* Кнопки навігації для десктопу */}
-          <button
-            className={`${styles.navButton} ${styles.prevButton}`}
-            onClick={e => {
-              e.stopPropagation();
-              handlePrev();
-            }}
-          >
-            &#10094;
-          </button>
-          <button
-            className={`${styles.navButton} ${styles.nextButton}`}
-            onClick={e => {
-              e.stopPropagation();
-              handleNext();
-            }}
-          >
-            &#10095;
-          </button>
+            {!isZoomed && (
+              <>
+                <button
+                  className={`${styles.navButton} ${styles.prevButton}`}
+                  onClick={e => {
+                    e.stopPropagation();
+                    handlePrev();
+                  }}
+                >
+                  &#10094;
+                </button>
+                <button
+                  className={`${styles.navButton} ${styles.nextButton}`}
+                  onClick={e => {
+                    e.stopPropagation();
+                    handleNext();
+                  }}
+                >
+                  &#10095;
+                </button>
+              </>
+            )}
 
-          {/* 4. Контейнер для зображення, щоб зум працював коректно */}
-          <div className={styles.imageContainer} onClick={handleImageClick}>
-            <Image
-              src={`/images/office/${images[selectedIndex]}`}
-              alt={`Фото кабінету ${selectedIndex + 1}`}
-              width={1200}
-              height={900}
-              // 5. Динамічні класи для зображення
-              className={`${styles.modalImage} ${isZoomed ? styles.zoomedImage : ''}`}
-              priority
-            />
-          </div>
-        </div>
-      )}
+            <div className={styles.imageContainer} onClick={e => e.stopPropagation()}>
+              <AnimatePresence initial={false} custom={direction}>
+                <motion.div
+                  className={styles.motionWrapper}
+                  key={selectedIndex}
+                  custom={direction}
+                  variants={variants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{
+                    x: { type: 'spring', stiffness: 300, damping: 30 },
+                    opacity: { duration: 0.2 },
+                  }}
+                >
+                  <Image
+                    {...bind()}
+                    src={`/images/office/${images[selectedIndex]}`}
+                    alt={`Фото кабинета ${selectedIndex + 1}`}
+                    width={1200}
+                    height={900}
+                    className={`${styles.modalImage} ${isZoomed ? styles.panning : ''}`}
+                    style={{
+                      transform: `translate(${pan.x}px, ${pan.y}px) scale(${isZoomed ? 2.5 : 1})`,
+                      cursor: isZoomed ? 'grab' : 'zoom-in',
+                    }}
+                    draggable={false}
+                    priority
+                  />
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
