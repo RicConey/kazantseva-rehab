@@ -110,7 +110,7 @@
 
 /* 4. Клас для збільшеного зображення */
 .zoomedImage {
-  transform: scale(2.0);
+  transform: scale(2);
   cursor: zoom-out;
 }
 
