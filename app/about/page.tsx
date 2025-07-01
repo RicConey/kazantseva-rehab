@@ -4,15 +4,19 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import CertificateGallery from './CertificateGallery';
+import OfficeGallery from './OfficeGallery';
 import styles from './About.module.css';
 import GoogleReviews from 'app/components/GoogleReviews';
 
 // Иконки для списков
-import { FiTarget, FiTool, FiCheckCircle } from 'react-icons/fi';
+import { FiTarget, FiTool, FiCheckCircle, FiHome } from 'react-icons/fi';
 
 export default function AboutPage() {
   const [showCerts, setShowCerts] = useState(false);
   const [certFiles, setCertFiles] = useState<string[]>([]);
+
+  // 2. Створюємо масив з іменами файлів фото кабінету
+  const officeImages = ['office-1.jpg', 'office-2.jpg', 'office-3.jpg'];
 
   useEffect(() => {
     async function fetchCertificates() {
@@ -142,12 +146,20 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* --- БЛОК 3: ОТЗЫВЫ КЛИЕНТОВ --- */}
+      {/* --- БЛОК 3: ФОТО КАБІНЕТУ --- */}
+      <div className={styles.officeGallerySection}>
+        <h2>
+          <FiHome /> Мій кабінет
+        </h2>
+        <OfficeGallery images={officeImages} />
+      </div>
+
+      {/* --- БЛОК 4: ОТЗЫВЫ КЛИЕНТОВ --- */}
       <div className={styles.reviewsSection}>
         <GoogleReviews />
       </div>
 
-      {/* --- БЛОК 4: СЕРТИФИКАТЫ --- */}
+      {/* --- БЛОК 5: СЕРТИФИКАТЫ --- */}
       <div>
         <div className={styles.certButtonContainer}>
           <button className={styles.certButton} onClick={() => setShowCerts(prev => !prev)}>

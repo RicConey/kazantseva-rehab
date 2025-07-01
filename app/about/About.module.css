@@ -148,3 +148,25 @@
   color: #249b89;
   font-weight: 600;
 }
+
+/* --- Блок 3: Фото кабінету --- */
+.officeGallerySection {
+  margin-top: 20px; /* Відступ зверху, аналогічно до відгуків */
+}
+
+.officeGallerySection h2 {
+  font-size: 1.3rem; /* */
+  color: #249b89; /* */
+  margin-bottom: 15px; /* */
+  border-bottom: 2px solid #e9ecef; /* */
+  padding-bottom: 8px; /* */
+  display: flex; /* */
+  align-items: center; /* */
+  gap: 10px; /* */
+}
+
+/* --- Блок 4: Отзывы --- */
+.reviewsSection {
+  margin-top: 20px;
+  /* Стили для самого компонента находятся в Reviews.module.css */
+}
