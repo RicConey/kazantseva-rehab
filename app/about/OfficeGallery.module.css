@@ -3,8 +3,8 @@
 .galleryContainer {
   margin-top: 20px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
   justify-content: center;
 }
 
@@ -40,18 +40,82 @@
   cursor: zoom-out;
 }
 
+/* 1. Стиль для хрестика */
+.closeButton {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 2rem;
+  line-height: 40px;
+  text-align: center;
+  cursor: pointer;
+  z-index: 1002;
+  transition: background-color 0.2s;
+}
+
+.closeButton:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.navButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.4);
+  color: white;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  padding: 10px 15px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+  z-index: 1001;
+}
+
+.navButton:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.prevButton {
+  left: 20px;
+}
+.nextButton {
+  right: 20px;
+}
+
+/* 2. Контейнер для фото, дозволяє клікати по ньому для зуму */
+.imageContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: zoom-in;
+}
+
 .modalImage {
-  width: auto !important;
-  height: auto !important;
-  max-width: 90vw;
+  width: auto;
+  height: auto;
+  max-width: 85vw;
   max-height: 90vh;
   object-fit: contain;
   border-radius: 8px;
   box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease;
 }
 
-/* Ховаємо кнопки на пристроях без ховера (телефони, планшети) */
-@media (hover: none) and (pointer: coarse) {
+/* 4. Клас для збільшеного зображення */
+.zoomedImage {
+  transform: scale(1.8);
+  cursor: zoom-out;
+}
+
+/* 5. ховаємо кнопки на мобільних */
+@media (max-width: 768px) {
   .navButton {
     display: none;
   }

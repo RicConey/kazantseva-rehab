@@ -8,28 +8,46 @@ import { useSwipeable } from 'react-swipeable';
 
 export default function OfficeGallery({ images }) {
   const [selectedIndex, setSelectedIndex] = useState(null);
+  // 1. Новий стан для відстеження зуму
+  const [isZoomed, setIsZoomed] = useState(false);
 
-  const openModal = index => setSelectedIndex(index);
-  const closeModal = () => setSelectedIndex(null);
+  // --- Функції для управління станом ---
+
+  const openModal = index => {
+    setSelectedIndex(index);
+    setIsZoomed(false); // Скидаємо зум при відкритті нового фото
+  };
+
+  const closeModal = () => {
+    setSelectedIndex(null);
+    setIsZoomed(false); // Скидаємо зум при закритті
+  };
 
   const handleNext = () => {
     if (selectedIndex === null) return;
     const nextIndex = (selectedIndex + 1) % images.length;
     setSelectedIndex(nextIndex);
+    setIsZoomed(false); // Скидаємо зум при переході
   };
 
   const handlePrev = () => {
     if (selectedIndex === null) return;
     const prevIndex = (selectedIndex - 1 + images.length) % images.length;
     setSelectedIndex(prevIndex);
+    setIsZoomed(false); // Скидаємо зум при переході
   };
 
-  // 2. Налаштовуємо обробники свайпів
+  // 2. Функція для зуму по кліку на фото
+  const handleImageClick = e => {
+    e.stopPropagation(); // Не даємо кліку "спливти" до оверлея, щоб не закрити вікно
+    setIsZoomed(prev => !prev);
+  };
+
   const handlers = useSwipeable({
-    onSwipedLeft: () => handleNext(), // Свайп вліво -> наступне фото
-    onSwipedRight: () => handlePrev(), // Свайп вправо -> попереднє фото
-    trackMouse: true, // Дозволяє "свайпати" мишкою на комп'ютері для тестування
-    preventScrollOnSwipe: true, // Запобігає прокручуванню сторінки під час свайпу
+    onSwipedLeft: () => handleNext(),
+    onSwipedRight: () => handlePrev(),
+    trackMouse: true,
+    preventScrollOnSwipe: true,
   });
 
   return (
@@ -50,9 +68,19 @@ export default function OfficeGallery({ images }) {
       </div>
 
       {selectedIndex !== null && (
-        // 3. "Розгортаємо" обробники свайпів на оверлей
         <div {...handlers} className={styles.modalOverlay} onClick={closeModal}>
-          {/* Кнопки залишаються для десктопу */}
+          {/* 3. Хрестик для закриття */}
+          <button
+            className={styles.closeButton}
+            onClick={e => {
+              e.stopPropagation();
+              closeModal();
+            }}
+          >
+            &times;
+          </button>
+
+          {/* Кнопки навігації для десктопу */}
           <button
             className={`${styles.navButton} ${styles.prevButton}`}
             onClick={e => {
@@ -62,16 +90,6 @@ export default function OfficeGallery({ images }) {
           >
             &#10094;
           </button>
-
-          <Image
-            src={`/images/office/${images[selectedIndex]}`}
-            alt={`Фото кабінету ${selectedIndex + 1}`}
-            width={1200}
-            height={900}
-            className={styles.modalImage}
-            priority
-          />
-
           <button
             className={`${styles.navButton} ${styles.nextButton}`}
             onClick={e => {
@@ -81,6 +99,19 @@ export default function OfficeGallery({ images }) {
           >
             &#10095;
           </button>
+
+          {/* 4. Контейнер для зображення, щоб зум працював коректно */}
+          <div className={styles.imageContainer} onClick={handleImageClick}>
+            <Image
+              src={`/images/office/${images[selectedIndex]}`}
+              alt={`Фото кабінету ${selectedIndex + 1}`}
+              width={1200}
+              height={900}
+              // 5. Динамічні класи для зображення
+              className={`${styles.modalImage} ${isZoomed ? styles.zoomedImage : ''}`}
+              priority
+            />
+          </div>
         </div>
       )}
     </>
