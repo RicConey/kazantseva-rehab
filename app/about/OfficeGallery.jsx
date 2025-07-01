@@ -1,7 +1,7 @@
 // app/about/OfficeGallery.jsx
 'use client';
 
-import { useState, useEffect, useRef } from 'react'; // 1. Добавляем useRef
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import styles from './OfficeGallery.module.css';
 import { useSwipeable } from 'react-swipeable';
@@ -14,12 +14,10 @@ export default function OfficeGallery({ images }) {
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [direction, setDirection] = useState(0);
 
-  // 2. Создаем "ссылки" на DOM-элементы для измерения их размеров
+  // Ссылка теперь нужна только на контейнер
   const containerRef = useRef(null);
-  const imageRef = useRef(null);
 
   useEffect(() => {
-    // Логика для свайпа "Назад" в браузере
     const handlePopState = () => {
       if (selectedIndex !== null) setSelectedIndex(null);
     };
@@ -76,18 +74,37 @@ export default function OfficeGallery({ images }) {
       if (isZoomed) setPan({ x: ox, y: oy });
     },
     {
-      // 3. Добавляем конфигурацию для `useDrag`
+      // --- ИСПРАВЛЕНИЕ ЗДЕСЬ ---
       bounds: () => {
-        // Вычисляем границы только если фото увеличено и элементы существуют
-        if (!isZoomed || !containerRef.current || !imageRef.current) return {};
+        if (!isZoomed || !containerRef.current) return {};
 
         const { width: containerWidth, height: containerHeight } =
           containerRef.current.getBoundingClientRect();
-        const { width: imageWidth, height: imageHeight } = imageRef.current.getBoundingClientRect();
 
-        // `getBoundingClientRect` уже дает отмасштабированный размер
-        const xOffset = Math.max(0, (imageWidth - containerWidth) / 2);
-        const yOffset = Math.max(0, (imageHeight - containerHeight) / 2);
+        // Оригинальные пропорции фото кабинета
+        const intrinsicWidth = 1200;
+        const intrinsicHeight = 900;
+        const zoomLevel = 1.5;
+
+        // Рассчитываем отображаемый размер фото (как при object-fit: contain)
+        const imageAspectRatio = intrinsicWidth / intrinsicHeight;
+        const containerAspectRatio = containerWidth / containerHeight;
+
+        let renderedWidth, renderedHeight;
+
+        if (imageAspectRatio > containerAspectRatio) {
+          renderedWidth = containerWidth;
+          renderedHeight = containerWidth / imageAspectRatio;
+        } else {
+          renderedHeight = containerHeight;
+          renderedWidth = containerHeight * imageAspectRatio;
+        }
+
+        const zoomedWidth = renderedWidth * zoomLevel;
+        const zoomedHeight = renderedHeight * zoomLevel;
+
+        const xOffset = Math.max(0, (zoomedWidth - containerWidth) / 2);
+        const yOffset = Math.max(0, (zoomedHeight - containerHeight) / 2);
 
         return {
           left: -xOffset,
@@ -96,7 +113,6 @@ export default function OfficeGallery({ images }) {
           bottom: yOffset,
         };
       },
-      // Резиновый эффект, чтобы движение было приятнее на границах
       rubberband: 0.1,
     }
   );
@@ -166,7 +182,6 @@ export default function OfficeGallery({ images }) {
                 </button>
               </>
             )}
-            {/* 4. Привязываем ref к контейнеру */}
             <div className={styles.imageContainer} ref={containerRef}>
               <AnimatePresence initial={false} custom={direction}>
                 <motion.div
@@ -185,8 +200,7 @@ export default function OfficeGallery({ images }) {
                 >
                   <Image
                     {...bind()}
-                    ref={imageRef}
-                    /* 5. Привязываем ref к фото */ src={`/images/office/${images[selectedIndex]}`}
+                    src={`/images/office/${images[selectedIndex]}`}
                     alt={`Фото кабинета ${selectedIndex + 1}`}
                     width={1200}
                     height={900}
