@@ -1,4 +1,4 @@
-// app/about/CertificateGallery.jsx
+// app/about/CertificateGallery.jsx.
 'use client';
 
 import { useState, useEffect, useRef } from 'react'; // 1. Добавляем useRef
