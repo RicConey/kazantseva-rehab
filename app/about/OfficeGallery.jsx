@@ -1,7 +1,7 @@
 // app/about/OfficeGallery.jsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react'; // 1. Добавляем useRef
 import Image from 'next/image';
 import styles from './OfficeGallery.module.css';
 import { useSwipeable } from 'react-swipeable';
@@ -14,6 +14,20 @@ export default function OfficeGallery({ images }) {
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [direction, setDirection] = useState(0);
 
+  // 2. Создаем "ссылки" на DOM-элементы для измерения их размеров
+  const containerRef = useRef(null);
+  const imageRef = useRef(null);
+
+  useEffect(() => {
+    // Логика для свайпа "Назад" в браузере
+    const handlePopState = () => {
+      if (selectedIndex !== null) setSelectedIndex(null);
+    };
+    if (selectedIndex !== null) window.history.pushState({ modal: true }, '');
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [selectedIndex]);
+
   const resetState = () => {
     setIsZoomed(false);
     setPan({ x: 0, y: 0 });
@@ -25,6 +39,7 @@ export default function OfficeGallery({ images }) {
   };
 
   const closeModal = () => {
+    if (window.history.state?.modal) window.history.back();
     setSelectedIndex(null);
   };
 
@@ -52,34 +67,44 @@ export default function OfficeGallery({ images }) {
   });
 
   const bind = useDrag(
-    ({ tap, movement: [mx, my] }) => {
+    ({ tap, offset: [ox, oy] }) => {
       if (tap) {
         setIsZoomed(prev => !prev);
         setPan({ x: 0, y: 0 });
         return;
       }
-      if (isZoomed) {
-        setPan({ x: mx, y: my });
-      }
+      if (isZoomed) setPan({ x: ox, y: oy });
     },
-    { from: [pan.x, pan.y] }
+    {
+      // 3. Добавляем конфигурацию для `useDrag`
+      bounds: () => {
+        // Вычисляем границы только если фото увеличено и элементы существуют
+        if (!isZoomed || !containerRef.current || !imageRef.current) return {};
+
+        const { width: containerWidth, height: containerHeight } =
+          containerRef.current.getBoundingClientRect();
+        const { width: imageWidth, height: imageHeight } = imageRef.current.getBoundingClientRect();
+
+        // `getBoundingClientRect` уже дает отмасштабированный размер
+        const xOffset = Math.max(0, (imageWidth - containerWidth) / 2);
+        const yOffset = Math.max(0, (imageHeight - containerHeight) / 2);
+
+        return {
+          left: -xOffset,
+          right: xOffset,
+          top: -yOffset,
+          bottom: yOffset,
+        };
+      },
+      // Резиновый эффект, чтобы движение было приятнее на границах
+      rubberband: 0.1,
+    }
   );
 
   const variants = {
-    enter: direction => ({
-      x: direction > 0 ? '100%' : '-100%',
-      opacity: 0,
-    }),
-    center: {
-      zIndex: 1,
-      x: 0,
-      opacity: 1,
-    },
-    exit: direction => ({
-      zIndex: 0,
-      x: direction < 0 ? '100%' : '-100%',
-      opacity: 0,
-    }),
+    enter: direction => ({ x: direction > 0 ? '100%' : '-100%', opacity: 0 }),
+    center: { zIndex: 1, x: 0, opacity: 1 },
+    exit: direction => ({ zIndex: 0, x: direction < 0 ? '100%' : '-100%', opacity: 0 }),
   };
 
   return (
@@ -119,7 +144,6 @@ export default function OfficeGallery({ images }) {
             >
               &times;
             </button>
-
             {!isZoomed && (
               <>
                 <button
@@ -142,8 +166,8 @@ export default function OfficeGallery({ images }) {
                 </button>
               </>
             )}
-
-            <div className={styles.imageContainer} onClick={e => e.stopPropagation()}>
+            {/* 4. Привязываем ref к контейнеру */}
+            <div className={styles.imageContainer} ref={containerRef}>
               <AnimatePresence initial={false} custom={direction}>
                 <motion.div
                   className={styles.motionWrapper}
@@ -157,10 +181,12 @@ export default function OfficeGallery({ images }) {
                     x: { type: 'spring', stiffness: 300, damping: 30 },
                     opacity: { duration: 0.2 },
                   }}
+                  onClick={e => e.stopPropagation()}
                 >
                   <Image
                     {...bind()}
-                    src={`/images/office/${images[selectedIndex]}`}
+                    ref={imageRef}
+                    /* 5. Привязываем ref к фото */ src={`/images/office/${images[selectedIndex]}`}
                     alt={`Фото кабинета ${selectedIndex + 1}`}
                     width={1200}
                     height={900}
