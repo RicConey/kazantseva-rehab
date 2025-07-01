@@ -3,7 +3,7 @@
 .galleryContainer {
   margin-top: 20px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 15px;
   justify-content: center;
 }
@@ -110,7 +110,7 @@
 
 /* 4. Клас для збільшеного зображення */
 .zoomedImage {
-  transform: scale(1.8);
+  transform: scale(2.0);
   cursor: zoom-out;
 }
 
