@@ -37,7 +37,7 @@ export default function AboutPage() {
       <div className={styles.introSection}>
         <div className={styles.photoWrapper}>
           <Image
-            src="/images/natalia-kazantseva.jpg"
+            src="/images/natalia-kazantseva1.jpg"
             alt="Наталія Казанцева"
             width={250}
             height={250}
