@@ -49,7 +49,8 @@ export default function AboutPage() {
           <h1 className={styles.title}>Про мене</h1>
           <p>
             Я, <span className={styles.highcolor}>Наталія Казанцева</span>, спеціаліст з тілесної
-            реабілітації, мануальної терапії, остеопатії та лікувального масажу.
+            реабілітації, оздоровчого масажу, карніосокральної терапії, остеопатії та оздоровчого
+            масажу.
             <br />
             Стаж роботи: понад 8 років.
           </p>
@@ -113,7 +114,7 @@ export default function AboutPage() {
             </li>
             <li className={styles.listItem}>
               <FiCheckCircle className={styles.listIcon} />
-              Лікувальний масаж
+              Оздоровчій масаж
             </li>
           </ul>
         </div>

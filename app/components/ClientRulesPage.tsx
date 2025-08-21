@@ -23,11 +23,8 @@ export default function ClientRulesPage() {
             </li>
             <li>
               Якщо Ви <Highlight>не попередили про відсутність</Highlight> щонайменше за{' '}
-              <Highlight>2 години</Highlight> до запланованого візиту — вартість сеансу{' '}
-              <Highlight>не повертається</Highlight>.
-            </li>
-            <li>
-              Неявка без попередження розцінюється як <Highlight>використаний сеанс</Highlight>.
+              <Highlight>2 години</Highlight> до запланованого візиту — компенсація за витрачену
+              годину <Highlight>50%</Highlight>. Якщо запис з ранку, то попереджати з вечора!
             </li>
             <li>
               У разі повторної неявки без повідомлення я залишаю за собою право{' '}
@@ -59,18 +56,10 @@ export default function ClientRulesPage() {
           </ul>
         </RuleAccordion>
 
-        {/* ... Остальные компоненты RuleAccordion без изменений ... */}
-
         <RuleAccordion title="3. Скасування запису з мого боку" icon={<FiGift />}>
           <ul>
             <li>
-              <Highlight>Поверну передоплату</Highlight>, якщо скасування сталося з моєї вини.
-            </li>
-            <li>
-              Або <Highlight>надам знижку 50%</Highlight> на аналогічний масаж,
-            </li>
-            <li>
-              Або <Highlight>запропоную бонус</Highlight> до наступної процедури (на Ваш вибір).
+              <Highlight>Запропоную бонус</Highlight> до наступної процедури (на Ваш вибір).
             </li>
           </ul>
         </RuleAccordion>
