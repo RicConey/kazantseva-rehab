@@ -3,7 +3,7 @@ import RuleAccordion from './RuleAccordion';
 import styles from '../rules/Rules.module.css';
 
 // Иконки
-import { FiClock, FiXCircle, FiGift, FiHeart, FiThumbsUp } from 'react-icons/fi';
+import { FiClock, FiHeart, FiThumbsUp } from 'react-icons/fi';
 
 // Компонент для выделения текста теперь использует класс из CSS-модуля
 const Highlight = ({ children }) => <span className={styles.highlight}>{children}</span>;
@@ -15,7 +15,7 @@ export default function ClientRulesPage() {
       <h1 className={styles.pageTitle}>Правила для клієнтів</h1>
 
       <div className={styles.accordionContainer}>
-        <RuleAccordion title="1. Запізнення та неявка" icon={<FiClock />}>
+        <RuleAccordion title="1. Запізнення, скасування та неявка" icon={<FiClock />}>
           <ul>
             <li>
               У разі запізнення тривалість сеансу <Highlight>зменшується пропорційно</Highlight>,
@@ -24,47 +24,21 @@ export default function ClientRulesPage() {
             <li>
               Якщо Ви <Highlight>не попередили про відсутність</Highlight> щонайменше за{' '}
               <Highlight>2 години</Highlight> до запланованого візиту — компенсація за витрачену
-              годину <Highlight>50%</Highlight>. Якщо запис з ранку, то попереджати з вечора!
+              годину <Highlight>50%</Highlight>. Для ранкових сеансів (9:00 або 10:00) — скасування
+              повинно відбутись <Highlight>не пізніше ніж за 12 годин</Highlight>.
             </li>
             <li>
               У разі повторної неявки без повідомлення я залишаю за собою право{' '}
               <Highlight>відмовити у подальших прийомах</Highlight>.
             </li>
-          </ul>
-        </RuleAccordion>
-
-        <RuleAccordion title="2. Скасування запису" icon={<FiXCircle />}>
-          <ul>
             <li>
-              <Highlight>За 24 години і більше</Highlight> — можна{' '}
-              <Highlight>повернути передоплату</Highlight> або{' '}
-              <Highlight>перенести сеанс</Highlight> без пояснень.
-            </li>
-            <li>
-              <Highlight>За 12 годин і більше</Highlight> — можливе повернення коштів, але{' '}
-              <Highlight>наступний сеанс має бути сплачений наперед і в повному обсязі</Highlight>.
-            </li>
-            <li>
-              <Highlight>Менше ніж за 2 годин</Highlight> —{' '}
-              <Highlight>передоплата не повертається</Highlight>. Наступний запис можливий лише у
-              разі <Highlight>компенсації 50%</Highlight> вартості пропущеного сеансу.
-            </li>
-            <li>
-              Для ранкових сеансів (9:00 або 10:00) — скасування повинно відбутись{' '}
-              <Highlight>не пізніше ніж за 12 годин</Highlight>.
+              У разі скасування запису з мого боку - <Highlight>запропоную бонус</Highlight> до
+              наступної процедури (на Ваш вибір).
             </li>
           </ul>
         </RuleAccordion>
 
-        <RuleAccordion title="3. Скасування запису з мого боку" icon={<FiGift />}>
-          <ul>
-            <li>
-              <Highlight>Запропоную бонус</Highlight> до наступної процедури (на Ваш вибір).
-            </li>
-          </ul>
-        </RuleAccordion>
-
-        <RuleAccordion title="4. Стан здоров’я, гігієна та відповідальність" icon={<FiHeart />}>
+        <RuleAccordion title="2. Стан здоров’я, гігієна та відповідальність" icon={<FiHeart />}>
           <ul>
             <li>
               Будь ласка, дбайливо ставтесь до свого самопочуття. При наявності симптомів (застуда,
@@ -88,7 +62,7 @@ export default function ClientRulesPage() {
           </ul>
         </RuleAccordion>
 
-        <RuleAccordion title="5. Поважне ставлення" icon={<FiThumbsUp />}>
+        <RuleAccordion title="3. Поважне ставлення" icon={<FiThumbsUp />}>
           <ul>
             <li>
               Прошу дотримуватись <Highlight>ввічливості та поваги</Highlight> у спілкуванні.
