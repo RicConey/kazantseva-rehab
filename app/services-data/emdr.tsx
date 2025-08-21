@@ -9,6 +9,7 @@ export const metadata: ServiceMetadata = {
     'Терапія десенсибілізації та переробки рухом очей, спрямована на ефективну обробку травматичних спогадів.',
   image: '/images/services/emdr.webp',
   order: 3,
+  ctaText: 'Готові відчути психологічне полегшення?',
 };
 
 export default function EmdrTherapyPage() {

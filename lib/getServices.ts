@@ -8,6 +8,7 @@ export interface ServiceMetadata {
   description: string;
   image?: string;
   order?: number;
+  ctaText?: string;
 }
 
 /** Возвращает массив slug‑ов (имён файлов без расширения) */

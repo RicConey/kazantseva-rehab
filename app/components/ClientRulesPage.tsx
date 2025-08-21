@@ -31,10 +31,6 @@ export default function ClientRulesPage() {
               У разі повторної неявки без повідомлення я залишаю за собою право{' '}
               <Highlight>відмовити у подальших прийомах</Highlight>.
             </li>
-            <li>
-              У разі скасування запису з мого боку - <Highlight>запропоную бонус</Highlight> до
-              наступної процедури (на Ваш вибір).
-            </li>
           </ul>
         </RuleAccordion>
 
