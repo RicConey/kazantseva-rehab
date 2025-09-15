@@ -91,7 +91,7 @@ export default function GoogleReviews() {
 
       <div className={styles.googleLinkContainer}>
         <a
-          href={`https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${process.env.NEXT_PUBLIC_GOOGLE_PLACE_ID}`}
+          href={`https://search.google.com/local/reviews?placeid=${process.env.NEXT_PUBLIC_GOOGLE_PLACE_ID}`}
           target="_blank"
           rel="noopener noreferrer"
           className={styles.googleLink}
