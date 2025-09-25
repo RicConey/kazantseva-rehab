@@ -50,6 +50,14 @@ export default function ContactPage() {
             copyText="0967237838"
           >
             <div className={styles.messengerIcons}>
+              <a
+                href="https://t.me/+380967237838"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Telegram"
+              >
+                <Image src="/icons/telegram.svg" alt="Telegram" width={28} height={28} />
+              </a>
               <a href="viber://chat?number=+380967237838" aria-label="Viber">
                 <Image src="/icons/viber.svg" alt="Viber" width={28} height={28} />
               </a>
