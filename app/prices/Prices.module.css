@@ -55,6 +55,27 @@
   opacity: 0.8;
 }
 
+/* СТИЛИ ДЛЯ ИНФОРМАЦИОННОГО БЛОКА */
+.infoBlock {
+  margin: 0 auto 24px;
+  padding: 16px;
+  background-color: #f8f9fa; /* Используем тот же фон, что и у четных строк таблицы */
+  border-left: 5px solid #249b89; /* Яркий акцент в основном цвете сайта */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-radius: 0 8px 8px 0; /* Скругление углов, чтобы соответствовать таблице */
+  max-width: 95%; /* Чтобы на больших экранах блок не был слишком широким */
+}
+
+.infoBlock p {
+  margin: 0 0 8px;
+  line-height: 1.5;
+}
+
+.infoBlock p:last-child {
+  margin-bottom: 0;
+}
+/* КОНЕЦ СТИЛЕЙ ДЛЯ БЛОКА */
+
 /* Мобильная версия */
 @media (max-width: 600px) {
   .priceTable th,

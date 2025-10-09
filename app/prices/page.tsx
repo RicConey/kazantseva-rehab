@@ -26,6 +26,18 @@ export default async function PricesPage() {
     <div className="baseText" style={{ padding: '0 0 24px' }}>
       <h1 className={styles.title}>Ціни на послуги</h1>
 
+      {/* ИНФОРМАЦИОННЫЙ БЛОК О ПОВЫШЕНИИ ЦЕН */}
+      <div className={styles.infoBlock}>
+        <p>
+          <strong>Шановні клієнти!</strong>
+        </p>
+        <p>
+          Звертаємо вашу увагу, що з <strong>01.11.2025</strong> відбудеться планове підвищення цін
+          на послуги. Дякуємо за розуміння!
+        </p>
+      </div>
+      {/* КОНЕЦ ИНФОРМАЦИОННОГО БЛОКА */}
+
       <div className={styles.container}>
         <table className={styles.priceTable}>
           <thead>
