@@ -1,8 +1,8 @@
 // app/api/prices/route.ts
 
 // Next.js caching & tags
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// export const dynamic = 'force-dynamic';
+export const revalidate = 604800; // 1 неделя
 export const tags = ['prices'];
 
 import { NextResponse } from 'next/server';
