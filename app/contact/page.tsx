@@ -58,9 +58,6 @@ export default function ContactPage() {
               >
                 <Image src="/icons/telegram.svg" alt="Telegram" width={28} height={28} />
               </a>
-              <a href="viber://chat?number=+380967237838" aria-label="Viber">
-                <Image src="/icons/viber.svg" alt="Viber" width={28} height={28} />
-              </a>
             </div>
           </ContactCard>
 
